@@ -400,6 +400,22 @@ class ArtbeatDrawerItems {
     color: ArtbeatColors.primaryPurple,
   );
 
+  static const captureModeration = ArtbeatDrawerItem(
+    title: 'Capture Moderation',
+    icon: Icons.photo_library_outlined,
+    route: '/capture/admin/moderation',
+    requiredRoles: ['admin'],
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const artWalkModeration = ArtbeatDrawerItem(
+    title: 'Art Walk Moderation',
+    icon: Icons.route_outlined,
+    route: '/artwalk/admin/moderation',
+    requiredRoles: ['admin'],
+    color: ArtbeatColors.primaryPurple,
+  );
+
   // Settings items
   static const settings = ArtbeatDrawerItem(
     title: 'Settings',
@@ -497,6 +513,8 @@ class ArtbeatDrawerItems {
   static List<ArtbeatDrawerItem> get adminItems => [
     unifiedAdminDashboard,
     adminSettings,
+    captureModeration,
+    artWalkModeration,
     manageAds,
     adStatistics,
   ];

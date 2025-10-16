@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' hide Card;
 import 'dart:io';
 
 import '../models/ad_model.dart';
@@ -37,8 +38,10 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
 
   List<File> _selectedImages = [];
   bool _isLoading = false;
+  bool _isProcessingPayment = false;
 
   final ImagePicker _picker = ImagePicker();
+  final PaymentService _paymentService = PaymentService();
 
   @override
   void dispose() {
@@ -75,88 +78,27 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     }
   }
 
-  Future<void> _createAd() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one image')),
-      );
-      return;
-    }
+  Future<void> _processPaymentAndCreateAd() async {
+    final confirmed = await _showPaymentConfirmationDialog();
+    if (!confirmed) return;
 
     setState(() {
       _isLoading = true;
+      _isProcessingPayment = true;
     });
 
     try {
-      // Get current user (simplified - you may need to adjust based on your auth system)
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
+      // Step 1: Process Payment first
+      await _processPayment();
 
-      // Calculate dates
-      final startDate = DateTime.now();
-      final endDate = startDate.add(Duration(days: _selectedDays));
-
-      // Create duration object based on selected days
-      AdDuration duration;
-      switch (_selectedDays) {
-        case 1:
-          duration = AdDuration.oneDay;
-          break;
-        case 3:
-          duration = AdDuration.threeDays;
-          break;
-        case 7:
-          duration = AdDuration.oneWeek;
-          break;
-        case 14:
-          duration = AdDuration.twoWeeks;
-          break;
-        case 30:
-          duration = AdDuration.oneMonth;
-          break;
-        default:
-          duration = AdDuration.custom;
-          break;
-      }
-
-      // Create ad model with zone (location is set to a default for backward compatibility)
-      final ad = AdModel(
-        id: '', // Will be set by service
-        ownerId: user.uid,
-        type: _selectedType,
-        size: _selectedSize,
-        imageUrl: '', // Will be set after upload
-        artworkUrls: [], // Will be set after upload
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        location: AdLocation
-            .fluidDashboard, // Default location for backward compatibility
-        zone: _selectedZone,
-        duration: duration,
-        startDate: startDate,
-        endDate: endDate,
-        status: AdStatus.pending,
-        destinationUrl: _destinationUrlController.text.trim().isEmpty
-            ? null
-            : _destinationUrlController.text.trim(),
-        ctaText: _ctaTextController.text.trim().isEmpty
-            ? null
-            : _ctaTextController.text.trim(),
-        imageFit: _selectedImageFit,
-      );
-
-      // Create ad with images using SimpleAdService
-      final adService = SimpleAdService();
-      await adService.createAdWithImages(ad, _selectedImages);
+      // Step 2: Create ad only after successful payment
+      await _createAdAfterPayment();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Ad created successfully! It will be reviewed before going live.',
+              'Payment successful! Your ad has been created and will be reviewed before going live.',
             ),
             backgroundColor: Colors.green,
           ),
@@ -166,19 +108,186 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating ad: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _isProcessingPayment = false;
         });
       }
     }
+  }
+
+  Future<bool> _showPaymentConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Confirm Payment'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Ad Title: ${_titleController.text}'),
+                const SizedBox(height: 8),
+                Text('Zone: ${_selectedZone.displayName}'),
+                Text('Size: ${_selectedSize.displayName}'),
+                Text('Duration: $_selectedDays days'),
+                const Divider(),
+                Text(
+                  'Total Cost: \$${_totalCost.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'You will be charged immediately upon confirmation.',
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Proceed to Payment'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _processPayment() async {
+    try {
+      // Get the current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Process payment using the existing payment service method
+      final response = await _paymentService.processDirectAdPayment(
+        adType: _selectedType.name,
+        duration: _selectedDays,
+        amount: _totalCost,
+        adContent: {
+          'title': _titleController.text.trim(),
+          'description': _descriptionController.text.trim(),
+          'destinationUrl': _destinationUrlController.text.trim().isEmpty
+              ? null
+              : _destinationUrlController.text.trim(),
+          'ctaText': _ctaTextController.text.trim().isEmpty
+              ? null
+              : _ctaTextController.text.trim(),
+          'zone': _selectedZone.name,
+          'size': _selectedSize.name,
+          'imageFit': _selectedImageFit.name,
+        },
+      );
+
+      if (response['status'] != 'success') {
+        throw Exception(response['message'] ?? 'Payment failed');
+      }
+
+      AppLogger.info('✅ Ad payment processed successfully');
+    } catch (e) {
+      if (e is StripeException) {
+        throw Exception('Payment failed: ${e.error.localizedMessage}');
+      } else {
+        throw Exception('Payment processing error: $e');
+      }
+    }
+  }
+
+  Future<void> _createAdAfterPayment() async {
+    // Get current user
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Calculate dates
+    final startDate = DateTime.now();
+    final endDate = startDate.add(Duration(days: _selectedDays));
+
+    // Create duration object based on selected days
+    AdDuration duration;
+    switch (_selectedDays) {
+      case 1:
+        duration = AdDuration.oneDay;
+        break;
+      case 3:
+        duration = AdDuration.threeDays;
+        break;
+      case 7:
+        duration = AdDuration.oneWeek;
+        break;
+      case 14:
+        duration = AdDuration.twoWeeks;
+        break;
+      case 30:
+        duration = AdDuration.oneMonth;
+        break;
+      default:
+        duration = AdDuration.custom;
+        break;
+    }
+
+    // Create ad model with payment status as paid
+    final ad = AdModel(
+      id: '', // Will be set by service
+      ownerId: user.uid,
+      type: _selectedType,
+      size: _selectedSize,
+      imageUrl: '', // Will be set after upload
+      artworkUrls: [], // Will be set after upload
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      location: AdLocation
+          .fluidDashboard, // Default location for backward compatibility
+      zone: _selectedZone,
+      duration: duration,
+      startDate: startDate,
+      endDate: endDate,
+      status: AdStatus.pending, // Still pending review, but payment is complete
+      destinationUrl: _destinationUrlController.text.trim().isEmpty
+          ? null
+          : _destinationUrlController.text.trim(),
+      ctaText: _ctaTextController.text.trim().isEmpty
+          ? null
+          : _ctaTextController.text.trim(),
+      imageFit: _selectedImageFit,
+    );
+
+    // Create ad with images using SimpleAdService
+    final adService = SimpleAdService();
+    await adService.createAdWithImages(ad, _selectedImages);
+  }
+
+  Future<void> _createAd() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one image')),
+      );
+      return;
+    }
+
+    // Redirect to payment processing
+    await _processPaymentAndCreateAd();
   }
 
   double get _totalCost =>
@@ -246,8 +355,30 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                     foregroundColor: Colors.white,
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Create Ad', style: TextStyle(fontSize: 16)),
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _isProcessingPayment
+                                  ? 'Processing Payment...'
+                                  : 'Creating Ad...',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        )
+                      : const Text(
+                          'Pay & Create Ad',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
             ],

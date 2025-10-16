@@ -1,99 +1,80 @@
-# 🚀 Capture Optimization - Quick Reference
+# 🚀 CI/CD Quick Reference
 
-## Problem Fixed
+## 📊 Status: 95% Complete
 
-❌ **Before:** Capture submission took 3-8 seconds  
-✅ **After:** Capture submission takes 0.5-1.5 seconds  
-📈 **Improvement:** 70-85% faster!
+### ✅ Done (19 secrets)
+- Android build (4)
+- Firebase staging (3)
+- Firebase production (3)
+- API keys (8)
+- Legacy (1)
 
----
-
-## What Changed
-
-### Files Modified
-
-1. `packages/artbeat_capture/lib/src/services/capture_service.dart`
-2. `packages/artbeat_capture/lib/src/screens/capture_upload_screen.dart`
-
-### Key Changes
-
-- ✅ Save to Firestore first (critical operation)
-- ✅ Return immediately to user
-- ✅ Process XP, achievements, social in background
-- ✅ Parallel execution for speed
-- ✅ Isolated error handling
+### 🔴 Missing (5 secrets)
+1. ENV_STAGING
+2. ENV_PRODUCTION
+3. FIREBASE_TOKEN
+4. FIREBASE_ANDROID_APP_ID_STAGING
+5. GOOGLE_PLAY_SERVICE_ACCOUNT
 
 ---
 
-## How It Works
+## ⚡ Quick Commands
 
-```
-User submits → Save to Firestore (1s) → Show success ✅
-                                            ↓
-                                    Background (2-4s):
-                                    - Award XP
-                                    - Update stats
-                                    - Post social
-                                    - Check achievements
+### Generate Environment Secrets
+```bash
+./scripts/generate_env_secrets.sh
 ```
 
----
+### Get Firebase App IDs
+```bash
+./scripts/get_firebase_app_ids.sh
+```
 
-## Testing Checklist
+### Generate Firebase Token
+```bash
+firebase login:ci
+```
 
-Quick test:
+### Update Stripe Key
+```bash
+echo "pk_live_51QpJ6iAO5ulTKoALD0MCyfwOCP2ivyVgKNK457uvrjJ0N9uj9Y7uSAtWfYq7nyuFZFqMjF4BHaDOYuMpwxd0PdbK00Ooktqk6z" | pbcopy
+# Then update PRODUCTION_STRIPE_PUBLISHABLE_KEY in GitHub
+```
 
-1. ☐ Capture an image
-2. ☐ Fill in details
-3. ☐ Submit
-4. ☐ Success dialog appears in < 2 seconds
-5. ☐ Check XP increased (after 5 seconds)
-6. ☐ Check social post created (after 5 seconds)
-
----
-
-## Documentation
-
-| Document                              | Purpose                           |
-| ------------------------------------- | --------------------------------- |
-| `OPTIMIZATION_COMPLETE.md`            | **Start here!** Complete overview |
-| `CAPTURE_OPTIMIZATION_SUMMARY.md`     | Executive summary                 |
-| `CAPTURE_PERFORMANCE_OPTIMIZATION.md` | Technical deep dive               |
-| `CAPTURE_FLOW_COMPARISON.md`          | Visual diagrams                   |
-| `TESTING_CAPTURE_OPTIMIZATION.md`     | Testing guide                     |
+### Store Stripe Secret Key
+```bash
+firebase functions:secrets:set STRIPE_SECRET_KEY
+# Paste: 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
+```
 
 ---
 
-## Key Metrics
+## 📚 Documentation
 
-| Metric         | Target        |
-| -------------- | ------------- |
-| UI Response    | < 2 seconds   |
-| Image Upload   | < 2 seconds   |
-| Firestore Save | < 0.5 seconds |
-| Background Ops | < 5 seconds   |
+| Document | Purpose |
+|----------|---------|
+| **START_HERE.md** | Quick start guide |
+| **FINISH_CICD_NOW.md** | Step-by-step completion |
+| **FINAL_5_PERCENT_CHECKLIST.md** | Detailed checklist |
+| **UPDATE_STRIPE_KEY.md** | Stripe key update guide |
+| **CICD_COMPLETION_SUMMARY.md** | Full status report |
 
 ---
 
-## Rollback
+## 🔗 Quick Links
 
-If needed:
+- **GitHub Secrets:** https://github.com/kdbock/artbeat-app/settings/secrets/actions
+- **GitHub Actions:** https://github.com/kdbock/artbeat-app/actions
+- **Firebase Console:** https://console.firebase.google.com
+- **Google Play Console:** https://play.google.com/console
+- **Stripe Dashboard:** https://dashboard.stripe.com
+
+---
+
+## 🎯 Next Action
 
 ```bash
-git revert <commit-hash>
+./scripts/generate_env_secrets.sh
 ```
 
-Low risk - only 2 files changed, no schema changes.
-
----
-
-## Status
-
-✅ Code complete  
-✅ Documentation complete  
-✅ Ready for testing  
-⏳ Awaiting deployment
-
----
-
-**Questions?** See `OPTIMIZATION_COMPLETE.md`
+Then follow the prompts!

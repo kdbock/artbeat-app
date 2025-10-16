@@ -1,0 +1,169 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify Dart SDK
+        run: dart --version
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+        continue-on-error: true
+
+      - name: Analyze code
+        run: flutter analyze
+        continue-on-error: true
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - artbeat_core
+          - artbeat_auth
+          - artbeat_profile
+          - artbeat_artwork
+          - artbeat_artist
+          - artbeat_art_walk
+          - artbeat_community
+          - artbeat_settings
+          - artbeat_messaging
+          - artbeat_events
+          - artbeat_capture
+          - artbeat_ads
+          - artbeat_admin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: packages/${{ matrix.module }}
+
+      - name: Generate mocks
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+        working-directory: packages/${{ matrix.module }}
+        continue-on-error: true
+
+      - name: Run tests
+        run: |
+          if [ -d "test" ] && [ "$(find test -name "*_test.dart" | wc -l)" -gt 0 ]; then
+            flutter test --coverage
+          else
+            echo "No tests found for ${{ matrix.module }} - skipping"
+            exit 0
+          fi
+        working-directory: packages/${{ matrix.module }}
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: packages/${{ matrix.module }}/coverage/lcov.info
+          flags: ${{ matrix.module }}
+        continue-on-error: true
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+          channel: "stable"
+          cache: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug --no-shrink
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+  build-ios:
+    name: Build iOS (No Signing)
+    runs-on: macos-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --debug --no-codesign
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, unit-tests, build-android, build-ios]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "✅ Pull Request Checks Complete!"
+          echo "Lint & Format: ${{ needs.lint-and-format.result }}"
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"
+          echo "Android Build: ${{ needs.build-android.result }}"
+          echo "iOS Build: ${{ needs.build-ios.result }}"

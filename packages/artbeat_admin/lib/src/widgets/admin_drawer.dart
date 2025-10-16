@@ -152,6 +152,20 @@ class AdminDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context,
+                      icon: Icons.photo_library,
+                      title: 'Capture Moderation',
+                      route: '/capture/admin/moderation',
+                      subtitle: 'Moderate captures and manage reports',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.route,
+                      title: 'Art Walk Moderation',
+                      route: '/artwalk/admin/moderation',
+                      subtitle: 'Moderate art walks and manage reports',
+                    ),
+                    _buildDrawerItem(
+                      context,
                       icon: Icons.people,
                       title: 'User Management',
                       route:

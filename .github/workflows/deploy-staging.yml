@@ -1,0 +1,181 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: "3.35.3"
+  JAVA_VERSION: "17"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Analyze code
+        run: flutter analyze
+
+  build-android-staging:
+    name: Build Android (Staging)
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: "gradle"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create staging environment file
+        run: |
+          echo "${{ secrets.ENV_STAGING }}" > .env
+          cat .env
+
+      - name: Build Android App Bundle (Staging)
+        run: flutter build appbundle --release --build-name=2.0.6-staging --build-number=${{ github.run_number }}
+        env:
+          ENVIRONMENT: staging
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID_STAGING }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_STAGING_SERVICE_ACCOUNT }}
+          groups: internal-testers
+          file: build/app/outputs/bundle/release/app-release.aab
+          releaseNotes: |
+            Staging Build - ${{ github.sha }}
+            Branch: develop
+            Commit: ${{ github.event.head_commit.message }}
+
+  build-ios-staging:
+    name: Build iOS (Staging)
+    runs-on: macos-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create staging environment file
+        run: |
+          echo "${{ secrets.ENV_STAGING }}" > .env
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Import Code Signing Certificates
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      - name: Install Provisioning Profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_STAGING }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/staging.mobileprovision
+
+      - name: Build iOS IPA (Staging)
+        run: |
+          flutter build ipa --release --export-options-plist=ios/ExportOptions-Staging.plist --build-name=2.0.6-staging --build-number=${{ github.run_number }}
+        env:
+          ENVIRONMENT: staging
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_IOS_APP_ID_STAGING }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_STAGING_SERVICE_ACCOUNT }}
+          groups: internal-testers
+          file: build/ios/ipa/artbeat.ipa
+          releaseNotes: |
+            Staging Build - ${{ github.sha }}
+            Branch: develop
+            Commit: ${{ github.event.head_commit.message }}
+
+  deploy-firebase-staging:
+    name: Deploy Firebase Rules (Staging)
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Firestore Rules
+        run: firebase deploy --only firestore:rules --project staging --token "${{ secrets.FIREBASE_TOKEN }}"
+
+      - name: Deploy Storage Rules
+        run: firebase deploy --only storage:rules --project staging --token "${{ secrets.FIREBASE_TOKEN }}"
+
+  notify-staging-deployed:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [build-android-staging, build-ios-staging, deploy-firebase-staging]
+    if: always()
+
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "🚀 Staging Deployment Complete!"
+          echo "Android: ${{ needs.build-android-staging.result }}"
+          echo "iOS: ${{ needs.build-ios-staging.result }}"
+          echo "Firebase: ${{ needs.deploy-firebase-staging.result }}"
+          echo ""
+          echo "📱 Test builds available in Firebase App Distribution"
+          echo "Group: internal-testers"

@@ -3,9 +3,9 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Helper functions for access control
     function isDebugMode() {
-      // Set to true only if you want to completely bypass App Check
-      // Better approach: Register debug tokens in Firebase Console
-      return true; // Temporarily enabled for development
+      // PRODUCTION: Set to false to enforce App Check
+      // For development: Register debug tokens in Firebase Console instead
+      return false; // Production mode - App Check enforced
     }
 
     function hasAppCheck() {
@@ -21,10 +21,7 @@ service firebase.storage {
     }
     
     function isUserPath(userId) {
-      return isAuthorized() && (
-        isDebugMode() || 
-        request.auth.uid == userId
-      );
+      return isAuthorized() && request.auth.uid == userId;
     }
 
     function isAdmin(userId) {
@@ -32,365 +29,351 @@ service firebase.storage {
         && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin');
     }
 
+    // File validation functions
+    function isValidImageSize() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB limit for images
+    }
+
+    function isValidVideoSize() {
+      return request.resource.size < 100 * 1024 * 1024; // 100MB limit for videos
+    }
+
+    function isValidAudioSize() {
+      return request.resource.size < 50 * 1024 * 1024; // 50MB limit for audio
+    }
+
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isValidVideoType() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    function isValidAudioType() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+
     // Base rules that apply to all paths
     match /{allPaths=**} {
-      allow read: if isAuthenticated(); // Simplified for dev - just require auth
+      allow read: if isAuthenticated(); // Require authentication for all reads
       allow write: if false; // Specific paths must explicitly allow write
     }
 
-    // Temporary very permissive rule for debugging artist profile uploads
+    // Profile images - authenticated users only with validation
     match /profile/{allPaths=**} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
     }
 
-    // Temporary very permissive rule for debugging artwork uploads
+    // Artwork images - authenticated users only with validation
     match /artwork/{allPaths=**} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
     }
 
-    // Temporary very permissive rule for debugging post uploads
+    // Post images - authenticated users only with validation
     match /post_images/{allPaths=**} {
-      allow read: if true; // Public read access for debugging
-      allow write: if isAuthenticated();
+      allow read: if isAuthenticated(); // Require authentication
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
     }
 
-    // Root level files - for simple uploads during development
+    // Root level files - restricted in production
     match /{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Debug uploads path - optimized for reliable ad uploads
-    // This path has proven most reliable for avoiding "cannot parse response" errors
+    // Debug uploads path - DISABLED IN PRODUCTION
+    // For development, use proper user-specific paths instead
     match /debug_uploads/{fileName} {
-      allow read, write: if isAuthenticated();
-      // Additional permissive rules for better reliability
-      allow read, write: if request.auth != null;
+      allow read, write: if false; // Disabled in production
     }
     
-    // Debug uploads with subdirectories for better organization
+    // Debug uploads with subdirectories - DISABLED IN PRODUCTION
     match /debug_uploads/{category}/{fileName} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if false; // Disabled in production
     }
 
-    // Artwork images - artists can upload their own artwork
+    // Artwork images - artists can upload their own artwork with validation
     match /artwork_images/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Temporary more permissive artwork upload path for debugging
+    // Artwork upload path - user-specific with validation
     match /artwork_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // Artwork images with subdirectory (e.g., artwork_images/userId/new/fileName)
     match /artwork_images/{userId}/{subDir}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Very permissive artwork path for development
-    match /artwork_images/{allPaths=**} {
-      allow read: if true; // Public read access for artwork images
-      allow write: if isAuthenticated(); // More permissive for development
-    }
-
-    // Artwork path without 'images' suffix (legacy support)
+    // Artwork path without 'images' suffix (legacy support) - secured
     match /artwork/{userId}/{fileName} {
-      allow read: if true; // Public read access for artwork
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Artwork path with subdirectories (legacy support)
-    match /artwork/{allPaths=**} {
-      allow read: if true; // Public read access for all artwork
-      allow write: if isAuthenticated(); // More permissive for development
-    }
-
-    // Artwork videos - artists can upload their own artwork videos
+    // Artwork videos - artists can upload their own artwork videos with validation
     match /artwork_videos/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidVideoSize() && isValidVideoType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Temporary more permissive artwork video upload path for debugging
+    // Artwork video upload path - user-specific with validation
     match /artwork_videos/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidVideoSize() && isValidVideoType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Very permissive artwork video path for development
-    match /artwork_videos/{allPaths=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-    }
-
-    // Artwork audio - artists can upload their own artwork audio files
+    // Artwork audio - artists can upload their own artwork audio files with validation
     match /artwork_audio/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidAudioSize() && isValidAudioType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Temporary more permissive artwork audio upload path for debugging
+    // Artwork audio upload path - user-specific with validation
     match /artwork_audio/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidAudioSize() && isValidAudioType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Very permissive artwork audio path for development
-    match /artwork_audio/{allPaths=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-    }
-
-    // Artist images - for artist profiles (portfolio, banner, etc.)
+    // Artist images - for artist profiles (portfolio, banner, etc.) with validation
     match /artist_images/{userId}/{type}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Capture images - allow authenticated users to upload to their own folder
+    // Capture images - allow authenticated users to upload to their own folder with validation
     match /capture_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (
         request.auth.uid == userId || 
         isAdmin(request.auth.uid)
-      );
+      ) && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && (
         request.auth.uid == userId || 
         isAdmin(request.auth.uid)
       );
     }
 
-    // Legacy captures path - for backward compatibility
+    // Legacy captures path - secured with validation
     match /captures/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
     
-    // Post images for community feed
+    // Post images for community feed - secured with validation
     match /post_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Post videos for community feed
+    // Post videos for community feed - secured with validation
     match /posts/{userId}/videos/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidVideoSize() && isValidVideoType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Post audio for community feed
+    // Post audio for community feed - secured with validation
     match /posts/{userId}/audio/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidAudioSize() && isValidAudioType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
     
-    // More permissive posts path for development (videos and audio)
-    match /posts/{allPaths=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-      allow delete: if isAuthenticated();
-    }
-    
-    // Profile images
+    // Profile images - secured with validation
     match /profile_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Enhanced Storage Service paths for profile images (very permissive for development)
+    // Enhanced Storage Service paths for profile images - secured with validation
     match /profile/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Enhanced Storage Service paths for profile thumbnails
+    // Enhanced Storage Service paths for profile thumbnails - secured with validation
     match /profile/thumbnails/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Enhanced Storage Service paths for artwork images (used for cover images)
+    // Enhanced Storage Service paths for artwork images (used for cover images) - secured with validation
     match /artwork/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Enhanced Storage Service paths for artwork thumbnails
+    // Enhanced Storage Service paths for artwork thumbnails - secured with validation
     match /artwork/thumbnails/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Feedback images - for developer feedback system
+    // Feedback images - for developer feedback system with validation
     match /feedback_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Public art images - for art walk public art submissions
+    // Public art images - for art walk public art submissions with validation
     match /public_art_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Event images - for event creation (headshots, banners, event images)
+    // Event images - for event creation (headshots, banners, event images) with validation
     match /events/{userId}/{eventId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Event images - more permissive path for development
+    // Event images - user-specific path with validation
     match /events/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Art Walk images - allow authenticated users to upload to their own folder
+    // Art Walk images - allow authenticated users to upload to their own folder with validation
     match /art_walk_images/{userId}/{artWalkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Art Walk related paths
+    // Art Walk related paths with validation
     match /art_walks/{walkId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (
         // Check if user is the owner of the art walk or an admin
         request.auth.uid == request.resource.metadata.userId || 
         isAdmin(request.auth.uid)
-      );
+      ) && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && (
         request.auth.uid == resource.metadata.userId ||
         isAdmin(request.auth.uid)
       );
     }
 
-    // Art Walk debug uploads (for development)
+    // Art Walk debug uploads - DISABLED IN PRODUCTION
     match /art_walks_debug/{walkId}/{fileName} {
-      allow read, write: if isAuthenticated() && isDebugMode();
+      allow read, write: if false; // Disabled in production
     }
 
-    // Enhanced storage paths for simplified uploads
+    // Enhanced storage paths for simplified uploads - secured with validation
     match /temp_uploads/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Simple uploads path for development and testing
+    // Simple uploads path - secured with validation
     match /uploads/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Ad images - for advertisement uploads
+    // Ad images - for advertisement uploads with validation
     match /ads/{userId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (
         request.auth.uid == userId || 
         isAdmin(request.auth.uid)
-      );
+      ) && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && (
         request.auth.uid == userId || 
         isAdmin(request.auth.uid)
       );
     }
 
-    // Admin ads - for admin-created advertisements
+    // Admin ads - for admin-created advertisements with validation
     match /admin_ads/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow write: if isAuthenticated() && isAdmin(request.auth.uid) && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
     }
 
-    // Artist ads - for artist-created advertisements
+    // Artist ads - for artist-created advertisements with validation
     match /artist_ads/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Gallery ads - for gallery-created advertisements
+    // Gallery ads - for gallery-created advertisements with validation
     match /gallery_ads/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User ads - for regular user-created advertisements
+    // User ads - for regular user-created advertisements with validation
     match /user_ads/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Artist approved ads - special category for artist-approved advertisements
+    // Artist approved ads - special category for artist-approved advertisements with validation
     match /artist_approved_ads/{subpath=**} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // More permissive ad uploads path for development
-    match /ads/{allPaths=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
-      allow delete: if isAuthenticated();
-    }
-
-    // Chat images - for messaging system image uploads
+    // Chat images - for messaging system image uploads with validation
     match /chat_images/{chatId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // Chat participants can upload images
+      allow write: if isAuthenticated() && isValidImageSize() && isValidImageType();
       allow delete: if isAuthenticated();
     }
 
-    // Voice messages - for messaging system voice message uploads
+    // Voice messages - for messaging system voice message uploads with validation
     match /voice_messages/{chatId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // Chat participants can upload voice messages
+      allow write: if isAuthenticated() && isValidAudioSize() && isValidAudioType();
       allow delete: if isAuthenticated();
     }
 
-    // Chat media - generic path for chat-related media
+    // Chat media - generic path for chat-related media with validation
     match /chat_media/{chatId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        (isValidImageSize() && isValidImageType()) ||
+        (isValidVideoSize() && isValidVideoType()) ||
+        (isValidAudioSize() && isValidAudioType())
+      );
       allow delete: if isAuthenticated();
-    }
-
-    // Debug mode bypass for testing
-    match /{path=**}/{fileName} {
-      allow read, write: if isDebugMode();
     }
   }
 }

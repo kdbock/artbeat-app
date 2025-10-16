@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_purchase.dart';
+import 'recurring_event_service.dart';
 
 /// Service for managing events in Firestore
 class EventService {
@@ -12,8 +13,10 @@ class EventService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Logger _logger = Logger();
+  final RecurringEventService _recurringEventService = RecurringEventService();
 
   /// Create a new event
+  /// If the event is recurring, this will also generate all recurring instances
   Future<String> createEvent(ArtbeatEvent event) async {
     try {
       final docRef = await _firestore
@@ -21,6 +24,15 @@ class EventService {
           .add(event.toFirestore());
 
       _logger.i('Event created with ID: ${docRef.id}');
+
+      // If this is a recurring event, generate all instances
+      if (event.isRecurring) {
+        await _recurringEventService.generateRecurringInstances(
+          docRef.id,
+          event.copyWith(id: docRef.id),
+        );
+      }
+
       return docRef.id;
     } catch (e) {
       _logger.e('Error creating event: $e');
@@ -29,6 +41,7 @@ class EventService {
   }
 
   /// Update an existing event
+  /// If the event is a recurring parent event, this will also update all instances
   Future<void> updateEvent(ArtbeatEvent event) async {
     try {
       await _firestore
@@ -37,6 +50,11 @@ class EventService {
           .update(event.copyWith(updatedAt: DateTime.now()).toFirestore());
 
       _logger.i('Event updated: ${event.id}');
+
+      // If this is a recurring parent event, update all instances
+      if (event.isRecurring) {
+        await _recurringEventService.updateRecurringInstances(event.id, event);
+      }
     } catch (e) {
       _logger.e('Error updating event: $e');
       rethrow;
@@ -44,11 +62,20 @@ class EventService {
   }
 
   /// Delete an event
+  /// If the event is a recurring parent event, this will also delete all instances
   Future<void> deleteEvent(String eventId) async {
     try {
+      // Check if this is a recurring parent event
+      final event = await getEvent(eventId);
+
       await _firestore.collection(_eventsCollection).doc(eventId).delete();
 
       _logger.i('Event deleted: $eventId');
+
+      // If this was a recurring parent event, delete all instances
+      if (event?.isRecurring == true) {
+        await _recurringEventService.deleteRecurringInstances(eventId);
+      }
     } catch (e) {
       _logger.e('Error deleting event: $e');
       rethrow;

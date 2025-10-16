@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "51687823143",
+    "project_id": "fragrance-app-7063e",
+    "storage_bucket": "fragrance-app-7063e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:51687823143:android:324b6d18e70d552a48bb02",
+        "android_client_info": {
+          "package_name": "com.wordnerd.fragrance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUWD0WyB4XIk7aRbewY-TxFbx-kam7ufw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -80,21 +80,26 @@ android {
             signingConfig = if (hasReleaseKeystore) {
                 signingConfigs.getByName("release")
             } else {
-                logger.warn("Release keystore not found or incomplete, using debug signing for release build.")
-                signingConfigs.getByName("debug")
+                logger.error("⚠️  PRODUCTION BUILD ERROR: Release keystore not found!")
+                logger.error("Please create a release keystore and configure key.properties")
+                logger.error("See SECURITY_SETUP.md for instructions")
+                throw GradleException("Release keystore required for production builds")
             }
             
-            // Temporarily disable minification to avoid Stripe SDK issues
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // PRODUCTION: Enable minification and resource shrinking
+            // TODO: Re-enable after testing ProGuard rules with Stripe SDK
+            isMinifyEnabled = false  // Set to true after ProGuard testing
+            isShrinkResources = false  // Set to true after ProGuard testing
             
-            // Keep ProGuard rules for future use
+            // ProGuard rules for code obfuscation and optimization
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         
         debug {
             // Debug builds continue to use debug signing
             signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
     }
 }

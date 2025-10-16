@@ -199,9 +199,10 @@ class AppRouter {
       return _handleCommunityRoutes(settings);
     }
 
-    // Art Walk routes
+    // Art Walk routes (including admin moderation)
     if (routeName.startsWith('/art-walk') ||
-        routeName.startsWith('/enhanced')) {
+        routeName.startsWith('/enhanced') ||
+        routeName.startsWith('/artwalk')) {
       return _handleArtWalkRoutes(settings);
     }
 
@@ -710,6 +711,22 @@ class AppRouter {
           currentIndex: 1,
           child: const Center(child: Text('Art Walk Settings - Coming Soon')),
         );
+
+      case AppRoutes.artWalkAdminModeration:
+        core.AppLogger.info(
+          '🔍 AppRouter: Handling artWalkAdminModeration route',
+        );
+        try {
+          final route = RouteUtils.createMainLayoutRoute<dynamic>(
+            child: const art_walk.AdminArtWalkModerationScreen(),
+          );
+          core.AppLogger.info('✅ AppRouter: Route created successfully');
+          return route;
+        } catch (e, stackTrace) {
+          core.AppLogger.error('❌ AppRouter: Error creating route: $e');
+          core.AppLogger.error('Stack trace: $stackTrace');
+          rethrow;
+        }
 
       case '/art-walk/review':
         final args = settings.arguments as Map<String, dynamic>?;

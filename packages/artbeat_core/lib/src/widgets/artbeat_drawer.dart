@@ -184,6 +184,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/capture/edit',
       '/capture/create',
       '/capture/public',
+      '/artwalk/admin/moderation',
       '/ads/create',
       '/ads/management',
       '/ads/statistics',
