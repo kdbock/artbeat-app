@@ -226,21 +226,14 @@ class _EnhancedArtWalkCreateScreenState
         radiusKm: 50.0,
       );
 
-      // Fetch captures near location (not all captures)
+      // Fetch captures from database and filter by location (same radius as public art)
       final captureService = CaptureService();
-      final captures = await captureService.getAllCaptures(limit: 100);
+      final allCaptures = await captureService.getAllCaptures(
+        limit: 500,
+      ); // Increased limit to get more captures
 
-      // Filter captures to only include those within reasonable distance based on user preference
-      final String distanceUnit = _userSettings?.distanceUnit ?? 'miles';
-      final double defaultRadius = DistanceUtils.getDefaultSearchRadius(
-        distanceUnit,
-      );
-      final double radiusInMeters = DistanceUtils.getFilterRadiusInMeters(
-        defaultRadius,
-        distanceUnit,
-      );
-
-      final List<PublicArtModel> captureArt = captures
+      // Filter captures to only include those within the same radius as public art
+      final List<PublicArtModel> captureArt = allCaptures
           .where((capture) {
             // Skip captures without location
             if (capture.location == null) {
@@ -256,16 +249,9 @@ class _EnhancedArtWalkCreateScreenState
                 capture.location!.longitude,
               );
 
-              // Format distance in user's preferred unit
-              final formattedDistance = DistanceUtils.formatDistance(
-                distance,
-                unit: distanceUnit,
-              );
-              debugPrint(
-                'Capture "${capture.title}" distance: $formattedDistance',
-              );
-
-              return distance <= radiusInMeters;
+              // Use same radius as public art (50km = 50000 meters)
+              const double radiusMeters = 50000.0;
+              return distance <= radiusMeters;
             } catch (e) {
               debugPrint(
                 'Error calculating distance for capture ${capture.title}: $e',
@@ -289,38 +275,12 @@ class _EnhancedArtWalkCreateScreenState
           )
           .toList();
 
-      debugPrint('Total captures fetched: ${captures.length}');
-      debugPrint('Filtered captures within range: ${captureArt.length}');
+      debugPrint('Total captures fetched: ${allCaptures.length}');
+      debugPrint('Captures within 50km radius: ${captureArt.length}');
       debugPrint('Current location: $latitude, $longitude');
 
-      // Temporary fallback: if no captures found within range, include all captures with location
-      List<PublicArtModel> finalCaptureArt = captureArt;
-      if (captureArt.isEmpty && captures.isNotEmpty) {
-        debugPrint(
-          'No captures found within range, including all captures with location as fallback',
-        );
-        finalCaptureArt = captures
-            .where((capture) => capture.location != null)
-            .map(
-              (CaptureModel capture) => PublicArtModel(
-                id: capture.id,
-                title: capture.title ?? 'Captured Art',
-                artistName: capture.artistName ?? 'Unknown Artist',
-                imageUrl: capture.imageUrl,
-                location: capture.location ?? const GeoPoint(0, 0),
-                description: capture.description ?? '',
-                tags: capture.tags ?? [],
-                userId: capture.userId,
-                usersFavorited: const [],
-                createdAt: Timestamp.fromDate(capture.createdAt),
-              ),
-            )
-            .toList();
-        debugPrint('Fallback captures included: ${finalCaptureArt.length}');
-      }
-
       setState(() {
-        _availableArtPieces = [...publicArt, ...finalCaptureArt];
+        _availableArtPieces = [...publicArt, ...captureArt];
         _updateMapMarkers();
       });
     } catch (e) {
