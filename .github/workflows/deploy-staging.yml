@@ -175,7 +175,7 @@ jobs:
         run: firebase deploy --only firestore:rules --project artbeat-staging --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Storage Rules
-        run: firebase deploy --only storage:rules --project artbeat-staging --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only storage --project artbeat-staging --token "${{ secrets.FIREBASE_TOKEN }}"
 
   notify-staging-deployed:
     name: Notify Deployment

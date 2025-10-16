@@ -206,7 +206,7 @@ jobs:
         run: firebase deploy --only firestore:rules --project artbeat-production --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Storage Rules
-        run: firebase deploy --only storage:rules --project artbeat-production --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only storage --project artbeat-production --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Cloud Functions
         run: |
