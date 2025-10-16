@@ -203,17 +203,17 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Deploy Firestore Rules
-        run: firebase deploy --only firestore:rules --project production --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only firestore:rules --project wordnerd-artbeat --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Storage Rules
-        run: firebase deploy --only storage:rules --project production --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only storage:rules --project wordnerd-artbeat --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Cloud Functions
         run: |
           cd functions
           npm ci
           cd ..
-          firebase deploy --only functions --project production --token "${{ secrets.FIREBASE_TOKEN }}"
+          firebase deploy --only functions --project wordnerd-artbeat --token "${{ secrets.FIREBASE_TOKEN }}"
 
   create-release:
     name: Create GitHub Release
