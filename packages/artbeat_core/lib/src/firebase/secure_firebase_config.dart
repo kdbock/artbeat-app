@@ -146,8 +146,8 @@ class SecureFirebaseConfig {
 
         // Always use debug provider in debug mode
         await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.debug,
-          appleProvider: AppleProvider.debug,
+          providerAndroid: AndroidDebugProvider(),
+          providerApple: AppleDebugProvider(),
           // Skip web provider in debug mode if no reCAPTCHA key is configured
         );
 
@@ -155,8 +155,8 @@ class SecureFirebaseConfig {
       } else {
         // Production mode - use secure providers
         await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.playIntegrity,
-          appleProvider: AppleProvider.deviceCheck,
+          providerAndroid: AndroidPlayIntegrityProvider(),
+          providerApple: AppleDeviceCheckProvider(),
         );
       }
 
