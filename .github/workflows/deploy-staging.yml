@@ -67,7 +67,8 @@ jobs:
 
       - name: Decode keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          mkdir -p android/app/signing
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/signing/artbeat-upload-key.jks
 
       - name: Create key.properties
         run: |
@@ -75,7 +76,7 @@ jobs:
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          storeFile=app/keystore.jks
+          storeFile=app/signing/artbeat-upload-key.jks
           EOF
 
       - name: Build Android App Bundle (Staging)
