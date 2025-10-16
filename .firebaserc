@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "wordnerd-artbeat"
+    "default": "wordnerd-artbeat",
+    "staging": "artbeat-staging",
+    "production": "artbeat-production"
   }
 }
