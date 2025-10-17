@@ -3,7 +3,7 @@
 # ArtBeat - Production Readiness Validation Script
 # This script checks if your app is ready for production deployment
 
-set -e
+set -o pipefail  # Exit on pipe errors, but allow functions to return non-zero
 
 echo "🔍 ArtBeat Production Readiness Check"
 echo "======================================"
