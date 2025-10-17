@@ -1,0 +1,81 @@
+name: iOS TestFlight Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: "3.35.3"
+
+jobs:
+  build-ios-testflight:
+    name: Build & Upload to TestFlight
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create environment file
+        run: |
+          echo "${{ secrets.ENV_PRODUCTION }}" > .env
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Import Code Signing Certificates
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+
+      - name: Install Provisioning Profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_PRODUCTION }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/production.mobileprovision
+
+      - name: Build iOS IPA
+        run: |
+          flutter build ipa --release --export-options-plist=ios/ExportOptions-Production.plist
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/ipa/artbeat.ipa
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-testflight-ipa
+          path: build/ios/ipa/artbeat.ipa
+          retention-days: 30
+
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "✅ iOS TestFlight build uploaded successfully!"
+          echo "📱 Bundle ID: com.wordnerd.artbeat"
+          echo "📧 Notification sent to: kdbock79@icloud.com"
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          echo "❌ iOS TestFlight build failed"
+          echo "Check the logs above for details"
