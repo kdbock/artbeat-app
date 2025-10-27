@@ -3,6 +3,8 @@
 
 export 'firebase_diagnostic_service.dart';
 export 'offline_data_provider.dart';
+export 'unified_payment_service.dart';
+// Legacy compatibility (use UnifiedPaymentService instead)
 export 'payment_service.dart';
 export 'notification_service.dart';
 export 'connectivity_service.dart';

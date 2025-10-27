@@ -22,14 +22,23 @@ class EventsRouteHandler {
       case AppRoutes.eventsSearch:
         return const EventSearchScreen();
       case AppRoutes.eventsNearby:
-        // Navigate to EventsListScreen showing all events (location filtering can be added later)
-        return const EventsListScreen();
+        // Show events filtered by location - coming soon
+        return const EventsListScreen(
+          title: 'Events Near Me',
+          showCreateButton: true,
+        );
       case '/events/trending':
-        // Navigate to EventsListScreen showing all events
-        return const EventsListScreen();
+        // Show trending events - coming soon
+        return const EventsListScreen(
+          title: 'Trending Events',
+          showCreateButton: true,
+        );
       case '/events/weekend':
-        // Navigate to EventsListScreen showing all events
-        return const EventsListScreen();
+        // Show weekend events - coming soon
+        return const EventsListScreen(
+          title: 'This Weekend\'s Events',
+          showCreateButton: true,
+        );
       default:
         return const Center(child: Text('Coming Soon'));
     }

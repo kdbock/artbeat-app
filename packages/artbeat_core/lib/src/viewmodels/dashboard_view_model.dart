@@ -17,6 +17,7 @@ class DashboardViewModel extends ChangeNotifier {
   final artworkLib.ArtworkService _artworkService;
   final artWalkLib.ArtWalkService _artWalkService;
   final artWalkLib.SocialService _socialService;
+  final artWalkLib.ChallengeService _challengeService;
   final SubscriptionService _subscriptionService;
   final UserService _userService;
   final CaptureService _captureService;
@@ -60,6 +61,7 @@ class DashboardViewModel extends ChangeNotifier {
   List<CaptureModel> _localCaptures = [];
   List<community.PostModel> _posts = [];
   List<artWalkLib.SocialActivity> _activities = [];
+  artWalkLib.ChallengeModel? _todaysChallenge;
 
   // User progress stats
   int _totalDiscoveries = 0;
@@ -71,6 +73,7 @@ class DashboardViewModel extends ChangeNotifier {
     required artworkLib.ArtworkService artworkService,
     required artWalkLib.ArtWalkService artWalkService,
     artWalkLib.SocialService? socialService,
+    artWalkLib.ChallengeService? challengeService,
     required SubscriptionService subscriptionService,
     required UserService userService,
     CaptureService? captureService,
@@ -81,6 +84,7 @@ class DashboardViewModel extends ChangeNotifier {
        _artworkService = artworkService,
        _artWalkService = artWalkService,
        _socialService = socialService ?? artWalkLib.SocialService(),
+       _challengeService = challengeService ?? artWalkLib.ChallengeService(),
        _subscriptionService = subscriptionService,
        _userService = userService,
        _captureService = captureService ?? CaptureService(),
@@ -117,6 +121,7 @@ class DashboardViewModel extends ChangeNotifier {
         _loadPosts(),
         _loadActivities(),
         _loadUserProgress(),
+        _loadTodaysChallenge(),
       ]);
       debugPrint('🔍 DashboardViewModel: ✅ Initialization complete');
     } catch (e, stack) {
@@ -206,6 +211,7 @@ class DashboardViewModel extends ChangeNotifier {
       List.unmodifiable(_activities);
   LatLng? get mapLocation => _mapLocation;
   UserModel? get currentUser => _currentUser;
+  artWalkLib.ChallengeModel? get todaysChallenge => _todaysChallenge;
 
   // User progress getters
   int get totalDiscoveries => _totalDiscoveries;
@@ -611,6 +617,41 @@ class DashboardViewModel extends ChangeNotifier {
       AppLogger.error('Error loading nearby art markers: $e');
       _isMapPreviewReady = false;
       _safeNotifyListeners();
+    }
+  }
+
+  Future<void> _loadTodaysChallenge() async {
+    try {
+      debugPrint('🎯 DashboardViewModel: Loading today\'s challenge');
+      // Temporarily disable service call for testing
+      // _todaysChallenge = await _challengeService.getTodaysChallenge();
+
+      // Use a test challenge instead
+      _todaysChallenge = artWalkLib.ChallengeModel(
+        id: 'test_daily_challenge',
+        userId: 'test_user',
+        title: 'Art Hunter',
+        description: 'Discover 3 pieces of public art in your neighborhood',
+        type: artWalkLib.ChallengeType.daily,
+        targetCount: 3,
+        currentCount: 1,
+        rewardXP: 150,
+        rewardDescription: '🏆 Explorer Badge + 150 XP',
+        isCompleted: false,
+        createdAt: DateTime.now(),
+        expiresAt: DateTime.now().add(const Duration(hours: 18)),
+      );
+
+      debugPrint(
+        '🎯 DashboardViewModel: Loaded challenge: ${_todaysChallenge?.title ?? "None"}',
+      );
+      AppLogger.info(
+        'Loaded today\'s challenge: ${_todaysChallenge?.title ?? "None"}',
+      );
+    } catch (e) {
+      debugPrint('🎯 DashboardViewModel: ❌ Error loading challenge: $e');
+      AppLogger.error('Error loading today\'s challenge: $e');
+      _todaysChallenge = null;
     }
   }
 

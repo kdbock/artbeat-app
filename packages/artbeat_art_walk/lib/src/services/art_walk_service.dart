@@ -2445,4 +2445,88 @@ class ArtWalkService {
       return false;
     }
   }
+
+  // ============================================================================
+  // ADMIN METHODS
+  // ============================================================================
+
+  /// Get all art walks (admin only)
+  Future<List<ArtWalkModel>> getAllArtWalks({int limit = 100}) async {
+    try {
+      final snapshot = await _artWalksCollection
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        return ArtWalkModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      _logger.e('Error getting all art walks: $e');
+      return [];
+    }
+  }
+
+  /// Get reported art walks (admin only)
+  Future<List<ArtWalkModel>> getReportedArtWalks({int limit = 100}) async {
+    try {
+      // Try with orderBy first
+      try {
+        final snapshot = await _artWalksCollection
+            .where('reportCount', isGreaterThan: 0)
+            .orderBy('reportCount', descending: true)
+            .limit(limit)
+            .get();
+
+        return snapshot.docs.map((doc) {
+          return ArtWalkModel.fromFirestore(doc);
+        }).toList();
+      } catch (e) {
+        // Fallback without orderBy if index doesn't exist
+        _logger.w(
+          'Firestore index not found for reportCount orderBy, using fallback query',
+        );
+        final snapshot = await _artWalksCollection
+            .where('reportCount', isGreaterThan: 0)
+            .limit(limit)
+            .get();
+
+        final walks = snapshot.docs.map((doc) {
+          return ArtWalkModel.fromFirestore(doc);
+        }).toList();
+
+        // Sort in memory
+        walks.sort((a, b) => b.reportCount.compareTo(a.reportCount));
+        return walks;
+      }
+    } catch (e) {
+      _logger.e('Error getting reported art walks: $e');
+      return [];
+    }
+  }
+
+  /// Clear reports from an art walk (admin only)
+  Future<void> clearArtWalkReports(String walkId) async {
+    try {
+      await _artWalksCollection.doc(walkId).update({
+        'reportCount': 0,
+        'isFlagged': false,
+      });
+      _logger.i('Cleared reports for art walk: $walkId');
+    } catch (e) {
+      _logger.e('Error clearing art walk reports: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete an art walk (admin only - no ownership check)
+  Future<void> adminDeleteArtWalk(String walkId) async {
+    try {
+      await _artWalksCollection.doc(walkId).delete();
+      _logger.i('Admin deleted art walk: $walkId');
+    } catch (e) {
+      _logger.e('Error admin deleting art walk: $e');
+      rethrow;
+    }
+  }
 }

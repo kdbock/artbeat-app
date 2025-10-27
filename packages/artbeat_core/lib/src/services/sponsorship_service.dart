@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/sponsorship_model.dart';
-import 'enhanced_payment_service_working.dart'; // Use enhanced payment service
+import 'unified_payment_service.dart'; // Unified payment processing
 import 'user_service.dart';
 import '../utils/logger.dart';
 
@@ -10,8 +10,8 @@ import '../utils/logger.dart';
 class SponsorshipService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final EnhancedPaymentService _paymentService =
-      EnhancedPaymentService(); // Use enhanced service
+  final UnifiedPaymentService _paymentService =
+      UnifiedPaymentService(); // Unified payment service for all revenue streams
   final UserService _userService = UserService();
 
   /// Create a new sponsorship
@@ -283,7 +283,7 @@ class SponsorshipService {
       // Pause Stripe subscription
       if (sponsorship.stripeSubscriptionId != null) {
         await _paymentService.pauseSubscription(
-          sponsorship.stripeSubscriptionId!,
+          subscriptionId: sponsorship.stripeSubscriptionId!,
         );
       }
 
@@ -320,7 +320,7 @@ class SponsorshipService {
       // Resume Stripe subscription
       if (sponsorship.stripeSubscriptionId != null) {
         await _paymentService.resumeSubscription(
-          sponsorship.stripeSubscriptionId!,
+          subscriptionId: sponsorship.stripeSubscriptionId!,
         );
       }
 
@@ -363,8 +363,8 @@ class SponsorshipService {
       // Update Stripe subscription
       if (sponsorship.stripeSubscriptionId != null) {
         await _paymentService.updateSubscriptionPrice(
-          sponsorship.stripeSubscriptionId!,
-          newTier.name, // Use tier name as price ID
+          subscriptionId: sponsorship.stripeSubscriptionId!,
+          newPrice: newTier.monthlyPrice,
         );
       }
 

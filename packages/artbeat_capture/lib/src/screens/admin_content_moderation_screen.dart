@@ -52,6 +52,8 @@ class _AdminContentModerationScreenState
       List<core.CaptureModel> captures;
       if (status == 'pending') {
         captures = await _captureService.getPendingCaptures(limit: 50);
+      } else if (status == 'reported') {
+        captures = await _captureService.getReportedCaptures(limit: 50);
       } else {
         captures = await _captureService.getCapturesByStatus(status, limit: 50);
       }
@@ -263,6 +265,57 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _clearReports(core.CaptureModel capture) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Reports'),
+          content: Text(
+            'Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Clear Reports'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      final success = await _captureService.clearCaptureReports(capture.id);
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reports cleared successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          _loadCapturesByStatus(_selectedTab);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to clear reports'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _viewCaptureDetails(core.CaptureModel capture) {
     showDialog<void>(
       context: context,
@@ -340,6 +393,12 @@ class _AdminContentModerationScreenState
                         // Details
                         _buildDetailRow('Title', capture.title ?? 'No title'),
                         _buildDetailRow('Status', capture.status.displayName),
+                        if (capture.reportCount > 0)
+                          _buildDetailRow(
+                            'Reports',
+                            '${capture.reportCount} report${capture.reportCount > 1 ? 's' : ''}',
+                            isWarning: true,
+                          ),
                         if (capture.artistName != null)
                           _buildDetailRow('Artist', capture.artistName!),
                         if (capture.artType != null)
@@ -371,7 +430,7 @@ class _AdminContentModerationScreenState
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, {bool isWarning = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -381,10 +440,36 @@ class _AdminContentModerationScreenState
             width: 120,
             child: Text(
               '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: isWarning ? Colors.red.shade800 : null,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Row(
+              children: [
+                if (isWarning)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      Icons.flag,
+                      size: 16,
+                      color: Colors.red.shade800,
+                    ),
+                  ),
+                Expanded(
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      color: isWarning ? Colors.red.shade800 : null,
+                      fontWeight: isWarning ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -415,41 +500,50 @@ class _AdminContentModerationScreenState
           // Tab bar
           Container(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(
-                        value: 'pending',
-                        label: Text('Pending'),
-                        icon: Icon(Icons.schedule),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'pending',
+                            label: Text('Pending'),
+                            icon: Icon(Icons.schedule),
+                          ),
+                          ButtonSegment(
+                            value: 'approved',
+                            label: Text('Approved'),
+                            icon: Icon(Icons.check_circle),
+                          ),
+                          ButtonSegment(
+                            value: 'rejected',
+                            label: Text('Rejected'),
+                            icon: Icon(Icons.cancel),
+                          ),
+                          ButtonSegment(
+                            value: 'reported',
+                            label: Text('Reported'),
+                            icon: Icon(Icons.flag),
+                          ),
+                        ],
+                        selected: {_selectedTab},
+                        onSelectionChanged: (Set<String> newSelection) {
+                          setState(() {
+                            _selectedTab = newSelection.first;
+                          });
+                          _loadCapturesByStatus(_selectedTab);
+                        },
                       ),
-                      ButtonSegment(
-                        value: 'approved',
-                        label: Text('Approved'),
-                        icon: Icon(Icons.check_circle),
-                      ),
-                      ButtonSegment(
-                        value: 'rejected',
-                        label: Text('Rejected'),
-                        icon: Icon(Icons.cancel),
-                      ),
-                    ],
-                    selected: {_selectedTab},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      setState(() {
-                        _selectedTab = newSelection.first;
-                      });
-                      _loadCapturesByStatus(_selectedTab);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                IconButton(
-                  onPressed: () => _loadCapturesByStatus(_selectedTab),
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Refresh',
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      onPressed: () => _loadCapturesByStatus(_selectedTab),
+                      icon: const Icon(Icons.refresh),
+                      tooltip: 'Refresh',
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -469,7 +563,9 @@ class _AdminContentModerationScreenState
                               ? Icons.schedule
                               : _selectedTab == 'approved'
                               ? Icons.check_circle
-                              : Icons.cancel,
+                              : _selectedTab == 'rejected'
+                              ? Icons.cancel
+                              : Icons.flag,
                           size: 64,
                           color: Colors.grey,
                         ),
@@ -547,37 +643,81 @@ class _AdminContentModerationScreenState
                                         fontSize: 12,
                                       ),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            capture.status ==
-                                                core.CaptureStatus.pending
-                                            ? Colors.orange.shade100
-                                            : capture.status ==
-                                                  core.CaptureStatus.approved
-                                            ? Colors.green.shade100
-                                            : Colors.red.shade100,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        capture.status.displayName,
-                                        style: TextStyle(
-                                          color:
-                                              capture.status ==
-                                                  core.CaptureStatus.pending
-                                              ? Colors.orange.shade800
-                                              : capture.status ==
-                                                    core.CaptureStatus.approved
-                                              ? Colors.green.shade800
-                                              : Colors.red.shade800,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                capture.status ==
+                                                    core.CaptureStatus.pending
+                                                ? Colors.orange.shade100
+                                                : capture.status ==
+                                                      core
+                                                          .CaptureStatus
+                                                          .approved
+                                                ? Colors.green.shade100
+                                                : Colors.red.shade100,
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            capture.status.displayName,
+                                            style: TextStyle(
+                                              color:
+                                                  capture.status ==
+                                                      core.CaptureStatus.pending
+                                                  ? Colors.orange.shade800
+                                                  : capture.status ==
+                                                        core
+                                                            .CaptureStatus
+                                                            .approved
+                                                  ? Colors.green.shade800
+                                                  : Colors.red.shade800,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        if (capture.reportCount > 0) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade100,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.flag,
+                                                  size: 12,
+                                                  color: Colors.red.shade800,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${capture.reportCount} report${capture.reportCount > 1 ? 's' : ''}',
+                                                  style: TextStyle(
+                                                    color: Colors.red.shade800,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -606,6 +746,13 @@ class _AdminContentModerationScreenState
                                       tooltip: 'Reject',
                                     ),
                                   ],
+                                  if (capture.reportCount > 0)
+                                    IconButton(
+                                      onPressed: () => _clearReports(capture),
+                                      icon: const Icon(Icons.flag_outlined),
+                                      color: Colors.blue,
+                                      tooltip: 'Clear Reports',
+                                    ),
                                   IconButton(
                                     onPressed: () => _deleteCapture(capture),
                                     icon: const Icon(Icons.delete),

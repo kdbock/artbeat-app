@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/coupon_model.dart';
 import '../services/coupon_service.dart';
-import '../services/enhanced_payment_service_working.dart';
+import '../services/unified_payment_service.dart';
 
 /// Types of transactions that can be reviewed
 enum TransactionType {
@@ -156,7 +156,7 @@ class OrderReviewScreen extends StatefulWidget {
 class _OrderReviewScreenState extends State<OrderReviewScreen> {
   final TextEditingController _couponController = TextEditingController();
   final CouponService _couponService = CouponService();
-  final EnhancedPaymentService _paymentService = EnhancedPaymentService();
+  final UnifiedPaymentService _paymentService = UnifiedPaymentService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   CouponModel? _appliedCoupon;
@@ -348,16 +348,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
             // Process payment with enhanced service
             final paymentResult = await _paymentService
                 .processPaymentWithRiskAssessment(
-                  paymentIntentClientSecret: clientSecret,
+                  clientSecret: clientSecret,
                   amount: _finalAmount,
                   currency: 'USD',
-                  metadata: {
-                    'type': 'gift',
-                    'recipientId': widget.orderDetails.metadata['recipientId'],
-                    'giftType': widget.orderDetails.metadata['giftType'],
-                    'message': widget.orderDetails.metadata['message'],
-                    'platform': 'ARTbeat',
-                  },
+                  description:
+                      'Gift: ${widget.orderDetails.metadata['giftType']}',
                 );
 
             result = {
@@ -403,15 +398,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
           // Process payment with enhanced service
           final paymentResult = await _paymentService
               .processPaymentWithRiskAssessment(
-                paymentIntentClientSecret: clientSecret,
+                clientSecret: clientSecret,
                 amount: _finalAmount,
                 currency: 'USD',
-                metadata: {
-                  'type': 'subscription',
-                  'tier': widget.orderDetails.metadata['tier'],
-                  'billingCycle': widget.orderDetails.metadata['billingCycle'],
-                  'platform': 'ARTbeat',
-                },
+                description:
+                    'Subscription: ${widget.orderDetails.metadata['tier']}',
               );
 
           result = {
@@ -466,17 +457,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
           // Process payment with enhanced service
           final paymentResult = await _paymentService
               .processPaymentWithRiskAssessment(
-                paymentIntentClientSecret: clientSecret,
+                clientSecret: clientSecret,
                 amount: _finalAmount,
                 currency: 'USD',
-                metadata: {
-                  'type': 'advertisement',
-                  'adType': widget.orderDetails.metadata['adType'],
-                  'duration': widget.orderDetails.metadata['duration'],
-                  'targetAudience':
-                      widget.orderDetails.metadata['targetAudience'],
-                  'platform': 'ARTbeat',
-                },
+                description:
+                    'Advertisement: ${widget.orderDetails.metadata['adType']}',
               );
 
           result = {
@@ -532,18 +517,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
           // Process payment with enhanced service
           final paymentResult = await _paymentService
               .processPaymentWithRiskAssessment(
-                paymentIntentClientSecret: clientSecret,
+                clientSecret: clientSecret,
                 amount: _finalAmount,
                 currency: 'USD',
-                metadata: {
-                  'type': 'sponsorship',
-                  'artistId': widget.orderDetails.metadata['artistId'],
-                  'sponsorshipType':
-                      widget.orderDetails.metadata['sponsorshipType'],
-                  'duration': widget.orderDetails.metadata['duration'],
-                  'benefits': widget.orderDetails.metadata['benefits'],
-                  'platform': 'ARTbeat',
-                },
+                description:
+                    'Sponsorship: ${widget.orderDetails.metadata['sponsorshipType']}',
               );
 
           result = {
@@ -598,18 +576,11 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
           // Process payment with enhanced service
           final paymentResult = await _paymentService
               .processPaymentWithRiskAssessment(
-                paymentIntentClientSecret: clientSecret,
+                clientSecret: clientSecret,
                 amount: _finalAmount,
                 currency: 'USD',
-                metadata: {
-                  'type': 'commission',
-                  'artistId': widget.orderDetails.metadata['artistId'],
-                  'commissionType':
-                      widget.orderDetails.metadata['commissionType'],
-                  'description': widget.orderDetails.metadata['description'],
-                  'deadline': widget.orderDetails.metadata['deadline'],
-                  'platform': 'ARTbeat',
-                },
+                description:
+                    'Commission: ${widget.orderDetails.metadata['commissionType']}',
               );
 
           result = {

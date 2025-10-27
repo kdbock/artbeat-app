@@ -154,6 +154,7 @@ class MyApp extends StatelessWidget {
     ),
     Provider<ArtworkService>(create: (_) => ArtworkService(), lazy: true),
     Provider<ArtWalkService>(create: (_) => ArtWalkService(), lazy: true),
+    Provider<ChallengeService>(create: (_) => ChallengeService(), lazy: true),
     Provider<capture.CaptureService>(
       create: (_) => capture.CaptureService(),
       lazy: true,
@@ -168,6 +169,7 @@ class MyApp extends StatelessWidget {
         eventService: context.read<events.EventService>(),
         artworkService: context.read<ArtworkService>(),
         artWalkService: context.read<ArtWalkService>(),
+        challengeService: context.read<ChallengeService>(),
         subscriptionService: context.read<core.SubscriptionService>(),
         userService: context.read<core.UserService>(),
         captureService: context.read<capture.CaptureService>(),

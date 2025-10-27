@@ -309,25 +309,31 @@ class _EventsListScreenState extends State<EventsListScreen>
 
     if (_filteredEvents.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.event_busy, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(
-              'No events found',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            if (widget.showCreateButton)
-              ElevatedButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildEmptyStateIcon(),
+              const SizedBox(height: 24),
+              Text(
+                _getEmptyStateTitle(),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: const Text('Create Event'),
+                textAlign: TextAlign.center,
               ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                _getEmptyStateMessage(),
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              _buildEmptyStateActions(),
+            ],
+          ),
         ),
       );
     }
@@ -363,5 +369,118 @@ class _EventsListScreenState extends State<EventsListScreen>
         ],
       ),
     );
+  }
+
+  /// Build context-appropriate empty state icon
+  Widget _buildEmptyStateIcon() {
+    final title = widget.title?.toLowerCase() ?? '';
+
+    if (title.contains('near') || title.contains('location')) {
+      return const Icon(Icons.location_on, size: 64, color: Colors.blue);
+    } else if (title.contains('trending')) {
+      return const Icon(Icons.trending_up, size: 64, color: Colors.orange);
+    } else if (title.contains('weekend')) {
+      return const Icon(Icons.calendar_today, size: 64, color: Colors.purple);
+    } else if (title.contains('ticket') ||
+        widget.mode == EventListMode.myTickets) {
+      return const Icon(
+        Icons.confirmation_number,
+        size: 64,
+        color: Colors.teal,
+      );
+    } else {
+      return const Icon(Icons.event_available, size: 64, color: Colors.grey);
+    }
+  }
+
+  /// Get context-appropriate empty state title
+  String _getEmptyStateTitle() {
+    final title = widget.title?.toLowerCase() ?? '';
+
+    if (title.contains('near') || title.contains('location')) {
+      return 'No Events Near You';
+    } else if (title.contains('trending')) {
+      return 'No Trending Events';
+    } else if (title.contains('weekend')) {
+      return 'No Weekend Events';
+    } else if (title.contains('ticket') ||
+        widget.mode == EventListMode.myTickets) {
+      return 'No Tickets Found';
+    } else {
+      return 'No Events Found';
+    }
+  }
+
+  /// Get context-appropriate empty state message
+  String _getEmptyStateMessage() {
+    final title = widget.title?.toLowerCase() ?? '';
+
+    if (title.contains('near') || title.contains('location')) {
+      return 'There are no events currently scheduled in your area. Check back soon or create your own event to get the community started!';
+    } else if (title.contains('trending')) {
+      return 'No events are trending right now. Be the first to create an event that gets everyone talking!';
+    } else if (title.contains('weekend')) {
+      return 'No events are scheduled for this weekend. Why not plan something exciting for the community?';
+    } else if (title.contains('ticket') ||
+        widget.mode == EventListMode.myTickets) {
+      return 'You haven\'t purchased any event tickets yet. Discover amazing events happening in your area!';
+    } else {
+      return 'No events match your current filters. Try adjusting your search or create a new event.';
+    }
+  }
+
+  /// Build context-appropriate empty state actions
+  Widget _buildEmptyStateActions() {
+    final title = widget.title?.toLowerCase() ?? '';
+
+    if (title.contains('ticket') || widget.mode == EventListMode.myTickets) {
+      return Column(
+        children: [
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pushReplacementNamed(context, '/events'),
+            icon: const Icon(Icons.explore),
+            label: const Text('Discover Events'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+            ),
+            icon: const Icon(Icons.add),
+            label: const Text('Create Event'),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          if (widget.showCreateButton)
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Create Event'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.pushReplacementNamed(context, '/events'),
+            icon: const Icon(Icons.refresh),
+            label: const Text('View All Events'),
+          ),
+        ],
+      );
+    }
   }
 }

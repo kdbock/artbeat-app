@@ -274,6 +274,22 @@ service cloud.firestore {
       );
     }
 
+    // Ticket Purchases
+    match /ticket_purchases/{purchaseId} {
+      allow read, list: if isAuthenticated() && (
+        isAdmin(request.auth.uid) ||
+        request.auth.uid == resource.data.userId
+      );
+      allow create: if isAuthenticated() && (
+        isAdmin(request.auth.uid) ||
+        request.auth.uid == request.resource.data.userId
+      );
+      allow update, delete: if isAuthenticated() && (
+        isAdmin(request.auth.uid) ||
+        request.auth.uid == resource.data.userId
+      );
+    }
+
     // Artwork
     match /artwork/{artworkId} {
       allow read, list: if true;

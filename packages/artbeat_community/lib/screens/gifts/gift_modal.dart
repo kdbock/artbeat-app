@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart'; // Use the main package export for all core classes
+import 'package:artbeat_core/artbeat_core.dart'
+    hide
+        PaymentResult; // Use the main package export but hide PaymentResult to avoid conflict
+import 'package:artbeat_core/src/services/enhanced_payment_service_working.dart'
+    show
+        EnhancedPaymentService,
+        PaymentResult; // Import both EnhancedPaymentService and PaymentResult
 
 class GiftModal extends StatefulWidget {
   final String recipientId;
@@ -128,11 +134,9 @@ class _GiftModalState extends State<GiftModal> {
         amount: amount,
         currency: 'USD',
         metadata: {
-          'type': 'gift',
-          'recipientId': recipientId,
-          'recipientName': recipientName,
-          'giftType': giftType,
-          'platform': 'ARTbeat',
+          'gift_type': giftType,
+          'recipient_id': recipientId,
+          'recipient_name': recipientName,
         },
       );
 

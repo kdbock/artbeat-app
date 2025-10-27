@@ -21,14 +21,20 @@ export 'src/services/user_service.dart' show UserService;
 export 'src/services/connectivity_service.dart' show ConnectivityService;
 export 'src/services/subscription_service.dart' show SubscriptionService;
 export 'src/services/artist_service.dart' show ArtistService;
-export 'src/services/payment_service.dart' show PaymentService;
-export 'src/services/crash_prevention_service.dart' show CrashPreventionService;
-export 'src/services/enhanced_payment_service_working.dart'
+export 'src/services/unified_payment_service.dart'
     show
-        EnhancedPaymentService,
+        UnifiedPaymentService,
         PaymentResult,
         SubscriptionResult,
-        RiskAssessment;
+        RiskAssessment,
+        PaymentMethodWithRisk,
+        ArtbeatModule,
+        RevenueStream;
+export 'src/services/crash_prevention_service.dart' show CrashPreventionService;
+// Legacy compatibility exports (deprecated - use UnifiedPaymentService instead)
+export 'src/services/payment_service.dart' show PaymentService;
+export 'src/services/enhanced_payment_service_working.dart'
+    show EnhancedPaymentService;
 export 'src/services/in_app_purchase_manager.dart'
     show InAppPurchaseManager, PurchaseEvent, PurchaseEventType;
 export 'src/models/in_app_purchase_models.dart' show CompletedPurchase;

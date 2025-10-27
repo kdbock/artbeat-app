@@ -9,6 +9,7 @@ export 'src/models/refund_policy.dart';
 
 // Services - Business logic and integrations
 export 'src/services/event_service.dart';
+export 'src/services/recurring_event_service.dart';
 export 'src/services/event_notification_service.dart';
 export 'src/services/calendar_integration_service.dart';
 export 'src/services/event_analytics_service.dart';

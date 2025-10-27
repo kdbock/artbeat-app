@@ -61,6 +61,8 @@ class CaptureModel {
   final CaptureStatus status;
   final String? moderationNotes;
   final EngagementStats engagementStats;
+  final int reportCount;
+  final bool isFlagged;
 
   CaptureModel({
     required this.id,
@@ -84,6 +86,8 @@ class CaptureModel {
     this.status = CaptureStatus.approved,
     this.moderationNotes,
     EngagementStats? engagementStats,
+    this.reportCount = 0,
+    this.isFlagged = false,
   }) : engagementStats =
            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
@@ -144,6 +148,8 @@ class CaptureModel {
       engagementStats: EngagementStats.fromFirestore(
         json['engagementStats'] as Map<String, dynamic>? ?? json,
       ),
+      reportCount: json['reportCount'] as int? ?? 0,
+      isFlagged: json['isFlagged'] as bool? ?? false,
     );
   }
 
@@ -180,6 +186,8 @@ class CaptureModel {
       'status': status.value,
       'moderationNotes': moderationNotes,
       'engagementStats': engagementStats.toFirestore(),
+      'reportCount': reportCount,
+      'isFlagged': isFlagged,
     };
   }
 
@@ -207,6 +215,8 @@ class CaptureModel {
     CaptureStatus? status,
     String? moderationNotes,
     EngagementStats? engagementStats,
+    int? reportCount,
+    bool? isFlagged,
   }) {
     return CaptureModel(
       id: id ?? this.id,
@@ -230,6 +240,8 @@ class CaptureModel {
       status: status ?? this.status,
       moderationNotes: moderationNotes ?? this.moderationNotes,
       engagementStats: engagementStats ?? this.engagementStats,
+      reportCount: reportCount ?? this.reportCount,
+      isFlagged: isFlagged ?? this.isFlagged,
     );
   }
 

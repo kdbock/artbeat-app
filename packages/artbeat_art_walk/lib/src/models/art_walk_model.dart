@@ -22,6 +22,8 @@ class ArtWalkModel {
   final GeoPoint? startLocation; // Starting location for the art walk
   final int?
   completionCount; // Number of times this art walk has been completed
+  final int reportCount; // Number of reports/flags on this art walk
+  final bool isFlagged; // Whether this art walk has been flagged for review
 
   ArtWalkModel({
     required this.id,
@@ -43,6 +45,8 @@ class ArtWalkModel {
     this.isAccessible,
     this.startLocation,
     this.completionCount,
+    this.reportCount = 0,
+    this.isFlagged = false,
   });
 
   factory ArtWalkModel.fromFirestore(DocumentSnapshot doc) {
@@ -57,13 +61,22 @@ class ArtWalkModel {
       isPublic: data['isPublic'] as bool? ?? false,
       viewCount: data['viewCount'] as int? ?? 0,
       imageUrls: List<String>.from(data['imageUrls'] as List<dynamic>? ?? []),
-      zipCode: data['zipCode'] as String?, // Added
+      zipCode: data['zipCode'] as String?,
       estimatedDuration: data['estimatedDuration'] as double?,
       estimatedDistance: data['estimatedDistance'] as double?,
-      coverImageUrl: data['coverImageUrl'] as String?,
+      coverImageUrl: (data['coverImageUrl'] as String?)?.isEmpty == true
+          ? null
+          : data['coverImageUrl'] as String?,
       routeData: data['routeData'] as String?,
+      tags: data['tags'] != null
+          ? List<String>.from(data['tags'] as List<dynamic>)
+          : null,
+      difficulty: data['difficulty'] as String?,
+      isAccessible: data['isAccessible'] as bool?,
       startLocation: data['startLocation'] as GeoPoint?,
       completionCount: data['completionCount'] as int?,
+      reportCount: data['reportCount'] as int? ?? 0,
+      isFlagged: data['isFlagged'] as bool? ?? false,
     );
   }
 
@@ -77,13 +90,18 @@ class ArtWalkModel {
       'isPublic': isPublic,
       'viewCount': viewCount,
       'imageUrls': imageUrls,
-      'zipCode': zipCode, // Added
+      'zipCode': zipCode,
       'estimatedDuration': estimatedDuration,
       'estimatedDistance': estimatedDistance,
       'coverImageUrl': coverImageUrl,
       'routeData': routeData,
+      'tags': tags,
+      'difficulty': difficulty,
+      'isAccessible': isAccessible,
       'startLocation': startLocation,
       'completionCount': completionCount,
+      'reportCount': reportCount,
+      'isFlagged': isFlagged,
     };
   }
 
@@ -97,13 +115,18 @@ class ArtWalkModel {
     bool? isPublic,
     int? viewCount,
     List<String>? imageUrls,
-    String? zipCode, // Added
+    String? zipCode,
     double? estimatedDuration,
     double? estimatedDistance,
     String? coverImageUrl,
     String? routeData,
+    List<String>? tags,
+    String? difficulty,
+    bool? isAccessible,
     GeoPoint? startLocation,
     int? completionCount,
+    int? reportCount,
+    bool? isFlagged,
   }) {
     return ArtWalkModel(
       id: id ?? this.id,
@@ -115,13 +138,18 @@ class ArtWalkModel {
       isPublic: isPublic ?? this.isPublic,
       viewCount: viewCount ?? this.viewCount,
       imageUrls: imageUrls ?? this.imageUrls,
-      zipCode: zipCode ?? this.zipCode, // Added
+      zipCode: zipCode ?? this.zipCode,
       estimatedDuration: estimatedDuration ?? this.estimatedDuration,
       estimatedDistance: estimatedDistance ?? this.estimatedDistance,
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
       routeData: routeData ?? this.routeData,
+      tags: tags ?? this.tags,
+      difficulty: difficulty ?? this.difficulty,
+      isAccessible: isAccessible ?? this.isAccessible,
       startLocation: startLocation ?? this.startLocation,
       completionCount: completionCount ?? this.completionCount,
+      reportCount: reportCount ?? this.reportCount,
+      isFlagged: isFlagged ?? this.isFlagged,
     );
   }
 

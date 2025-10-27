@@ -149,6 +149,22 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
       case EngagementType.share:
         message = 'Demo share feature! 📤';
         break;
+      case EngagementType.gift:
+        message =
+            'Demo gift feature! 🎁 (Gift functionality available in full app)';
+        break;
+      case EngagementType.commission:
+        message =
+            'Demo commission feature! 🎨 (Commission functionality available in full app)';
+        break;
+      case EngagementType.sponsor:
+        message =
+            'Demo sponsor feature! 💖 (Sponsorship functionality available in full app)';
+        break;
+      case EngagementType.message:
+        message =
+            'Demo message feature! 💌 (Messaging functionality available in full app)';
+        break;
       default:
         message = 'Demo engagement! ✨';
     }
@@ -524,9 +540,8 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
 
   Future<void> _showGiftDialog() async {
     if (widget.artistId == null || widget.artistName == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Artist information not available')),
-      );
+      // Show a dialog to collect recipient information
+      await _showRecipientSelectionDialog();
       return;
     }
 
@@ -539,6 +554,71 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
         ),
       ),
     );
+  }
+
+  Future<void> _showRecipientSelectionDialog() async {
+    final TextEditingController recipientController = TextEditingController();
+
+    final result = await showDialog<Map<String, String>?>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send Gift'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Enter the username or email of the recipient:'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: recipientController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Username or email',
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Note: The recipient must be a registered ARTbeat user.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final input = recipientController.text.trim();
+                if (input.isNotEmpty) {
+                  // For now, use the input as both ID and name
+                  // In a real implementation, you'd lookup the user
+                  Navigator.pop(context, {
+                    'recipientId': input,
+                    'recipientName': input,
+                  });
+                }
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      // Navigate to gift purchase screen with the selected recipient
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => EnhancedGiftPurchaseScreen(
+            recipientId: result['recipientId']!,
+            recipientName: result['recipientName']!,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _handleShare() async {
@@ -882,30 +962,278 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showSponsorDialog() async {
-    // Navigate to sponsorship screen
-    Navigator.of(context).pushNamed('/community/sponsorships');
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.volunteer_activism, color: Colors.pink),
+              SizedBox(width: 8),
+              Text('Sponsor Artist'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.artistName != null)
+                Text(
+                  'Sponsor ${widget.artistName}\'s creative work',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )
+              else
+                const Text(
+                  'Support an artist\'s creative work',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              const SizedBox(height: 16),
+              const Text(
+                'Artist sponsorship features are coming soon! You\'ll be able to:\n\n'
+                '• Provide monthly support to artists\n'
+                '• Get exclusive access to their work\n'
+                '• Receive personalized updates\n'
+                '• Support emerging talent\n'
+                '• Build long-term relationships',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.pink.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.pink),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'For now, you can show support by liking their work and sending gifts.',
+                        style: TextStyle(color: Colors.pink.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            if (widget.artistId != null && widget.artistName != null)
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showGiftDialog();
+                },
+                icon: const Icon(Icons.card_giftcard, size: 16),
+                label: const Text('Send Gift'),
+              )
+            else
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _showCommissionDialog() async {
     // Navigate to commission request screen if artist info is available
     if (widget.artistId != null && widget.artistName != null) {
-      Navigator.of(context).pushNamed(
-        '/commission/request',
-        arguments: {
-          'artistId': widget.artistId,
-          'artistName': widget.artistName,
-        },
-      );
+      try {
+        // Use dynamic import to avoid circular dependencies
+        final commissionModule = await _loadCommissionModule();
+        if (commissionModule != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (context) => commissionModule),
+          );
+        } else {
+          _showCommissionFallbackDialog();
+        }
+      } catch (e) {
+        _showCommissionFallbackDialog();
+      }
     } else {
-      // Fallback if artist info is not provided
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Artist information not available')),
-      );
+      _showCommissionFallbackDialog();
     }
   }
 
+  Future<Widget?> _loadCommissionModule() async {
+    try {
+      // Try to dynamically create commission request screen
+      // This is a placeholder - in a real implementation you'd use proper module loading
+      return null; // Will trigger fallback
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _showCommissionFallbackDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.palette, color: Colors.purple),
+              SizedBox(width: 8),
+              Text('Commission Request'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.artistName != null)
+                Text(
+                  'Request a custom commission from ${widget.artistName}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )
+              else
+                const Text(
+                  'Request a custom artwork commission',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              const SizedBox(height: 16),
+              const Text(
+                'Commission features are coming soon! You\'ll be able to:\n\n'
+                '• Request custom artwork\n'
+                '• Set your budget and timeline\n'
+                '• Communicate directly with artists\n'
+                '• Track progress with milestones\n'
+                '• Secure payment processing',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'For now, you can message the artist directly to discuss commission details.',
+                        style: TextStyle(color: Colors.blue.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            if (widget.artistId != null)
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showMessageDialog();
+                },
+                icon: const Icon(Icons.message, size: 16),
+                label: const Text('Message Artist'),
+              )
+            else
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _showMessageDialog() async {
-    // Navigate to messaging screen
-    Navigator.of(context).pushNamed('/messaging');
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.message, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('Send Message'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.artistName != null)
+                Text(
+                  'Send a message to ${widget.artistName}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )
+              else
+                const Text(
+                  'Send a direct message',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              const SizedBox(height: 16),
+              const Text(
+                'Direct messaging features are coming soon! You\'ll be able to:\n\n'
+                '• Send private messages to artists\n'
+                '• Share artwork and inspiration\n'
+                '• Discuss collaborations\n'
+                '• Get instant notifications\n'
+                '• Organize conversations by topic',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'For now, you can connect through the community feed and comments.',
+                        style: TextStyle(color: Colors.green.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

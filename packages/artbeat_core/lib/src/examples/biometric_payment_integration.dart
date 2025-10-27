@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/biometric_auth_service.dart';
-import '../services/enhanced_payment_service_working.dart';
+import '../services/unified_payment_service.dart';
 import '../utils/logger.dart';
 
 /// Example integration of biometric authentication with payment flows
 class BiometricPaymentIntegration {
   final BiometricAuthService _biometricService = BiometricAuthService();
-  final EnhancedPaymentService _paymentService = EnhancedPaymentService();
+  final UnifiedPaymentService _paymentService = UnifiedPaymentService();
 
   /// Process payment with biometric authentication
   Future<PaymentResult> processBiometricPayment({
@@ -38,13 +38,10 @@ class BiometricPaymentIntegration {
 
       // Process the payment
       return await _paymentService.processPaymentWithRiskAssessment(
-        paymentIntentClientSecret: clientSecret,
+        clientSecret: clientSecret,
         amount: amount,
         currency: currency,
-        metadata: {
-          'biometric_verified': biometricSettings.enabled,
-          'payment_type': 'biometric_authenticated',
-        },
+        description: 'Biometric authenticated payment',
       );
     } catch (e) {
       return PaymentResult(

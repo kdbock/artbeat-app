@@ -988,6 +988,70 @@ class CaptureService {
     }
   }
 
+  /// Admin: Get reported/flagged captures
+  Future<List<CaptureModel>> getReportedCaptures({int limit = 50}) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('reportCount', isGreaterThan: 0)
+          .orderBy('reportCount', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs
+          .map(
+            (doc) => CaptureModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+    } catch (e) {
+      AppLogger.error('Error fetching reported captures: $e');
+
+      // Fallback without orderBy
+      try {
+        final fallbackQuery = await _capturesRef
+            .where('reportCount', isGreaterThan: 0)
+            .limit(limit)
+            .get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by reportCount
+        captures.sort((a, b) => b.reportCount.compareTo(a.reportCount));
+        return captures;
+      } catch (fallbackError) {
+        debugPrint(
+          '❌ Fallback reported captures query also failed: $fallbackError',
+        );
+        return [];
+      }
+    }
+  }
+
+  /// Admin: Clear reports from a capture
+  Future<bool> clearCaptureReports(String captureId) async {
+    try {
+      await _capturesRef.doc(captureId).update({
+        'reportCount': 0,
+        'isFlagged': false,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      AppLogger.info('✅ Reports cleared for capture: $captureId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error clearing capture reports: $e');
+      return false;
+    }
+  }
+
   /// Migration method: Move existing public captures to publicArt collection
   Future<void> migrateCapturesToPublicArt() async {
     try {

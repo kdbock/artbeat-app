@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/enhanced_payment_service_working.dart';
+import '../services/unified_payment_service.dart';
 import '../models/subscription_tier.dart';
 
 // ignore_for_file: avoid_print
@@ -7,7 +7,7 @@ import '../models/subscription_tier.dart';
 /// Example usage of the Enhanced Payment Service
 /// This demonstrates how to integrate the new payment features
 class PaymentServiceExample {
-  final EnhancedPaymentService _paymentService = EnhancedPaymentService();
+  final UnifiedPaymentService _paymentService = UnifiedPaymentService();
 
   /// Example: Process a standard payment with risk assessment
   Future<void> processStandardPayment({
@@ -17,13 +17,10 @@ class PaymentServiceExample {
   }) async {
     try {
       final result = await _paymentService.processPaymentWithRiskAssessment(
-        paymentIntentClientSecret: clientSecret,
+        clientSecret: clientSecret,
         amount: amount,
         currency: currency,
-        metadata: {
-          'payment_type': 'artwork_purchase',
-          'item_id': 'artwork_123',
-        },
+        description: 'Artwork Purchase',
       );
 
       if (result.success) {
@@ -40,22 +37,21 @@ class PaymentServiceExample {
 
   /// Example: Process digital wallet payment
   Future<void> processWalletPayment({
-    required String walletType,
+    required String walletId,
     required double amount,
     required String currency,
   }) async {
     try {
       final result = await _paymentService.processDigitalWalletPayment(
-        walletType: walletType, // 'apple_pay', 'google_pay', 'paypal'
+        walletId: walletId, // Wallet identifier
         amount: amount,
         currency: currency,
-        metadata: {'wallet_payment': true, 'device_verified': true},
       );
 
       if (result.success) {
-        print('✅ $walletType payment successful!');
+        print('✅ $walletId payment successful!');
       } else {
-        print('❌ $walletType payment failed: ${result.error}');
+        print('❌ $walletId payment failed: ${result.error}');
       }
     } catch (e) {
       print('❌ Error processing wallet payment: $e');
@@ -66,14 +62,12 @@ class PaymentServiceExample {
   Future<void> processOneClickPayment({
     required String paymentMethodId,
     required double amount,
-    required String currency,
   }) async {
     try {
       final result = await _paymentService.processOneClickPayment(
         paymentMethodId: paymentMethodId,
         amount: amount,
-        currency: currency,
-        metadata: {'one_click': true, 'saved_payment_method': true},
+        description: 'One-Click Payment',
       );
 
       if (result.success) {
@@ -87,9 +81,11 @@ class PaymentServiceExample {
   }
 
   /// Example: Get payment methods with risk assessment
-  Future<void> getPaymentMethodsWithRisk() async {
+  Future<void> getPaymentMethodsWithRisk(String customerId) async {
     try {
-      final methods = await _paymentService.getPaymentMethodsWithRisk();
+      final methods = await _paymentService.getPaymentMethodsWithRisk(
+        customerId,
+      );
 
       for (final method in methods) {
         print('Payment Method: ${method.displayName}');
@@ -105,14 +101,15 @@ class PaymentServiceExample {
 
   /// Example: Create enhanced subscription
   Future<void> createSubscription({
+    required String customerId,
     required SubscriptionTier tier,
     required String paymentMethodId,
   }) async {
     try {
       final result = await _paymentService.createEnhancedSubscription(
+        customerId: customerId,
         tier: tier,
         paymentMethodId: paymentMethodId,
-        metadata: {'subscription_type': 'premium_artist', 'auto_renew': true},
       );
 
       if (result.success) {
@@ -200,13 +197,13 @@ class _PaymentExampleWidgetState extends State<PaymentExampleWidget> {
 
   Future<void> _processWalletPayment() async {
     await _paymentExample.processWalletPayment(
-      walletType: 'apple_pay',
+      walletId: 'wallet_apple_pay_123',
       amount: 49.99,
       currency: 'usd',
     );
   }
 
   Future<void> _getPaymentMethods() async {
-    await _paymentExample.getPaymentMethodsWithRisk();
+    await _paymentExample.getPaymentMethodsWithRisk('customer_123');
   }
 }

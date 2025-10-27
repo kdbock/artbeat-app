@@ -49,6 +49,24 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     super.dispose();
   }
 
+  /// Create a test challenge for development/testing purposes
+  ChallengeModel _createTestChallenge() {
+    return ChallengeModel(
+      id: 'test_daily_challenge',
+      userId: 'test_user',
+      title: 'Art Explorer',
+      description: 'Discover 3 pieces of public art today',
+      type: ChallengeType.daily,
+      targetCount: 3,
+      currentCount: 1,
+      rewardXP: 100,
+      rewardDescription: '🎨 Artist Badge + 100 XP',
+      isCompleted: false,
+      createdAt: DateTime.now(),
+      expiresAt: DateTime.now().add(const Duration(hours: 20)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DashboardViewModel>(context);
@@ -84,6 +102,15 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
                   onInstantDiscoveryTap: () => _navigateToArtWalk(context),
                   onProfileMenuTap: () => _showProfileMenu(context),
                   onMenuPressed: () => _openDrawer(),
+                ),
+              ),
+
+              // 1.1. Daily Quest Card (gamification)
+              SliverToBoxAdapter(
+                child: DailyQuestCard(
+                  challenge:
+                      viewModel.todaysChallenge ?? _createTestChallenge(),
+                  onTap: () => _navigateToArtWalk(context),
                 ),
               ),
 

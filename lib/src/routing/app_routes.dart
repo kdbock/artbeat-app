@@ -123,6 +123,7 @@ class AppRoutes {
   static const String artWalkPopular = '/art-walk/popular';
   static const String artWalkAchievements = '/art-walk/achievements';
   static const String artWalkSettings = '/art-walk/settings';
+  static const String artWalkAdminModeration = '/artwalk/admin/moderation';
   static const String enhancedCreateArtWalk = '/enhanced-create-art-walk';
 
   // Deprecated: Use artWalkExperience instead
