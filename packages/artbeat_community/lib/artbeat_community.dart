@@ -44,6 +44,8 @@ export 'widgets/group_post_card.dart';
 export 'widgets/create_post_fab.dart';
 export 'widgets/artist_list_widget.dart';
 export 'widgets/community_drawer.dart';
+export 'widgets/commission_artists_browser.dart';
+export 'widgets/commission_filter_dialog.dart';
 
 // Controllers
 export 'controllers/controllers.dart';

@@ -59,8 +59,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
         targetSdk = 36  // Updated to match compileSdk
-        versionCode = 57
-        versionName = "2.3.0"
+        versionCode = 61
+        versionName = "2.3.1"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")
@@ -84,12 +84,12 @@ android {
                 signingConfigs.getByName("debug")
             }
             
-            // Temporarily disable minification to avoid Stripe SDK issues
+            // Disable R8/ProGuard minification due to XML parsing issues in dependencies
             isMinifyEnabled = false
             isShrinkResources = false
             
-            // Keep ProGuard rules for future use
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // ProGuard rules with Stripe SDK compatibility (disabled for now)
+            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         
         debug {

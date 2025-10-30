@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
+import 'commission_templates_browser.dart';
+import 'commission_gallery_screen.dart';
 
 class CommissionRequestScreen extends StatefulWidget {
   final String artistId;
@@ -174,7 +176,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Commission request submitted successfully!'),
-            backgroundColor: Colors.green,
+            backgroundColor: core.ArtbeatColors.primaryGreen,
           ),
         );
         Navigator.pop(context, commissionId);
@@ -192,7 +194,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
+      appBar: const core.EnhancedUniversalHeader(
         title: 'Request Commission',
         showLogo: false,
         showBackButton: true,
@@ -200,12 +202,12 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
         backgroundGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [CommunityColors.primary, CommunityColors.secondary],
+          colors: [Color.fromARGB(255, 128, 30, 148), Color.fromARGB(255, 17, 196, 92)],
         ),
         titleGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [CommunityColors.primary, CommunityColors.secondary],
+          colors: [Color.fromARGB(255, 145, 12, 175), Color.fromARGB(255, 17, 201, 66)],
         ),
       ),
       body: Container(
@@ -217,6 +219,117 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Artist Info & Gallery Preview
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Requesting from',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: core.ArtbeatColors.textSecondary,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.artistName,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (context) => CommissionGalleryScreen(
+                                  artistId: widget.artistId,
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(Icons.image_search, size: 18),
+                            label: const Text('View Gallery'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Quick Start with Template
+              Card(
+                color: core.ArtbeatColors.primaryPurple.withAlpha(25),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.lightbulb_outline,
+                            color: core.ArtbeatColors.primaryPurple,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Quick Start with Template',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: core.ArtbeatColors.primaryPurple,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Use a template to fill in common fields automatically',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: core.ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  const CommissionTemplatesBrowser(),
+                            ),
+                          ),
+                          icon: const Icon(Icons.auto_awesome),
+                          label: const Text('Browse Templates'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: core.ArtbeatColors.primaryPurple,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Commission Type
               Card(
                 child: Padding(
@@ -259,8 +372,8 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isAvailable
-                                    ? Colors.black87
-                                    : Colors.grey,
+                                    ? core.ArtbeatColors.textPrimary
+                                    : core.ArtbeatColors.textSecondary,
                                 fontSize: 14,
                               ),
                             ),
@@ -417,7 +530,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                                 ),
                               ),
                               style: const TextStyle(
-                                color: Colors.black87,
+                                color: core.ArtbeatColors.textPrimary,
                                 fontSize: 14,
                               ),
                               isExpanded: true,
@@ -611,7 +724,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
               // Price Estimation
               if (_estimatedPrice != null)
                 Card(
-                  color: Colors.green.shade50,
+                  color: core.ArtbeatColors.primaryGreen.withAlpha(25),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -620,21 +733,24 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                         Text(
                           'Estimated Price',
                           style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: Colors.black87),
+                              ?.copyWith(color: core.ArtbeatColors.textPrimary),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           '\$${_estimatedPrice!.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(
-                                color: Colors.green.shade700,
+                                color: core.ArtbeatColors.primaryGreen,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
                           'This is an estimate. The artist will provide the final quote.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: core.ArtbeatColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),

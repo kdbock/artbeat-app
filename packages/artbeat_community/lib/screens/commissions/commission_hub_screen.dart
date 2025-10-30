@@ -7,8 +7,14 @@ import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
 import 'direct_commissions_screen.dart';
 import 'artist_commission_settings_screen.dart';
+import 'commission_setup_wizard_screen.dart';
 import 'commission_detail_screen.dart';
-import 'commission_analytics_screen.dart';
+import 'commission_rating_screen.dart';
+import 'commission_progress_tracker.dart';
+import 'commission_dispute_screen.dart';
+import 'commission_templates_browser.dart';
+import 'commission_gallery_screen.dart';
+import 'commission_analytics_dashboard.dart';
 
 class CommissionHubScreen extends StatefulWidget {
   const CommissionHubScreen({super.key});
@@ -188,7 +194,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                             ? 'Manage your commission requests and settings'
                             : 'Request custom artwork from talented artists',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey.shade700,
+                          color: core.ArtbeatColors.textPrimary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -204,7 +210,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                 icon: const Icon(Icons.brush),
                 label: const Text('Become an Artist'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: CommunityColors.primary,
+                  foregroundColor: core.ArtbeatColors.primaryPurple,
                 ),
               ),
             ],
@@ -222,7 +228,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
             'Active',
             _stats['active']?.toString() ?? '0',
             Icons.pending_actions,
-            Colors.orange,
+            core.ArtbeatColors.warning,
           ),
         ),
         const SizedBox(width: 8),
@@ -231,7 +237,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
             'Completed',
             _stats['completed']?.toString() ?? '0',
             Icons.check_circle,
-            Colors.green,
+            core.ArtbeatColors.primaryGreen,
           ),
         ),
         const SizedBox(width: 8),
@@ -240,7 +246,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
             'Total',
             _stats['total']?.toString() ?? '0',
             Icons.art_track,
-            Colors.blue,
+            core.ArtbeatColors.info,
           ),
         ),
         if (_isArtist) ...[
@@ -250,7 +256,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
               'Earnings',
               '\$${_stats['earnings']?.toString() ?? '0'}',
               Icons.attach_money,
-              Colors.purple,
+              core.ArtbeatColors.primaryPurple,
             ),
           ),
         ],
@@ -350,6 +356,26 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionButton(
+                      'Templates',
+                      Icons.auto_awesome,
+                      _viewTemplates,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildActionButton(
+                      'Gallery',
+                      Icons.image_search,
+                      _viewGallery,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -381,7 +407,10 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.brush, color: CommunityColors.primary),
+                const Icon(
+                  Icons.brush,
+                  color: core.ArtbeatColors.primaryPurple,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Artist Dashboard',
@@ -400,8 +429,8 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                         ? Icons.check_circle
                         : Icons.pause_circle,
                     color: _artistSettings!.acceptingCommissions
-                        ? Colors.green
-                        : Colors.orange,
+                        ? core.ArtbeatColors.primaryGreen
+                        : core.ArtbeatColors.warning,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -411,8 +440,8 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                         : 'Not accepting commissions',
                     style: TextStyle(
                       color: _artistSettings!.acceptingCommissions
-                          ? Colors.green.shade700
-                          : Colors.orange.shade700,
+                          ? core.ArtbeatColors.primaryGreen
+                          : core.ArtbeatColors.warning,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -427,28 +456,110 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                 'Available Types: ${_artistSettings!.availableTypes.map((t) => t.displayName).join(', ')}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-            ] else ...[
-              Text(
-                'Commission settings not configured',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.orange.shade700),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => CommissionSetupWizardScreen(
+                            mode: SetupMode.editing,
+                            initialSettings: _artistSettings,
+                          ),
+                        ),
+                      ).then((_) => _loadData()),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit (Wizard)'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) =>
+                              const ArtistCommissionSettingsScreen(),
+                        ),
+                      ).then((_) => _loadData()),
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Advanced'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: core.ArtbeatColors.warning.withAlpha(25),
+                  border: Border.all(
+                    color: core.ArtbeatColors.warning.withAlpha(100),
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 20,
+                          color: core.ArtbeatColors.warning,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Complete your commission setup',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: core.ArtbeatColors.warning,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Take our quick guided setup to start accepting commissions',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: core.ArtbeatColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute<ArtistCommissionSettingsScreen>(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const CommissionSetupWizardScreen(
+                      mode: SetupMode.firstTime,
+                    ),
+                  ),
+                ).then((_) => _loadData()),
+                icon: const Icon(Icons.auto_awesome),
+                label: const Text('Quick Setup Wizard'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: core.ArtbeatColors.primaryPurple,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
                     builder: (context) =>
                         const ArtistCommissionSettingsScreen(),
                   ),
-                ),
+                ).then((_) => _loadData()),
                 icon: const Icon(Icons.settings),
-                label: const Text('Setup Commission Settings'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: CommunityColors.primary,
-                  foregroundColor: Colors.white,
-                ),
+                label: const Text('Detailed Settings'),
               ),
             ],
           ],
@@ -487,18 +598,18 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
             ),
             const SizedBox(height: 16),
             if (_recentCommissions.isEmpty)
-              Center(
+              const Center(
                 child: Column(
                   children: [
                     Icon(
                       Icons.art_track,
                       size: 48,
-                      color: Colors.grey.shade400,
+                      color: core.ArtbeatColors.textSecondary,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       'No commissions yet',
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: core.ArtbeatColors.textSecondary),
                     ),
                   ],
                 ),
@@ -517,52 +628,112 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
     final statusColor = _getStatusColor(commission.status);
     final isArtist =
         commission.artistId == FirebaseAuth.instance.currentUser?.uid;
+    final currentUser = FirebaseAuth.instance.currentUser;
 
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: statusColor.withValues(alpha: 0.1),
-        child: Icon(
-          _getStatusIcon(commission.status),
-          color: statusColor,
-          size: 20,
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: statusColor.withValues(alpha: 0.1),
+                child: Icon(
+                  _getStatusIcon(commission.status),
+                  color: statusColor,
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                commission.title,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isArtist
+                        ? 'Client: ${commission.clientName}'
+                        : 'Artist: ${commission.artistName}',
+                  ),
+                  Text(
+                    commission.status.displayName,
+                    style: TextStyle(color: statusColor, fontSize: 12),
+                  ),
+                ],
+              ),
+              trailing: commission.totalPrice > 0
+                  ? Text(
+                      '\$${commission.totalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: core.ArtbeatColors.primaryGreen,
+                      ),
+                    )
+                  : null,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) =>
+                        CommissionDetailScreen(commission: commission),
+                  ),
+                );
+              },
+            ),
+            // Action buttons
+            Wrap(
+              spacing: 8,
+              children: [
+                // View Progress button
+                if ([
+                  CommissionStatus.accepted,
+                  CommissionStatus.inProgress,
+                  CommissionStatus.revision,
+                ].contains(commission.status))
+                  SizedBox(
+                    height: 32,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _viewProgress(commission),
+                      icon: const Icon(Icons.trending_up, size: 16),
+                      label: const Text('Progress'),
+                    ),
+                  ),
+                // Rate Commission button (after completed)
+                if ([
+                      CommissionStatus.completed,
+                      CommissionStatus.delivered,
+                    ].contains(commission.status) &&
+                    currentUser != null)
+                  SizedBox(
+                    height: 32,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _rateCommission(commission),
+                      icon: const Icon(Icons.star_outline, size: 16),
+                      label: const Text('Rate'),
+                    ),
+                  ),
+                // Report Issue button
+                if ([
+                      CommissionStatus.inProgress,
+                      CommissionStatus.revision,
+                    ].contains(commission.status) &&
+                    currentUser != null)
+                  SizedBox(
+                    height: 32,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _reportDispute(commission),
+                      icon: const Icon(Icons.flag_outlined, size: 16),
+                      label: const Text('Report'),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
-      title: Text(
-        commission.title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isArtist
-                ? 'Client: ${commission.clientName}'
-                : 'Artist: ${commission.artistName}',
-          ),
-          Text(
-            commission.status.displayName,
-            style: TextStyle(color: statusColor, fontSize: 12),
-          ),
-        ],
-      ),
-      trailing: commission.totalPrice > 0
-          ? Text(
-              '\$${commission.totalPrice.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            )
-          : null,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (context) =>
-                CommissionDetailScreen(commission: commission),
-          ),
-        );
-      },
     );
   }
 
@@ -572,10 +743,10 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Icon(
+            const Icon(
               Icons.lightbulb_outline,
               size: 64,
-              color: Colors.amber.shade600,
+              color: core.ArtbeatColors.primaryPurple,
             ),
             const SizedBox(height: 16),
             Text(
@@ -589,9 +760,9 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
               _isArtist
                   ? 'Set up your commission settings to start receiving requests from clients.'
                   : 'Browse artists and request custom artwork tailored to your needs.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: core.ArtbeatColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -610,7 +781,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                 _isArtist ? 'Setup Commission Settings' : 'Browse Artists',
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: CommunityColors.primary,
+                backgroundColor: core.ArtbeatColors.primaryPurple,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -627,23 +798,23 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
   Color _getStatusColor(CommissionStatus status) {
     switch (status) {
       case CommissionStatus.pending:
-        return Colors.orange;
+        return core.ArtbeatColors.warning;
       case CommissionStatus.quoted:
-        return Colors.blue;
+        return core.ArtbeatColors.info;
       case CommissionStatus.accepted:
-        return Colors.green;
+        return core.ArtbeatColors.primaryGreen;
       case CommissionStatus.inProgress:
-        return Colors.purple;
+        return core.ArtbeatColors.primaryPurple;
       case CommissionStatus.revision:
-        return Colors.amber;
+        return core.ArtbeatColors.warning;
       case CommissionStatus.completed:
-        return Colors.green;
+        return core.ArtbeatColors.primaryGreen;
       case CommissionStatus.delivered:
-        return Colors.teal;
+        return core.ArtbeatColors.primaryGreen;
       case CommissionStatus.cancelled:
-        return Colors.red;
+        return core.ArtbeatColors.error;
       case CommissionStatus.disputed:
-        return Colors.red.shade800;
+        return core.ArtbeatColors.error;
     }
   }
 
@@ -689,10 +860,73 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
   }
 
   void _viewAnalytics() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (context) => const CommissionAnalyticsScreen(),
+        builder: (context) => CommissionAnalyticsDashboard(artistId: user.uid),
+      ),
+    );
+  }
+
+  void _viewTemplates() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const CommissionTemplatesBrowser(),
+      ),
+    );
+  }
+
+  void _viewGallery() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => CommissionGalleryScreen(artistId: user.uid),
+      ),
+    );
+  }
+
+  void _viewProgress(DirectCommissionModel commission) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => CommissionProgressTracker(commission: commission),
+      ),
+    );
+  }
+
+  void _rateCommission(DirectCommissionModel commission) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => CommissionRatingScreen(commission: commission),
+      ),
+    );
+  }
+
+  void _reportDispute(DirectCommissionModel commission) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final otherPartyId = commission.artistId == currentUser.uid
+        ? commission.clientId
+        : commission.artistId;
+    final otherPartyName = commission.artistId == currentUser.uid
+        ? commission.clientName
+        : commission.artistName;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => CommissionDisputeScreen(
+          commissionId: commission.id,
+          otherPartyId: otherPartyId,
+          otherPartyName: otherPartyName,
+        ),
       ),
     );
   }

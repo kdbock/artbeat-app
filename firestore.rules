@@ -112,6 +112,30 @@ service cloud.firestore {
         );
       }
 
+      // User's daily challenges subcollection
+      match /dailyChallenges/{challengeId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
+      // User's weekly goals subcollection
+      match /weeklyGoals/{goalId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
       // User's notifications subcollection (for messaging notifications)
       match /notifications/{notificationId} {
         allow read: if isAuthenticated() && (
@@ -541,6 +565,120 @@ service cloud.firestore {
       );
     }
 
+    // Commission Ratings Collection
+    match /commission_ratings/{ratingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.createdBy ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.createdBy ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.createdBy ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Artist Reputation Collection
+    match /artist_reputation/{reputationId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow update: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Commission Disputes Collection
+    match /commission_disputes/{disputeId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.initiatedById ||
+        request.auth.uid == resource.data.otherPartyId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.initiatedById ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.initiatedById ||
+        request.auth.uid == resource.data.otherPartyId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAdmin(request.auth.uid);
+
+      // Dispute messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.initiatedById ||
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.otherPartyId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.initiatedById ||
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.otherPartyId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+
+      // Dispute evidence subcollection
+      match /evidence/{evidenceId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.initiatedById ||
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.otherPartyId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.initiatedById ||
+          request.auth.uid == get(/databases/$(database)/documents/commission_disputes/$(disputeId)).data.otherPartyId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.uploadedBy ||
+          isAdmin(request.auth.uid)
+        );
+      }
+    }
+
+    // Commission Templates Collection
+    match /commission_templates/{templateId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.creatorId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.creatorId ||
+        isAdmin(request.auth.uid) ||
+        // Allow updating usage count and ratings from any authenticated user
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['useCount', 'avgRating', 'ratingCount', 'updatedAt']))
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.creatorId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Commission Analytics Collection
+    match /commission_analytics/{analyticsId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow update: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
     // Coupons collection
     match /coupons/{couponId} {
       allow read: if isAuthenticated();
@@ -772,7 +910,8 @@ service cloud.firestore {
 
     // Ads collections - allow read access for all authenticated users
     match /ads/{adId} {
-      allow read, list: if isAuthenticated();
+      // Public read access - ads are meant to be displayed to all users
+      allow read, list: if true;
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
@@ -782,7 +921,8 @@ service cloud.firestore {
 
     // Artist approved ads collection
     match /artist_approved_ads/{adId} {
-      allow read, list: if isAuthenticated();
+      // Public read access - approved ads are meant to be displayed to all users
+      allow read, list: if true;
       allow create: if isAuthenticated() && (
         isArtist(request.auth.uid) ||
         isAdmin(request.auth.uid)

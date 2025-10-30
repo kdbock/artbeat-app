@@ -773,11 +773,11 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // In a real app, this would navigate to purchase or inquiry page
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Purchase feature coming soon')),
+                            // Navigate to purchase screen
+                            Navigator.pushNamed(
+                              context,
+                              '/artwork/purchase',
+                              arguments: {'artworkId': artwork.id},
                             );
                           },
                           icon: const Icon(Icons.shopping_cart),

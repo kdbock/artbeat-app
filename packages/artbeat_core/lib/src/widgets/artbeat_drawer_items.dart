@@ -102,6 +102,21 @@ class ArtbeatDrawerItems {
     route: '/art-walk/create',
   );
 
+  // Quest & Goals items
+  static const dailyQuests = ArtbeatDrawerItem(
+    title: 'Daily Quests',
+    icon: Icons.assignment_outlined,
+    route: '/quests/daily',
+    color: ArtbeatColors.primaryGreen,
+  );
+
+  static const weeklyGoals = ArtbeatDrawerItem(
+    title: 'Weekly Goals',
+    icon: Icons.flag_outlined,
+    route: '/goals/weekly',
+    color: ArtbeatColors.primaryBlue,
+  );
+
   // Commission items
   static const artistCommissions = ArtbeatDrawerItem(
     title: 'Commission Hub',
@@ -455,6 +470,11 @@ class ArtbeatDrawerItems {
     advertise,
   ];
 
+  static List<ArtbeatDrawerItem> get questsAndGoals => [
+    dailyQuests,
+    weeklyGoals,
+  ];
+
   static List<ArtbeatDrawerItem> get personalItems => [
     notifications,
     achievements,
@@ -530,17 +550,20 @@ class ArtbeatDrawerItems {
     // 1. Core Navigation (Always Visible)
     sections.add(DrawerSection(title: 'Navigation', items: coreItems));
 
-    // 2. Creation Tools (for artists, galleries, admins)
+    // 2. Quests & Goals (Always Visible to All Users)
+    sections.add(DrawerSection(title: 'Engagement', items: questsAndGoals));
+
+    // 3. Creation Tools (for artists, galleries, admins)
     final hasCreationRole =
         userRole == 'artist' || userRole == 'gallery' || userRole == 'admin';
     if (hasCreationRole) {
       sections.add(DrawerSection(title: 'Create', items: creationItems));
     }
 
-    // 3. Messaging (always available for authenticated users)
+    // 4. Messaging (always available for authenticated users)
     sections.add(const DrawerSection(items: [messaging]));
 
-    // 4. Role-Specific Management Tools
+    // 5. Role-Specific Management Tools
     switch (userRole) {
       case 'artist':
         sections.add(DrawerSection(title: 'Artist', items: artistItems));
@@ -568,10 +591,10 @@ class ArtbeatDrawerItems {
         break;
     }
 
-    // 5. Personal & Social Features
+    // 6. Personal & Social Features
     sections.add(DrawerSection(title: 'Personal', items: personalItems));
 
-    // 6. Settings & Support
+    // 7. Settings & Support
     sections.add(
       DrawerSection(title: 'Settings', items: settingsItems, showDivider: true),
     );

@@ -1,6 +1,11 @@
 // artbeat_core services export file
 // Generated on Sun Jun  1 13:03:47 EDT 2025
 
+// Payment services
+export 'stripe_payment_service.dart';
+export 'enhanced_share_service.dart';
+export 'offline_caching_service.dart';
+
 export 'firebase_diagnostic_service.dart';
 export 'offline_data_provider.dart';
 export 'unified_payment_service.dart';

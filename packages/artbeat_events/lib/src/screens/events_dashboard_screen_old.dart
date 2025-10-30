@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
+import 'events_list_screen.dart';
+import 'my_tickets_screen.dart';
 import 'dart:developer' as developer;
 
 /// Central events dashboard screen - entry point for events tab
@@ -290,7 +292,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                       color: ArtbeatColors.primaryPurple,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/search');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'All Events',
+                              showCreateButton: true,
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -300,7 +309,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/nearby');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Events Near You',
+                              tags: ['nearby'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -310,7 +326,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                       color: ArtbeatColors.secondaryTeal,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/popular');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Popular Events',
+                              tags: ['popular', 'trending'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -320,7 +343,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                       color: ArtbeatColors.accentYellow,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/venues');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Event Venues',
+                              tags: ['venue', 'location'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -1112,7 +1142,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Quick Actions',
+          'Discover Events',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -1120,31 +1150,99 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           ),
         ),
         const SizedBox(height: 16),
+        // First row - Near Me and Trending
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              flex: 2,
               child: _buildModernActionCard(
                 context,
-                icon: Icons.search,
-                title: 'Find Events',
-                subtitle: 'Search & filter',
-                color: ArtbeatColors.primaryPurple,
-                onTap: () => _showSearchModal(context),
+                icon: Icons.location_on,
+                title: 'Near Me',
+                subtitle: 'Events nearby',
+                color: ArtbeatColors.primaryGreen,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EventsListScreen(
+                        title: 'Events Near You',
+                        tags: ['nearby'],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              flex: 2,
               child: _buildModernActionCard(
                 context,
-                icon: Icons.location_on,
-                title: 'Nearby',
-                subtitle: 'Events near you',
-                color: ArtbeatColors.primaryGreen,
-                onTap: () => Navigator.pushNamed(context, '/events/nearby'),
+                icon: Icons.trending_up,
+                title: 'Trending',
+                subtitle: 'Popular now',
+                color: ArtbeatColors.secondaryTeal,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EventsListScreen(
+                        title: 'Trending Events',
+                        tags: ['popular', 'trending'],
+                      ),
+                    ),
+                  );
+                },
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Second row - This Weekend and My Tickets (if authenticated)
+        Row(
+          children: [
+            Expanded(
+              child: _buildModernActionCard(
+                context,
+                icon: Icons.weekend,
+                title: 'This Weekend',
+                subtitle: 'Weekend events',
+                color: ArtbeatColors.primaryPurple,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const EventsListScreen(
+                        title: 'This Weekend',
+                        tags: ['weekend'],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: currentUser != null
+                  ? _buildModernActionCard(
+                      context,
+                      icon: Icons.confirmation_number,
+                      title: 'My Tickets',
+                      subtitle: 'Your purchases',
+                      color: const Color(0xFFE74C3C), // Red
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                MyTicketsScreen(userId: currentUser.uid),
+                          ),
+                        );
+                      },
+                    )
+                  : _buildModernActionCard(
+                      context,
+                      icon: Icons.search,
+                      title: 'Find Events',
+                      subtitle: 'Search & filter',
+                      color: const Color(0xFFE74C3C), // Red
+                      onTap: () => _showSearchModal(context),
+                    ),
             ),
           ],
         ),

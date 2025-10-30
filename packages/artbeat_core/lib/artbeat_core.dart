@@ -35,6 +35,7 @@ export 'src/services/crash_prevention_service.dart' show CrashPreventionService;
 export 'src/services/payment_service.dart' show PaymentService;
 export 'src/services/enhanced_payment_service_working.dart'
     show EnhancedPaymentService;
+// Deprecated: GiftPurchaseScreen removed (legacy basic screen, use EnhancedGiftPurchaseScreen)
 export 'src/services/in_app_purchase_manager.dart'
     show InAppPurchaseManager, PurchaseEvent, PurchaseEventType;
 export 'src/models/in_app_purchase_models.dart' show CompletedPurchase;
@@ -50,6 +51,9 @@ export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
 export 'src/services/coupon_service.dart' show CouponService;
+export 'src/services/stripe_payment_service.dart' show StripePaymentService;
+export 'src/services/enhanced_share_service.dart' show EnhancedShareService;
+export 'src/services/offline_caching_service.dart' show OfflineCachingService;
 export 'src/screens/order_review_screen.dart';
 export 'src/utils/order_review_helpers.dart';
 // 2025 Enhanced Services
@@ -92,8 +96,6 @@ export 'src/repositories/known_entity_repository.dart'
 // Export Enhanced Gift Screens
 export 'src/screens/enhanced_gift_purchase_screen.dart'
     show EnhancedGiftPurchaseScreen;
-export 'src/screens/gift_campaign_screen.dart' show GiftCampaignScreen;
-export 'src/screens/gift_subscription_screen.dart' show GiftSubscriptionScreen;
 export 'src/screens/leaderboard_screen.dart' show LeaderboardScreen;
 export 'src/screens/help_support_screen.dart' show HelpSupportScreen;
 
@@ -183,7 +185,6 @@ export 'src/screens/artbeat_dashboard_screen.dart' show ArtbeatDashboardScreen;
 export 'src/screens/search_results_page.dart' show SearchResultsPage;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
 export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
-export 'src/screens/gift_purchase_screen.dart' show GiftPurchaseScreen;
 export 'src/screens/subscription_purchase_screen.dart'
     show SubscriptionPurchaseScreen;
 export 'src/screens/subscription_plans_screen.dart'

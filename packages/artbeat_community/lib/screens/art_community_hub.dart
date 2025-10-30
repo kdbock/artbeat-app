@@ -8,6 +8,7 @@ import '../services/art_community_service.dart';
 import '../widgets/art_gallery_widgets.dart';
 import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
+import '../widgets/commission_artists_browser.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import 'artist_onboarding_screen.dart';
@@ -285,6 +286,27 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
                       'artist_onboarding_screen.dart',
                       'ArtistOnboardingScreen',
                     ),
+                  ),
+
+                  // Commissions Section
+                  _buildDrawerSection('Commissions'),
+                  _buildDrawerItem(
+                    icon: Icons.art_track,
+                    title: 'Commission Hub',
+                    subtitle: 'Browse commissions & requests',
+                    onTap: () => _navigateToScreen(
+                      'commissions/commission_hub_screen.dart',
+                      'CommissionHubScreen',
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.handshake,
+                    title: 'Commission Artists',
+                    subtitle: 'Find artists accepting work',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(1); // Go to Artists tab
+                    },
                   ),
 
                   // Topics & Discovery
@@ -1747,6 +1769,35 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
               zone: AdZone.communitySocial,
               adIndex: 1,
               showIfEmpty: true,
+            ),
+          ),
+
+          // Commission Artists Browser
+          SliverToBoxAdapter(
+            child: CommissionArtistsBrowser(
+              onCommissionRequest: () {
+                // Refresh artists after commission request
+                _loadArtists();
+              },
+            ),
+          ),
+
+          // Divider
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Divider(),
+            ),
+          ),
+
+          // Section title
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'All Artists',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
 

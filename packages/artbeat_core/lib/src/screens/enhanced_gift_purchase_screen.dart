@@ -94,8 +94,8 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
       case 0:
         _giftMode = 'preset';
         // Set a default amount for preset mode to prevent $0.00 payments
-        _selectedAmount = 5.0; // Default to "Brush Pack" amount
-        _selectedPresetGift = 'Brush Pack';
+        _selectedAmount = 4.99; // Default to "Small Gift" amount
+        _selectedPresetGift = 'Small Gift (50 Credits)';
         debugPrint(
           '🎁 Set default amount: \$${_selectedAmount.toStringAsFixed(2)}',
         );
@@ -1346,18 +1346,14 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
 
   String _getGiftDescription(String giftType) {
     switch (giftType) {
-      case 'Mini Palette':
-        return 'A small token of appreciation';
-      case 'Brush Pack':
-        return 'Essential tools for creativity';
-      case 'Canvas Set':
-        return 'Perfect for new artworks';
-      case 'Art Supplies':
-        return 'Complete set of art materials';
-      case 'Studio Time':
-        return 'Support for dedicated art time';
-      case 'Premium Support':
-        return 'Comprehensive artist support';
+      case 'Small Gift (50 Credits)':
+        return 'A small token of appreciation - 50 credits';
+      case 'Medium Gift (100 Credits)':
+        return 'A meaningful gift - 100 credits';
+      case 'Large Gift (250 Credits)':
+        return 'A generous contribution - 250 credits';
+      case 'Premium Gift (500 Credits)':
+        return 'Maximum support for the artist - 500 credits';
       default:
         return 'A thoughtful gift for artists';
     }
@@ -1365,17 +1361,13 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
 
   IconData _getGiftIcon(String giftType) {
     switch (giftType) {
-      case 'Mini Palette':
-        return Icons.palette;
-      case 'Brush Pack':
-        return Icons.brush;
-      case 'Canvas Set':
-        return Icons.crop_original;
-      case 'Art Supplies':
-        return Icons.art_track;
-      case 'Studio Time':
-        return Icons.access_time;
-      case 'Premium Support':
+      case 'Small Gift (50 Credits)':
+        return Icons.card_giftcard;
+      case 'Medium Gift (100 Credits)':
+        return Icons.redeem;
+      case 'Large Gift (250 Credits)':
+        return Icons.card_giftcard;
+      case 'Premium Gift (500 Credits)':
         return Icons.star;
       default:
         return Icons.card_giftcard;

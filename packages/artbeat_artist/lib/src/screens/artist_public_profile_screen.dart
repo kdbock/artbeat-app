@@ -9,9 +9,12 @@ import 'package:artbeat_core/artbeat_core.dart'
         EnhancedGiftPurchaseScreen;
 import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
+import 'package:artbeat_community/artbeat_community.dart'
+    show DirectCommissionService, ArtistCommissionSettings;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
 import '../services/analytics_service.dart';
+import '../widgets/commission_badge_widget.dart';
 
 /// Screen for viewing an artist's public profile
 class ArtistPublicProfileScreen extends StatefulWidget {
@@ -31,6 +34,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   final SubscriptionService _subscriptionService = SubscriptionService();
   final artwork.ArtworkService _artworkService = artwork.ArtworkService();
   final AnalyticsService _analyticsService = AnalyticsService();
+  final DirectCommissionService _commissionService = DirectCommissionService();
 
   bool _isLoading = true;
   ArtistProfileModel? _artistProfile;
@@ -38,6 +42,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   String? _currentUserId;
   String? _artistProfileId; // Store the artist profile document ID
   bool _isFollowing = false;
+  ArtistCommissionSettings? _commissionSettings;
 
   @override
   void initState() {
@@ -98,12 +103,22 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
         //     '👥 ArtistPublicProfileScreen: Following status: $isFollowing');
       }
 
+      // Load commission settings for this artist
+      ArtistCommissionSettings? commissionSettings;
+      try {
+        commissionSettings =
+            await _commissionService.getArtistCommissionSettings(widget.userId);
+      } catch (e) {
+        // Artist may not have commission settings - that's OK
+      }
+
       if (mounted) {
         setState(() {
           _artistProfile = artistProfile;
           _artistProfileId = artistProfile.id; // Store the document ID
           _artwork = artwork;
           _isFollowing = isFollowing;
+          _commissionSettings = commissionSettings;
           _isLoading = false;
         });
         // debugPrint(
@@ -339,6 +354,18 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                     ],
                   ),
 
+                  // Commission Badge
+                  if (_commissionSettings?.acceptingCommissions ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: CommissionBadge(
+                        acceptingCommissions: true,
+                        basePrice: _commissionSettings?.basePrice,
+                        turnaroundDays:
+                            _commissionSettings?.averageTurnaroundDays,
+                      ),
+                    ),
+
                   // Subscription badge
                   if (isPremium)
                     Padding(
@@ -394,6 +421,20 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                       style: const TextStyle(height: 1.5),
                     ),
                   ),
+
+                  // Commission Info Card
+                  if (_commissionSettings?.acceptingCommissions ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: CommissionInfoCard(
+                        basePrice: _commissionSettings?.basePrice,
+                        turnaroundDays:
+                            _commissionSettings?.averageTurnaroundDays,
+                        availableTypes: _commissionSettings?.availableTypes
+                            .map((t) => t.displayName)
+                            .toList(),
+                      ),
+                    ),
 
                   // Specialties
                   const Padding(

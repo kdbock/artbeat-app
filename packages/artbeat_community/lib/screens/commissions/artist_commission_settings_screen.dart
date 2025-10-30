@@ -165,7 +165,7 @@ Please contact me with any questions before placing your commission request.
         lastUpdated: DateTime.now(),
       );
 
-      await _commissionService.updateArtistSettings(settings);
+      await _commissionService.updateArtistCommissionSettings(settings);
 
       setState(() => _isSaving = false);
 

@@ -201,6 +201,8 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/support',
       '/profile/following',
       '/profile/followers',
+      '/quests/daily',
+      '/goals/weekly',
     };
 
     if (implementedRoutes.contains(route)) {

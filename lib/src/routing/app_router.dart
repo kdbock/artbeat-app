@@ -422,17 +422,24 @@ class AppRouter {
         );
 
       case AppRoutes.artworkFeatured:
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Featured Artists'),
-          child: const artist.ArtistBrowseScreen(),
+        return RouteUtils.createSimpleRoute(
+          child: const artwork.ArtworkFeaturedScreen(),
+        );
+
+      case AppRoutes.artworkRecent:
+        return RouteUtils.createSimpleRoute(
+          child: const artwork.ArtworkRecentScreen(),
+        );
+
+      case AppRoutes.artworkTrending:
+        return RouteUtils.createSimpleRoute(
+          child: const artwork.ArtworkTrendingScreen(),
         );
 
       case AppRoutes.artworkSearch:
-      case AppRoutes.artworkRecent:
-      case AppRoutes.artworkTrending:
-        final feature = settings.name!.split('/').last;
-        return RouteUtils.createComingSoonRoute(
-          '${feature[0].toUpperCase()}${feature.substring(1)} Artwork',
+        final searchQuery = RouteUtils.getArgument<String>(settings, 'query');
+        return RouteUtils.createSimpleRoute(
+          child: artwork.AdvancedArtworkSearchScreen(initialQuery: searchQuery),
         );
 
       case '/artwork/local':
@@ -786,6 +793,26 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
           child: const art_walk.WeeklyGoalsScreen(),
+        );
+
+      case '/art-walk/location':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final locationName = args?['locationName'] as String?;
+        final captures = args?['captures'] as List<capture.CaptureModel>?;
+
+        if (locationName == null || captures == null) {
+          return RouteUtils.createErrorRoute(
+            'Location name and captures are required',
+          );
+        }
+
+        // Show captures for the selected location
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: _LocationCapturesView(
+            locationName: locationName,
+            captures: captures,
+          ),
         );
 
       default:
@@ -1278,11 +1305,6 @@ class AppRouter {
           child: const capture.CapturesListScreen(),
         );
 
-      case AppRoutes.captureEdit:
-        return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Edit Capture - Coming Soon')),
-        );
-
       case AppRoutes.captureCreate:
         return RouteUtils.createMainLayoutRoute(
           child: const capture.CaptureScreen(),
@@ -1294,12 +1316,24 @@ class AppRouter {
         );
 
       case AppRoutes.captureDetail:
-        // Note: This route may need to be updated based on the new capture flow
-        // The CaptureDetailScreen now expects an imageFile parameter for new captures
-        // For viewing existing captures, consider using CapturesListScreen or implement
-        // a separate view-only screen if needed
-        return RouteUtils.createNotFoundRoute(
-          'Capture detail viewing not implemented',
+        final captureId = RouteUtils.getArgument<String>(settings, 'captureId');
+        if (captureId == null || captureId.isEmpty) {
+          return RouteUtils.createErrorRoute('Capture ID is required');
+        }
+        return RouteUtils.createMainLayoutRoute(
+          child: capture.CaptureDetailViewerScreen(captureId: captureId),
+        );
+
+      case AppRoutes.captureEdit:
+        final captureModel = RouteUtils.getArgument<core.CaptureModel>(
+          settings,
+          'capture',
+        );
+        if (captureModel == null) {
+          return RouteUtils.createErrorRoute('Capture data is required');
+        }
+        return RouteUtils.createMainLayoutRoute(
+          child: capture.CaptureEditScreen(capture: captureModel),
         );
 
       default:
@@ -2024,4 +2058,111 @@ class _ProfileActivityContentState extends State<_ProfileActivityContent> {
       }
     }
   }
+}
+
+/// Widget to display captures for a specific location
+class _LocationCapturesView extends StatelessWidget {
+  const _LocationCapturesView({
+    required this.locationName,
+    required this.captures,
+  });
+
+  final String locationName;
+  final List<capture.CaptureModel> captures;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(locationName), elevation: 0),
+    body: captures.isEmpty
+        ? const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.image_not_supported, size: 64),
+                SizedBox(height: 16),
+              ],
+            ),
+          )
+        : GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: captures.length,
+            itemBuilder: (context, index) =>
+                _buildCaptureCard(context, captures[index]),
+          ),
+  );
+
+  Widget _buildCaptureCard(
+    BuildContext context,
+    capture.CaptureModel capture,
+  ) => GestureDetector(
+    onTap: () {
+      Navigator.pushNamed(
+        context,
+        '/capture/detail',
+        arguments: {'captureId': capture.id},
+      );
+    },
+    child: Card(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Image
+          if (capture.imageUrl.isNotEmpty)
+            Image.network(
+              capture.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.image_not_supported),
+              ),
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              },
+            )
+          else
+            Container(
+              color: Colors.grey[300],
+              child: const Icon(Icons.image_not_supported),
+            ),
+
+          // Title overlay
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black87, Colors.transparent],
+                ),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                capture.title ?? 'Untitled',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

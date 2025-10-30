@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -10,12 +11,18 @@ class ArtWalkHeroSection extends StatefulWidget {
   final VoidCallback onInstantDiscoveryTap;
   final VoidCallback onProfileMenuTap;
   final VoidCallback onMenuPressed;
+  final VoidCallback? onNotificationPressed;
+  final bool hasNotifications;
+  final int notificationCount;
 
   const ArtWalkHeroSection({
     Key? key,
     required this.onInstantDiscoveryTap,
     required this.onProfileMenuTap,
     required this.onMenuPressed,
+    this.onNotificationPressed,
+    this.hasNotifications = false,
+    this.notificationCount = 0,
   }) : super(key: key);
 
   @override
@@ -203,7 +210,7 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
             ],
           ),
 
-          // Right: Action buttons (search, messaging, profile)
+          // Right: Action buttons (search, notifications, messaging, profile)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -224,6 +231,11 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
                 ),
               ),
               const SizedBox(width: 4),
+              // Notification button with badge
+              if (widget.onNotificationPressed != null)
+                _buildNotificationButton(),
+              if (widget.onNotificationPressed != null)
+                const SizedBox(width: 4),
               // Messaging button with unread indicator
               _buildMessagingButton(),
               const SizedBox(width: 4),
@@ -260,9 +272,36 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
               color: Colors.transparent,
               child: InkWell(
                 onTap: () async {
-                  await Navigator.pushNamed(context, '/messaging');
-                  if (context.mounted) {
-                    messagingProvider.refreshUnreadCount();
+                  // Debug: Check if button is being tapped
+                  if (kDebugMode) {
+                    print('� Messaging button tapped! Route: /messaging');
+                  }
+
+                  // Show immediate feedback
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Opening messages...'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+
+                  try {
+                    await Navigator.pushNamed(context, '/messaging');
+                    if (context.mounted) {
+                      messagingProvider.refreshUnreadCount();
+                    }
+                  } catch (error) {
+                    // If route navigation fails, show error
+                    if (context.mounted) {
+                      AppLogger.error('Messaging navigation error: $error');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Messaging navigation error: $error'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    }
                   }
                 },
                 borderRadius: BorderRadius.circular(20),
@@ -312,6 +351,57 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
           ],
         );
       },
+    );
+  }
+
+  Widget _buildNotificationButton() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              widget.onNotificationPressed?.call();
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ),
+        ),
+        // Notification badge
+        if (widget.hasNotifications)
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: ArtbeatColors.error,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Text(
+                widget.notificationCount > 99
+                    ? '99+'
+                    : widget.notificationCount.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

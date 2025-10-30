@@ -43,6 +43,13 @@ export 'commissions/direct_commissions_screen.dart';
 export 'commissions/commission_request_screen.dart';
 export 'commissions/commission_detail_screen.dart';
 export 'commissions/artist_commission_settings_screen.dart';
+export 'commissions/commission_setup_wizard_screen.dart';
+export 'commissions/commission_rating_screen.dart';
+export 'commissions/commission_analytics_dashboard.dart';
+export 'commissions/commission_templates_browser.dart';
+export 'commissions/commission_progress_tracker.dart';
+export 'commissions/commission_dispute_screen.dart';
+export 'commissions/commission_gallery_screen.dart';
 
 // Sponsorship screens
 export 'sponsorships/enhanced_sponsorship_screen.dart';

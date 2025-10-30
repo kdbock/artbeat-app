@@ -5,6 +5,8 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
 import '../widgets/events_drawer.dart';
+import 'events_list_screen.dart';
+import 'my_tickets_screen.dart';
 
 /// 🎉 Events Dashboard - Discover What's Happening in Your City!
 ///
@@ -784,7 +786,16 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   icon: Icons.location_on,
                   title: 'Near Me',
                   color: ArtbeatColors.primaryGreen,
-                  onTap: () => Navigator.pushNamed(context, '/events/nearby'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const EventsListScreen(
+                          title: 'Events Near You',
+                          tags: ['nearby'],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -793,7 +804,16 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   icon: Icons.trending_up,
                   title: 'Trending',
                   color: ArtbeatColors.accentOrange,
-                  onTap: () => Navigator.pushNamed(context, '/events/trending'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const EventsListScreen(
+                          title: 'Trending Events',
+                          tags: ['popular', 'trending'],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -806,7 +826,16 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   icon: Icons.calendar_today,
                   title: 'This Weekend',
                   color: ArtbeatColors.primaryPurple,
-                  onTap: () => Navigator.pushNamed(context, '/events/weekend'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const EventsListScreen(
+                          title: 'This Weekend',
+                          tags: ['weekend'],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -815,8 +844,24 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   icon: Icons.confirmation_number,
                   title: 'My Tickets',
                   color: ArtbeatColors.secondaryTeal,
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/events/my-tickets'),
+                  onTap: () {
+                    final currentUser = FirebaseAuth.instance.currentUser;
+                    if (currentUser != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => MyTicketsScreen(
+                            userId: currentUser.uid,
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please sign in to view your tickets'),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
             ],
@@ -1311,7 +1356,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/nearby');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Events Near You',
+                              tags: ['nearby'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -1321,7 +1373,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                       color: ArtbeatColors.secondaryTeal,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/popular');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Popular Events',
+                              tags: ['popular', 'trending'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -1331,7 +1390,14 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                       color: ArtbeatColors.accentYellow,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/venues');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Event Venues',
+                              tags: ['venue', 'location'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ],

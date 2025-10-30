@@ -32,34 +32,48 @@ class _MainLayoutState extends State<MainLayout> {
     } else {
       // Default navigation logic - use pushNamedAndRemoveUntil to prevent app reloads
       // and ensure proper navigation stack management
-      switch (index) {
-        case 0:
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
-          break;
-        case 1:
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/art-walk/dashboard', (route) => false);
-          break;
-        case 2:
-          // Smart camera launch for capture button - checks terms acceptance
-          Navigator.of(context).pushNamed('/capture/smart');
-          break;
-        case 3:
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/community/dashboard', (route) => false);
-          break;
-        case 4:
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/events/discover', (route) => false);
-          break;
-        default:
-          // Handle any other indices gracefully
-          break;
+      try {
+        switch (index) {
+          case 0:
+            // Home tab - navigate to dashboard
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
+            break;
+          case 1:
+            // Art Walk tab - navigate to art walk map/dashboard
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/art-walk/map', (route) => false);
+            break;
+          case 2:
+            // Capture tab - launch capture sequence
+            Navigator.of(context).pushNamed('/capture/camera');
+            break;
+          case 3:
+            // Community tab - navigate to community hub
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/community/hub', (route) => false);
+            break;
+          case 4:
+            // Events tab - navigate to events discover
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil('/events/discover', (route) => false);
+            break;
+          default:
+            // Handle any other indices gracefully - stay on current page
+            break;
+        }
+      } catch (e) {
+        // If navigation fails, show feedback to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Navigation error: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     }
   }

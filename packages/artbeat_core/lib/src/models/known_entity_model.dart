@@ -104,6 +104,27 @@ class KnownEntity {
     );
   }
 
+  /// Create from community data (posts, directory)
+  factory KnownEntity.fromCommunity({
+    required String id,
+    required Map<String, dynamic> data,
+  }) {
+    final title = data['title'] as String? ?? '';
+    final authorName = data['authorName'] as String? ?? '';
+    final imageUrl = data['imageUrl'] as String?;
+
+    return KnownEntity(
+      id: id,
+      title: title.isNotEmpty ? title : 'Community Post',
+      subtitle: authorName.isNotEmpty ? 'by $authorName' : 'Community',
+      imageUrl: imageUrl,
+      type: KnownEntityType.community,
+      data: data,
+      createdAt: _parseTimestamp(data['createdAt']),
+      updatedAt: _parseTimestamp(data['updatedAt']),
+    );
+  }
+
   /// Create from location data
   factory KnownEntity.fromLocation({
     required String id,
@@ -202,7 +223,15 @@ class KnownEntity {
 }
 
 /// Types of entities that can be searched
-enum KnownEntityType { artist, artwork, event, artWalk, location, unknown }
+enum KnownEntityType {
+  artist,
+  artwork,
+  event,
+  artWalk,
+  community,
+  location,
+  unknown,
+}
 
 /// Extension to get user-friendly labels for entity types
 extension KnownEntityTypeExtension on KnownEntityType {
@@ -216,6 +245,8 @@ extension KnownEntityTypeExtension on KnownEntityType {
         return 'Event';
       case KnownEntityType.artWalk:
         return 'Art Walk';
+      case KnownEntityType.community:
+        return 'Community';
       case KnownEntityType.location:
         return 'Location';
       case KnownEntityType.unknown:

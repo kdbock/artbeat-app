@@ -1403,63 +1403,71 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _navigateToLocation(locationName, captures),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: DashboardColors.accentOrange.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Center(
-                  child: Text(
-                    '${captures.length}',
-                    style: const TextStyle(
-                      color: DashboardColors.accentOrange,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      locationName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: DashboardColors.accentOrange.withValues(
+                          alpha: 0.2,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${captures.length}',
+                          style: const TextStyle(
+                            color: DashboardColors.accentOrange,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
-                    Text(
-                      '${captures.length} artwork${captures.length == 1 ? '' : 's'}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            locationName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${captures.length} artwork${captures.length == 1 ? '' : 's'}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () => _navigateToLocation(locationName, captures),
-                icon: const Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ],
+            ),
           ),
         );
       }).toList(),

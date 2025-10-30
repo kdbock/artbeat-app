@@ -29,6 +29,8 @@ class KnownEntityRepository {
       _searchArtwork(lowerQuery),
       _searchArtWalks(lowerQuery),
       _searchEvents(lowerQuery),
+      _searchCommunity(lowerQuery),
+      _searchLocations(lowerQuery),
     ];
 
     try {
@@ -98,6 +100,7 @@ class KnownEntityRepository {
       final captures = await _captureService.getAllCaptures(limit: 100);
 
       for (final capture in captures) {
+        // Filter by query - improved capture filtering
         // Get photographer user info for enhanced matching
         String? photographerName;
         String? photographerUsername;
@@ -203,6 +206,96 @@ class KnownEntityRepository {
       }
     } catch (error) {
       debugPrint('Error searching events: $error');
+    }
+
+    return results;
+  }
+
+  /// Search for community posts
+  Future<List<KnownEntity>> _searchCommunity(String lowerQuery) async {
+    final results = <KnownEntity>[];
+
+    try {
+      // Search community posts
+      try {
+        final postsQuery = await _firestore
+            .collection('community_posts')
+            .limit(20)
+            .get();
+
+        for (final doc in postsQuery.docs) {
+          final data = doc.data();
+          if (_matchesCommunityData(data, lowerQuery)) {
+            results.add(KnownEntity.fromCommunity(id: doc.id, data: data));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error searching community posts: $e');
+      }
+
+      // Search artist directory
+      try {
+        final artistDirQuery = await _firestore
+            .collection('artist_directory')
+            .limit(20)
+            .get();
+
+        for (final doc in artistDirQuery.docs) {
+          final data = doc.data();
+          if (_matchesArtistDirectoryData(data, lowerQuery)) {
+            results.add(KnownEntity.fromCommunity(id: doc.id, data: data));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error searching artist directory: $e');
+      }
+    } catch (error) {
+      debugPrint('Error searching community: $error');
+    }
+
+    return results;
+  }
+
+  /// Search for locations (galleries, venues, studios)
+  Future<List<KnownEntity>> _searchLocations(String lowerQuery) async {
+    final results = <KnownEntity>[];
+
+    try {
+      // Search galleries collection
+      try {
+        final galleriesQuery = await _firestore
+            .collection('galleries')
+            .limit(20)
+            .get();
+
+        for (final doc in galleriesQuery.docs) {
+          final data = doc.data();
+          if (_matchesLocationData(data, lowerQuery)) {
+            results.add(KnownEntity.fromLocation(id: doc.id, data: data));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error searching galleries: $e');
+      }
+
+      // Search venues collection
+      try {
+        final venuesQuery = await _firestore
+            .collection('venues')
+            .limit(20)
+            .get();
+
+        for (final doc in venuesQuery.docs) {
+          final data = doc.data();
+          if (_matchesLocationData(data, lowerQuery)) {
+            results.add(KnownEntity.fromLocation(id: doc.id, data: data));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error searching venues: $e');
+      }
+    } catch (error) {
+      debugPrint('Error searching locations: $error');
     }
 
     return results;
@@ -336,6 +429,69 @@ class KnownEntityRepository {
         _matchesWords(title, lowerQuery) ||
         _matchesWords(description, lowerQuery) ||
         _matchesWords(location, lowerQuery);
+  }
+
+  /// Check if community data (posts, artists) matches query
+  bool _matchesCommunityData(Map<String, dynamic> data, String lowerQuery) {
+    final title = (data['title'] as String? ?? '').toLowerCase();
+    final content = (data['content'] as String? ?? '').toLowerCase();
+    final description = (data['description'] as String? ?? '').toLowerCase();
+    final authorName = (data['authorName'] as String? ?? '').toLowerCase();
+    final tags = (data['tags'] as List<dynamic>? ?? [])
+        .map((tag) => tag.toString().toLowerCase())
+        .toList();
+
+    return title.contains(lowerQuery) ||
+        content.contains(lowerQuery) ||
+        description.contains(lowerQuery) ||
+        authorName.contains(lowerQuery) ||
+        tags.any((tag) => tag.contains(lowerQuery)) ||
+        _matchesWords(title, lowerQuery) ||
+        _matchesWords(content, lowerQuery) ||
+        _matchesWords(description, lowerQuery) ||
+        _matchesWords(authorName, lowerQuery);
+  }
+
+  /// Check if artist directory data matches query
+  bool _matchesArtistDirectoryData(
+    Map<String, dynamic> data,
+    String lowerQuery,
+  ) {
+    final artistName = (data['artistName'] as String? ?? '').toLowerCase();
+    final bio = (data['bio'] as String? ?? '').toLowerCase();
+    final style = (data['style'] as String? ?? '').toLowerCase();
+    final tags = (data['tags'] as List<dynamic>? ?? [])
+        .map((tag) => tag.toString().toLowerCase())
+        .toList();
+
+    return artistName.contains(lowerQuery) ||
+        bio.contains(lowerQuery) ||
+        style.contains(lowerQuery) ||
+        tags.any((tag) => tag.contains(lowerQuery)) ||
+        _matchesWords(artistName, lowerQuery) ||
+        _matchesWords(bio, lowerQuery) ||
+        _matchesWords(style, lowerQuery);
+  }
+
+  /// Check if location (gallery, venue) data matches query
+  bool _matchesLocationData(Map<String, dynamic> data, String lowerQuery) {
+    final name = (data['name'] as String? ?? '').toLowerCase();
+    final description = (data['description'] as String? ?? '').toLowerCase();
+    final address = (data['address'] as String? ?? '').toLowerCase();
+    final city = (data['city'] as String? ?? '').toLowerCase();
+    final tags = (data['tags'] as List<dynamic>? ?? [])
+        .map((tag) => tag.toString().toLowerCase())
+        .toList();
+
+    return name.contains(lowerQuery) ||
+        description.contains(lowerQuery) ||
+        address.contains(lowerQuery) ||
+        city.contains(lowerQuery) ||
+        tags.any((tag) => tag.contains(lowerQuery)) ||
+        _matchesWords(name, lowerQuery) ||
+        _matchesWords(description, lowerQuery) ||
+        _matchesWords(address, lowerQuery) ||
+        _matchesWords(city, lowerQuery);
   }
 
   /// Check for word boundary matches (e.g., "Kelly" matches "Kristy Kelly")

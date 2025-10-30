@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/payment_service.dart';
 import '../models/subscription_tier.dart';
-import '../screens/gift_purchase_screen.dart';
+import '../screens/enhanced_gift_purchase_screen.dart';
 import '../screens/subscription_purchase_screen.dart';
 // Note: PaymentMethodsScreen is now available in artbeat_artist package
 
@@ -192,7 +192,7 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                    builder: (context) => const GiftPurchaseScreen(
+                    builder: (context) => const EnhancedGiftPurchaseScreen(
                       recipientId: 'example_artist_id',
                       recipientName: 'Example Artist',
                     ),
@@ -310,7 +310,7 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
             ),
             _buildIntegrationStep(
               '4. One-time Payments',
-              'Use GiftPurchaseScreen and AdPaymentScreen for single purchases.',
+              'Use EnhancedGiftPurchaseScreen and AdPaymentScreen for single purchases.',
             ),
             _buildIntegrationStep(
               '5. Webhooks',
@@ -341,8 +341,8 @@ final paymentService = PaymentService();
 final result = await paymentService.processEnhancedGiftPayment(
   recipientId: 'user_id',
   paymentMethodId: 'pm_123',
-  giftType: 'Mini Palette',
-  amount: 5.00,
+  giftType: 'Small Gift (50 Credits)',
+  amount: 4.99,
   message: 'Keep creating!',
 );
 

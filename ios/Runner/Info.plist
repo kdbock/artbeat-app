@@ -115,6 +115,14 @@
 			<key>CFBundleURLName</key>
 			<string>com.wordnerd.artbeat</string>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.googleusercontent.apps.665020451634-vonv2rpo06n7rmrvfa6liatasak5ua5o</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.665020451634-vonv2rpo06n7rmrvfa6liatasak5ua5o</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

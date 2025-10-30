@@ -17,7 +17,6 @@ class DashboardViewModel extends ChangeNotifier {
   final artworkLib.ArtworkService _artworkService;
   final artWalkLib.ArtWalkService _artWalkService;
   final artWalkLib.SocialService _socialService;
-  final artWalkLib.ChallengeService _challengeService;
   final SubscriptionService _subscriptionService;
   final UserService _userService;
   final CaptureService _captureService;
@@ -73,7 +72,6 @@ class DashboardViewModel extends ChangeNotifier {
     required artworkLib.ArtworkService artworkService,
     required artWalkLib.ArtWalkService artWalkService,
     artWalkLib.SocialService? socialService,
-    artWalkLib.ChallengeService? challengeService,
     required SubscriptionService subscriptionService,
     required UserService userService,
     CaptureService? captureService,
@@ -84,7 +82,6 @@ class DashboardViewModel extends ChangeNotifier {
        _artworkService = artworkService,
        _artWalkService = artWalkService,
        _socialService = socialService ?? artWalkLib.SocialService(),
-       _challengeService = challengeService ?? artWalkLib.ChallengeService(),
        _subscriptionService = subscriptionService,
        _userService = userService,
        _captureService = captureService ?? CaptureService(),

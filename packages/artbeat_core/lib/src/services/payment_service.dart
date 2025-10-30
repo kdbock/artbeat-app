@@ -958,14 +958,13 @@ class PaymentService {
   }
 
   /// Get available gift types and their prices
+  /// Matches App Store Connect IAP configuration
   Map<String, double> getGiftTypes() {
     return {
-      'Mini Palette': 5.00,
-      'Brush Pack': 10.00,
-      'Canvas Set': 15.00,
-      'Art Supplies': 25.00,
-      'Studio Time': 50.00,
-      'Premium Support': 100.00,
+      'Small Gift (50 Credits)': 4.99,
+      'Medium Gift (100 Credits)': 9.99,
+      'Large Gift (250 Credits)': 24.99,
+      'Premium Gift (500 Credits)': 49.99,
     };
   }
 

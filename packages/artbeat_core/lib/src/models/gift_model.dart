@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum GiftType {
-  preset, // Traditional preset gifts (Mini Palette, Brush Pack, etc.)
+  preset, // Preset gifts ($4.99, $9.99, $24.99, $49.99)
   custom, // Custom amount gifts
   campaign, // Campaign-related gifts
   subscription, // Recurring gift subscriptions
@@ -11,7 +11,8 @@ class GiftModel {
   final String id;
   final String senderId;
   final String recipientId;
-  final String giftType; // Mini Palette, Brush Pack, Custom, etc.
+  final String
+  giftType; // Small Gift, Medium Gift, Large Gift, Premium Gift, or Custom
   final double amount;
   final Timestamp createdAt;
   final GiftType type;

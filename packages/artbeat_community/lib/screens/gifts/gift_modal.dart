@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    hide
-        PaymentResult; // Use the main package export but hide PaymentResult to avoid conflict
-import 'package:artbeat_core/src/services/enhanced_payment_service_working.dart'
-    show
-        EnhancedPaymentService,
-        PaymentResult; // Import both EnhancedPaymentService and PaymentResult
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/services/in_app_gift_service.dart';
 
 class GiftModal extends StatefulWidget {
   final String recipientId;
@@ -20,12 +14,34 @@ class GiftModal extends StatefulWidget {
 
 class _GiftModalState extends State<GiftModal> {
   final UserService _userService = UserService();
-  final EnhancedPaymentService _paymentService = EnhancedPaymentService();
-  final List<Map<String, dynamic>> _giftOptions = [
-    {'type': 'Mini Palette', 'amount': 1.0},
-    {'type': 'Brush Pack', 'amount': 5.0},
-    {'type': 'Gallery Frame', 'amount': 20.0},
-    {'type': 'Golden Canvas', 'amount': 50.0},
+  final InAppGiftService _giftService = InAppGiftService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  late final List<Map<String, dynamic>> _giftOptions = [
+    {
+      'productId': 'artbeat_gift_small',
+      'type': 'Small Gift (50 Credits)',
+      'amount': 4.99,
+      'credits': 50,
+    },
+    {
+      'productId': 'artbeat_gift_medium',
+      'type': 'Medium Gift (100 Credits)',
+      'amount': 9.99,
+      'credits': 100,
+    },
+    {
+      'productId': 'artbeat_gift_large',
+      'type': 'Large Gift (250 Credits)',
+      'amount': 24.99,
+      'credits': 250,
+    },
+    {
+      'productId': 'artbeat_gift_premium',
+      'type': 'Premium Gift (500 Credits)',
+      'amount': 49.99,
+      'credits': 500,
+    },
   ];
 
   String? _recipientName;
@@ -54,37 +70,51 @@ class _GiftModalState extends State<GiftModal> {
     }
   }
 
-  Future<void> _sendGift(String giftType, double amount) async {
+  Future<void> _sendGift(String giftProductId, String giftType) async {
     try {
-      final senderId = _userService.currentUserId;
+      final senderId = _auth.currentUser?.uid;
       if (senderId == null) {
         throw Exception('User not authenticated');
       }
 
-      // Close the current modal first
-      Navigator.pop(context);
-
-      // Use enhanced payment service for gift processing
-      final paymentResult = await _processGiftPayment(
-        recipientId: widget.recipientId,
-        recipientName: _recipientName ?? 'Unknown User',
-        amount: amount,
-        giftType: giftType,
-      );
-
-      if (paymentResult.success && mounted) {
-        // Payment was successful
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gift sent successfully! 🎁'),
+            content: Text('Initiating gift purchase...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Use in-app purchase service for gift (Apple compliant)
+      final success = await _giftService.purchaseGift(
+        recipientId: widget.recipientId,
+        giftProductId: giftProductId,
+        message: 'A gift from an ArtBeat user',
+      );
+
+      // Close the modal
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (success && mounted) {
+        // IAP was initiated successfully
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Gift purchase initiated! 🎁 Complete payment to send.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
       } else if (mounted) {
-        // Payment failed
+        // Gift purchase failed
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to send gift'),
+            content: Text(
+              'Failed to initiate gift purchase. Please try again.',
+            ),
             backgroundColor: Colors.red,
             duration: Duration(seconds: 4),
           ),
@@ -98,6 +128,8 @@ class _GiftModalState extends State<GiftModal> {
       // Provide more user-friendly error messages
       if (e.toString().contains('User not authenticated')) {
         errorMessage = 'Please log in to send gifts.';
+      } else if (e.toString().contains('Recipient not found')) {
+        errorMessage = 'The recipient is no longer available.';
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,121 +139,6 @@ class _GiftModalState extends State<GiftModal> {
           duration: const Duration(seconds: 4),
         ),
       );
-    }
-  }
-
-  /// Process gift payment using enhanced payment service
-  Future<PaymentResult> _processGiftPayment({
-    required String recipientId,
-    required String recipientName,
-    required double amount,
-    required String giftType,
-  }) async {
-    try {
-      // Create payment intent for gift
-      final paymentIntentData = await _createGiftPaymentIntent(
-        recipientId: recipientId,
-        recipientName: recipientName,
-        amount: amount,
-        giftType: giftType,
-      );
-
-      final clientSecret = paymentIntentData['clientSecret'] as String;
-
-      // Process payment with enhanced service
-      final result = await _paymentService.processPaymentWithRiskAssessment(
-        paymentIntentClientSecret: clientSecret,
-        amount: amount,
-        currency: 'USD',
-        metadata: {
-          'gift_type': giftType,
-          'recipient_id': recipientId,
-          'recipient_name': recipientName,
-        },
-      );
-
-      if (result.success) {
-        // Log successful gift transaction
-        await _logGiftTransaction(
-          recipientId: recipientId,
-          recipientName: recipientName,
-          amount: amount,
-          giftType: giftType,
-          paymentIntentId: result.paymentIntentId,
-        );
-      }
-
-      return result;
-    } catch (e) {
-      AppLogger.error('Error processing gift payment: $e');
-      return PaymentResult(success: false, error: e.toString());
-    }
-  }
-
-  /// Create payment intent for gift using enhanced service
-  Future<Map<String, dynamic>> _createGiftPaymentIntent({
-    required String recipientId,
-    required String recipientName,
-    required double amount,
-    required String giftType,
-  }) async {
-    final body = {
-      'amount': (amount * 100).toInt(), // Convert to cents
-      'currency': 'usd',
-      'recipientId': recipientId,
-      'recipientName': recipientName,
-      'giftType': giftType,
-      'type': 'gift',
-      'platform': 'ARTbeat',
-      'deviceFingerprint': await _paymentService.getDeviceFingerprint(),
-      'metadata': {
-        'gift_type': giftType,
-        'recipient_id': recipientId,
-        'platform': 'ARTbeat',
-      },
-    };
-
-    // Use the enhanced payment service's authenticated request method
-    final response = await _paymentService.makeAuthenticatedRequest(
-      functionKey: 'processGiftPayment',
-      body: body,
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to create gift payment intent: ${response.body}');
-    }
-
-    return json.decode(response.body) as Map<String, dynamic>;
-  }
-
-  /// Log successful gift transaction
-  Future<void> _logGiftTransaction({
-    required String recipientId,
-    required String recipientName,
-    required double amount,
-    required String giftType,
-    String? paymentIntentId,
-  }) async {
-    try {
-      final senderId = _userService.currentUserId;
-      if (senderId == null) return;
-
-      await FirebaseFirestore.instance.collection('gift_transactions').add({
-        'senderId': senderId,
-        'recipientId': recipientId,
-        'recipientName': recipientName,
-        'amount': amount,
-        'currency': 'USD',
-        'giftType': giftType,
-        'paymentIntentId': paymentIntentId,
-        'timestamp': FieldValue.serverTimestamp(),
-        'platform': 'ARTbeat',
-        'status': 'completed',
-      });
-
-      AppLogger.info('✅ Gift transaction logged: $giftType to $recipientName');
-    } catch (e) {
-      AppLogger.error('❌ Error logging gift transaction: $e');
     }
   }
 
@@ -276,8 +193,8 @@ class _GiftModalState extends State<GiftModal> {
                   trailing: ElevatedButton.icon(
                     onPressed: _recipientName != null
                         ? () => _sendGift(
+                            gift['productId'] as String,
                             gift['type'] as String,
-                            (gift['amount'] as num).toDouble(),
                           )
                         : null,
                     icon: const Icon(Icons.send, size: 16),

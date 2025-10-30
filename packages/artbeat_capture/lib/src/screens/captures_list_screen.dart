@@ -99,11 +99,10 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
   }
 
   void _showCaptureDetails(core.CaptureModel capture) {
-    Navigator.push<void>(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute<void>(
-        builder: (context) => CaptureViewScreen(capture: capture),
-      ),
+      '/capture/detail',
+      arguments: {'captureId': capture.id},
     );
   }
 

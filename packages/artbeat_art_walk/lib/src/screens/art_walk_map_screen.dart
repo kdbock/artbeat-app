@@ -10,7 +10,6 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import '../models/public_art_model.dart';
 import '../widgets/art_walk_drawer.dart';
 
-import '../widgets/map_floating_menu.dart';
 import '../widgets/offline_map_fallback.dart';
 import '../widgets/offline_art_walk_widget.dart';
 import '../theme/art_walk_design_system.dart';
@@ -28,9 +27,13 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   final CaptureService _captureService = CaptureService();
   final UserService _userService = UserService();
 
+  // Scaffold key for drawer control
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // Map controller and state
   GoogleMapController? _mapController;
   Position? _currentPosition;
+  LatLng? _currentMapCenter; // Track current map center for filtering
   String _currentZipCode = '';
   bool _hasMovedToUserLocation = false;
   bool _isLoading = true;
@@ -42,7 +45,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   // Map data
   final Set<Marker> _markers = <Marker>{};
   List<CaptureModel> _nearbyCaptures = [];
-  String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
+  String _artFilter = 'public'; // 'public', 'my_captures', 'my_artwalks'
 
   // Location and timer
   Timer? _locationUpdateTimer;
@@ -81,21 +84,48 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         if (userProfile != null &&
             userProfile['zipCode'] != null &&
             userProfile['zipCode'].toString().isNotEmpty) {
-          _currentZipCode = userProfile['zipCode'].toString();
+          final profileZipCode = userProfile['zipCode'].toString();
+          if (mounted) {
+            setState(() {
+              _currentZipCode = profileZipCode;
+            });
+          }
+          AppLogger.info('Loaded ZIP code from profile: $profileZipCode');
+        }
+      }
+
+      // If no saved ZIP code, default to Kinston, NC
+      if (_currentZipCode.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _currentZipCode = '28501'; // Default to Kinston, NC
+          });
         }
       }
 
       // Priority 1: Try to get current location
       final position = await _tryGetCurrentLocation();
       if (position != null && mounted) {
-        setState(() => _currentPosition = position);
+        setState(() {
+          _currentPosition = position;
+          _currentMapCenter = LatLng(position.latitude, position.longitude);
+        });
         await _moveMapToLocation(position.latitude, position.longitude, 14.0);
         await _loadNearbyCaptures(position.latitude, position.longitude);
         _startLocationUpdates();
       } else if (_currentZipCode.isNotEmpty) {
         // Priority 2: Use user's saved ZIP code
+        AppLogger.info('Using saved ZIP code: $_currentZipCode');
         final coordinates = await _getCoordinatesFromZipCode(_currentZipCode);
         if (coordinates != null) {
+          AppLogger.info(
+            'Moving map to ZIP code $_currentZipCode coordinates: ${coordinates.latitude}, ${coordinates.longitude}',
+          );
+          if (mounted) {
+            setState(() {
+              _currentMapCenter = coordinates;
+            });
+          }
           await _moveMapToLocation(
             coordinates.latitude,
             coordinates.longitude,
@@ -107,6 +137,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           );
         } else {
           // Fallback to default location if ZIP code lookup fails
+          if (mounted) {
+            setState(() {
+              _currentMapCenter = _defaultLocation.target;
+            });
+          }
           await _moveMapToLocation(
             _defaultLocation.target.latitude,
             _defaultLocation.target.longitude,
@@ -119,6 +154,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         }
       } else {
         // Priority 3: Use default location (Kinston, NC - 28501)
+        if (mounted) {
+          setState(() {
+            _currentMapCenter = _defaultLocation.target;
+          });
+        }
         await _moveMapToLocation(
           _defaultLocation.target.latitude,
           _defaultLocation.target.longitude,
@@ -231,11 +271,32 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   /// Get coordinates from ZIP code
   Future<LatLng?> _getCoordinatesFromZipCode(String zipCode) async {
     try {
-      if (zipCode == '28501') {
-        return const LatLng(35.23838, -77.52658);
+      // Use LocationUtils from artbeat_core for proper ZIP code lookup
+      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
+        zipCode,
+      );
+      if (coordinates != null) {
+        return LatLng(coordinates.latitude, coordinates.longitude);
       }
-      return null;
+
+      // Fallback for common ZIP codes if LocationUtils fails (useful for simulator)
+      switch (zipCode) {
+        case '28501': // Kinston, NC
+          return const LatLng(35.23838, -77.52658);
+        case '90210': // Beverly Hills, CA (popular test ZIP)
+          return const LatLng(34.0901, -118.4065);
+        case '10001': // New York, NY
+          return const LatLng(40.7505, -73.9934);
+        case '60601': // Chicago, IL
+          return const LatLng(41.8781, -87.6298);
+        case '94102': // San Francisco, CA
+          return const LatLng(37.7749, -122.4194);
+        default:
+          AppLogger.info('ZIP code $zipCode not found in fallback list');
+          return null;
+      }
     } catch (e) {
+      AppLogger.error('Error getting coordinates for ZIP code $zipCode: $e');
       return null;
     }
   }
@@ -244,21 +305,55 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   Future<void> _moveMapToLocation(
     double latitude,
     double longitude,
-    double zoom,
-  ) async {
-    if (_mapController != null && mounted && !_hasMovedToUserLocation) {
+    double zoom, {
+    bool forceMove = false,
+  }) async {
+    if (_mapController != null &&
+        mounted &&
+        (!_hasMovedToUserLocation || forceMove)) {
       try {
+        AppLogger.info(
+          '📍 Moving map to: $latitude, $longitude (zoom: $zoom, force: $forceMove)',
+        );
         await _mapController!
             .animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(target: LatLng(latitude, longitude), zoom: zoom),
               ),
             )
-            .timeout(const Duration(seconds: 3));
-        _hasMovedToUserLocation = true;
+            .timeout(
+              const Duration(seconds: 5),
+            ); // Increased timeout for simulator
+        if (!forceMove) {
+          _hasMovedToUserLocation = true;
+        }
+        // Update current map center for filtering
+        if (mounted) {
+          setState(() {
+            _currentMapCenter = LatLng(latitude, longitude);
+          });
+        }
+        AppLogger.info('✅ Map movement completed');
       } catch (e) {
         AppLogger.error('⚠️ Error animating camera: $e');
+        // Try a fallback method for simulator
+        try {
+          await _mapController!.moveCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: LatLng(latitude, longitude), zoom: zoom),
+            ),
+          );
+          AppLogger.info('✅ Map movement completed via fallback method');
+        } catch (fallbackError) {
+          AppLogger.error(
+            '⚠️ Fallback camera movement also failed: $fallbackError',
+          );
+        }
       }
+    } else {
+      AppLogger.warning(
+        '🚫 Map movement blocked - Controller: ${_mapController != null}, Mounted: $mounted, HasMoved: $_hasMovedToUserLocation, Force: $forceMove',
+      );
     }
   }
 
@@ -289,6 +384,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       if (mounted) {
         setState(() {
           _nearbyCaptures = nearbyCaptures;
+          _currentMapCenter = LatLng(latitude, longitude); // Track map center
         });
         _updateMarkers();
       }
@@ -316,6 +412,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   void _updateMarkers() {
     if (!mounted) return;
 
+    AppLogger.info(
+      '🗺️ Updating markers with ${_nearbyCaptures.length} captures',
+    );
+
     setState(() {
       _markers.clear();
       for (final capture in _nearbyCaptures) {
@@ -336,6 +436,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           );
         }
       }
+      AppLogger.info('🗺️ Added ${_markers.length} markers to map');
     });
   }
 
@@ -390,53 +491,58 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
   /// Update nearby captures based on current position and filter
   Future<void> _updateNearbyCaptures() async {
-    if (!mounted || _currentPosition == null) return;
+    if (!mounted || _currentMapCenter == null) return;
     try {
       List<CaptureModel> nearbyCaptures = [];
       final user = FirebaseAuth.instance.currentUser;
 
+      AppLogger.info(
+        '🔄 Updating captures for filter: $_artFilter, user: ${user?.uid}',
+      );
+      AppLogger.info(
+        '🗺️ Using map center: ${_currentMapCenter!.latitude}, ${_currentMapCenter!.longitude}',
+      );
+
       switch (_artFilter) {
-        case 'all':
-          // Get all captures
-          final allCaptures = await _captureService.getAllCaptures(limit: 100);
-          nearbyCaptures = _filterCapturesByDistance(
-            allCaptures,
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
-          );
-          break;
         case 'public':
-          // Get only public captures
+          // Get all public captures (all user-captured art)
           final publicCaptures = await _captureService.getPublicCaptures(
             limit: 100,
           );
+          AppLogger.info('📍 Found ${publicCaptures.length} public captures');
           nearbyCaptures = _filterCapturesByDistance(
             publicCaptures,
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
+            _currentMapCenter!.latitude,
+            _currentMapCenter!.longitude,
           );
-          break;
-        case 'captures':
-          // Get all captures (same as 'all' for now)
-          final allCaptures = await _captureService.getAllCaptures(limit: 100);
-          nearbyCaptures = _filterCapturesByDistance(
-            allCaptures,
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
+          AppLogger.info(
+            '📍 Filtered to ${nearbyCaptures.length} nearby public captures',
           );
           break;
         case 'my_captures':
-          // Get only user's captures
+          // Get only current user's captures
           if (user != null) {
             final userCaptures = await _captureService.getCapturesForUser(
               user.uid,
             );
+            AppLogger.info(
+              '👤 Found ${userCaptures.length} user captures for ${user.uid}',
+            );
             nearbyCaptures = _filterCapturesByDistance(
               userCaptures,
-              _currentPosition!.latitude,
-              _currentPosition!.longitude,
+              _currentMapCenter!.latitude,
+              _currentMapCenter!.longitude,
             );
+            AppLogger.info(
+              '👤 Filtered to ${nearbyCaptures.length} nearby user captures',
+            );
+          } else {
+            AppLogger.warning('👤 No user logged in for my_captures filter');
           }
+          break;
+        case 'my_artwalks':
+          // This case should not be reached since my_artwalks navigates directly
+          AppLogger.info('🚶 My artwalks filter should have navigated already');
           break;
       }
 
@@ -457,6 +563,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     double longitude,
   ) {
     final nearbyCaptures = <CaptureModel>[];
+    AppLogger.info(
+      '📏 Filtering ${captures.length} captures within 10km of ($latitude, $longitude)',
+    );
+
     for (final capture in captures) {
       if (capture.location != null) {
         final distance = Geolocator.distanceBetween(
@@ -466,17 +576,37 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           capture.location!.longitude,
         );
 
+        final distanceKm = distance / 1000;
         // Convert distance from meters to kilometers
-        if (distance / 1000 <= 10.0) {
+        if (distanceKm <= 10.0) {
           nearbyCaptures.add(capture);
+          AppLogger.info(
+            '✅ Capture ${capture.id} at distance ${distanceKm.toStringAsFixed(2)}km - INCLUDED',
+          );
+        } else {
+          AppLogger.info(
+            '❌ Capture ${capture.id} at distance ${distanceKm.toStringAsFixed(2)}km - EXCLUDED',
+          );
         }
+      } else {
+        AppLogger.warning('⚠️ Capture ${capture.id} has no location data');
       }
     }
+
+    AppLogger.info(
+      '📏 Filtered result: ${nearbyCaptures.length} nearby captures',
+    );
     return nearbyCaptures;
   }
 
   /// Change filter
   void _changeFilter(String newFilter) {
+    if (newFilter == 'my_artwalks') {
+      // Navigate to user's art walk list
+      Navigator.pushNamed(context, '/art-walk/list');
+      return;
+    }
+
     setState(() {
       _artFilter = newFilter;
     });
@@ -487,11 +617,13 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 1, // Art Walk tab
+      scaffoldKey: _scaffoldKey,
       drawer: const ArtWalkDrawer(),
       child: Scaffold(
         appBar: ArtWalkDesignSystem.buildAppBar(
           title: 'Art Walk Map',
-          showBackButton: true,
+          showBackButton: false, // Don't show back button
+          scaffoldKey: _scaffoldKey, // Provide scaffold key for hamburger menu
           actions: [
             IconButton(
               icon: const Icon(
@@ -608,107 +740,87 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 child: TextField(
                   style: ArtWalkDesignSystem.cardTitleStyle,
                   decoration: InputDecoration(
-                    hintText: 'Enter ZIP code (current: $_currentZipCode)',
+                    hintText: _currentZipCode.isEmpty
+                        ? 'Enter ZIP code'
+                        : 'Enter ZIP code (current: $_currentZipCode)',
                     hintStyle: ArtWalkDesignSystem.cardSubtitleStyle,
                     border: InputBorder.none,
-                    suffixIcon: const Icon(
-                      Icons.search,
-                      color: ArtWalkDesignSystem.primaryTeal,
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_currentZipCode != '28501')
+                          IconButton(
+                            icon: const Icon(
+                              Icons.refresh,
+                              color: ArtWalkDesignSystem.primaryTeal,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              // Reset to default Kinston, NC
+                              setState(() => _currentZipCode = '28501');
+                              await _moveMapToLocation(
+                                35.23838,
+                                -77.52658,
+                                12.0,
+                                forceMove: true,
+                              );
+                              await _loadNearbyCaptures(35.23838, -77.52658);
+                              await _updateUserZipCode('28501');
+                              _showSnackBar(
+                                '✅ Reset to default location: Kinston, NC (28501)',
+                              );
+                            },
+                          ),
+                        const Icon(
+                          Icons.search,
+                          color: ArtWalkDesignSystem.primaryTeal,
+                        ),
+                      ],
                     ),
                   ),
                   onSubmitted: (zipCode) async {
-                    if (zipCode.isNotEmpty) {
+                    if (zipCode.isNotEmpty && zipCode.length >= 5) {
                       setState(() => _isSearchingZip = true);
+
+                      // Show loading message
+                      _showSnackBar('Searching for ZIP code $zipCode...');
+
                       final coordinates = await _getCoordinatesFromZipCode(
-                        zipCode,
+                        zipCode.trim(),
                       );
                       if (coordinates != null) {
                         await _moveMapToLocation(
                           coordinates.latitude,
                           coordinates.longitude,
                           12.0,
+                          forceMove: true, // Force move for ZIP code searches
                         );
                         await _loadNearbyCaptures(
                           coordinates.latitude,
                           coordinates.longitude,
                         );
-                        await _updateUserZipCode(zipCode);
-                        setState(() => _currentZipCode = zipCode);
+                        await _updateUserZipCode(zipCode.trim());
+                        setState(() => _currentZipCode = zipCode.trim());
+                        _showSnackBar('✅ Location updated to $zipCode');
                       } else {
-                        _showSnackBar('ZIP code not found');
+                        _showSnackBar(
+                          '❌ ZIP code $zipCode not found. Try: 28501, 90210, 10001, 60601, or 94102',
+                        );
                       }
                       setState(() => _isSearchingZip = false);
+                    } else {
+                      _showSnackBar('Please enter a valid ZIP code (5 digits)');
                     }
                   },
                 ),
               ),
             ),
 
-            // Filter buttons
+            // Create Art Walk button - positioned next to ZIP code search
             Positioned(
-              bottom: 100,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildFilterButton('All', 'all'),
-                  _buildFilterButton('Public', 'public'),
-                  _buildFilterButton('Captures', 'captures'),
-                  _buildFilterButton('Mine', 'my_captures'),
-                ],
-              ),
-            ),
-
-            // Action buttons
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Toggle captures slider
-                  FloatingActionButton(
-                    heroTag: 'toggle_slider',
-                    mini: true,
-                    onPressed: () {
-                      setState(() {
-                        _showCapturesSlider = !_showCapturesSlider;
-                      });
-                    },
-                    child: Icon(_showCapturesSlider ? Icons.close : Icons.list),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // My location button
-                  FloatingActionButton(
-                    heroTag: 'my_location',
-                    mini: true,
-                    onPressed: _currentPosition != null
-                        ? () {
-                            _mapController?.animateCamera(
-                              CameraUpdate.newCameraPosition(
-                                CameraPosition(
-                                  target: LatLng(
-                                    _currentPosition!.latitude,
-                                    _currentPosition!.longitude,
-                                  ),
-                                  zoom: 15.0,
-                                ),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Icon(Icons.my_location),
-                  ),
-                ],
-              ),
-            ),
-
-            // Create Art Walk button
-            Positioned(
-              bottom: 16,
-              left: 16,
+              top: 80, // Below the ZIP code search bar
+              left: ArtWalkDesignSystem.paddingM,
+              right: ArtWalkDesignSystem.paddingM,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(25),
@@ -752,6 +864,84 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+
+            // Filter buttons - moved higher up to avoid bottom nav overlap
+            Positioned(
+              bottom: 140,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildFilterButton('Public', 'public'),
+                    _buildFilterButton('My Captures', 'my_captures'),
+                    _buildFilterButton('My Artwalks', 'my_artwalks'),
+                  ],
+                ),
+              ),
+            ),
+
+            // Right-side action buttons - positioned to not overlap with bottom nav
+            Positioned(
+              bottom: 90,
+              right: 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Toggle captures slider
+                  FloatingActionButton(
+                    heroTag: 'toggle_slider',
+                    mini: true,
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    onPressed: () {
+                      setState(() {
+                        _showCapturesSlider = !_showCapturesSlider;
+                      });
+                    },
+                    child: Icon(_showCapturesSlider ? Icons.close : Icons.list),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // My location button
+                  FloatingActionButton(
+                    heroTag: 'my_location',
+                    mini: true,
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    onPressed: _currentPosition != null
+                        ? () {
+                            _mapController?.animateCamera(
+                              CameraUpdate.newCameraPosition(
+                                CameraPosition(
+                                  target: LatLng(
+                                    _currentPosition!.latitude,
+                                    _currentPosition!.longitude,
+                                  ),
+                                  zoom: 15.0,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Icon(Icons.my_location),
+                  ),
+                ],
               ),
             ),
 
@@ -809,26 +999,31 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               ),
           ],
         ),
-        floatingActionButton: MapFloatingMenu(
-          onViewArtWalks: () => Navigator.pushNamed(context, '/art-walk/list'),
-          onCreateArtWalk: () =>
-              Navigator.pushNamed(context, '/art-walk/create'),
-          onViewAttractions: () => Navigator.pushNamed(context, '/search'),
-        ),
       ),
     );
   }
 
   Widget _buildFilterButton(String label, String filter) {
     final isSelected = _artFilter == filter;
-    return ElevatedButton(
-      onPressed: () => _changeFilter(filter),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? ArtbeatColors.primary : Colors.white,
-        foregroundColor: isSelected ? Colors.white : ArtbeatColors.primary,
-        elevation: 2,
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+        child: ElevatedButton(
+          onPressed: () => _changeFilter(filter),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isSelected ? ArtbeatColors.primary : Colors.white,
+            foregroundColor: isSelected ? Colors.white : ArtbeatColors.primary,
+            elevation: isSelected ? 2 : 0,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            minimumSize: const Size(0, 32),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          child: Text(label),
+        ),
       ),
-      child: Text(label),
     );
   }
 

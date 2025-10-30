@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -141,6 +142,140 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  /// Handle Google Sign-In button press
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      setState(() => _isLoading = true);
+
+      final userCredential = await _authService.signInWithGoogle();
+
+      if (mounted && userCredential.user != null) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Handle Apple Sign-In button press
+  Future<void> _handleAppleSignIn() async {
+    try {
+      setState(() => _isLoading = true);
+
+      final userCredential = await _authService.signInWithApple();
+
+      if (mounted && userCredential.user != null) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Apple Sign-In failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Build social login buttons
+  Widget _buildSocialLoginButtons() {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+
+        // Divider with "OR" text
+        const Row(
+          children: [
+            Expanded(child: Divider()),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'OR',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Expanded(child: Divider()),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // Google Sign-In Button
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            key: const Key('google_sign_in_button'),
+            onPressed: _isLoading ? null : _handleGoogleSignIn,
+            icon: const Icon(Icons.g_mobiledata, color: Colors.red, size: 24),
+            label: const Text(
+              'Continue with Google',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.grey),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Apple Sign-In Button (iOS only)
+        if (Platform.isIOS)
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton.icon(
+              key: const Key('apple_sign_in_button'),
+              onPressed: _isLoading ? null : _handleAppleSignIn,
+              icon: const Icon(Icons.apple, color: Colors.black, size: 24),
+              label: const Text(
+                'Continue with Apple',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.grey),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -356,6 +491,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
+
+                        // Add social login buttons
+                        _buildSocialLoginButtons(),
+
                         const SizedBox(height: 24),
                       ],
                     ),

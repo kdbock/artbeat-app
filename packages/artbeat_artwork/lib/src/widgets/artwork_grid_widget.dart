@@ -13,6 +13,7 @@ class ArtworkGridWidget extends StatelessWidget {
   final bool showManagementActions;
   final int crossAxisCount;
   final double childAspectRatio;
+  final ScrollController? scrollController;
 
   const ArtworkGridWidget({
     super.key,
@@ -24,11 +25,13 @@ class ArtworkGridWidget extends StatelessWidget {
     this.showManagementActions = false,
     this.crossAxisCount = 2,
     this.childAspectRatio = 0.8,
+    this.scrollController,
   });
 
   @override
   Widget build(BuildContext context) {
     final Widget scrollView = CustomScrollView(
+      controller: scrollController,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

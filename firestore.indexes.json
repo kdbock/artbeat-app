@@ -77,6 +77,91 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "endDate", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "commission_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "commissionId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ratedUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "artistId", "order": "ASCENDING" },
+        { "fieldPath": "overallRating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_disputes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "commissionId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_disputes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "initiatedById", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_disputes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_templates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_templates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isFeatured", "order": "ASCENDING" },
+        { "fieldPath": "avgRating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_templates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "commission_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "artistId", "order": "ASCENDING" },
+        { "fieldPath": "period", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "artist_reputation",
+      "queryScope": "COLLECTION",
+      "fields": [{ "fieldPath": "artistId", "order": "ASCENDING" }]
     }
   ],
   "fieldOverrides": []

@@ -1166,4 +1166,223 @@ class CaptureService {
       rethrow;
     }
   }
+
+  // ============================================================================
+  // LIKE/ENGAGEMENT METHODS
+  // ============================================================================
+
+  /// Like a capture
+  Future<bool> likeCapture(String captureId, String userId) async {
+    try {
+      // Check if user already liked this capture
+      final existingLike = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: captureId)
+          .where('contentType', isEqualTo: 'capture')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'like')
+          .limit(1)
+          .get();
+
+      if (existingLike.docs.isNotEmpty) {
+        AppLogger.info('User already liked this capture');
+        return false; // Already liked
+      }
+
+      // Create engagement record
+      await _firestore.collection('engagements').add({
+        'contentId': captureId,
+        'contentType': 'capture',
+        'userId': userId,
+        'type': 'like',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Update capture like count
+      final captureRef = _capturesRef.doc(captureId);
+      await captureRef.update({
+        'engagementStats.likeCount': FieldValue.increment(1),
+        'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.info('✅ Capture $captureId liked by $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error liking capture: $e');
+      return false;
+    }
+  }
+
+  /// Unlike a capture
+  Future<bool> unlikeCapture(String captureId, String userId) async {
+    try {
+      // Find and delete the like engagement
+      final engagementQuery = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: captureId)
+          .where('contentType', isEqualTo: 'capture')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'like')
+          .get();
+
+      for (final doc in engagementQuery.docs) {
+        await doc.reference.delete();
+      }
+
+      // Update capture like count
+      final captureRef = _capturesRef.doc(captureId);
+      await captureRef.update({
+        'engagementStats.likeCount': FieldValue.increment(-1),
+        'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.info('✅ Capture $captureId unliked by $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error unliking capture: $e');
+      return false;
+    }
+  }
+
+  /// Check if user liked a capture
+  Future<bool> hasUserLikedCapture(String captureId, String userId) async {
+    try {
+      final query = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: captureId)
+          .where('contentType', isEqualTo: 'capture')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'like')
+          .limit(1)
+          .get();
+
+      return query.docs.isNotEmpty;
+    } catch (e) {
+      AppLogger.error('Error checking if user liked capture: $e');
+      return false;
+    }
+  }
+
+  // ============================================================================
+  // COMMENT METHODS
+  // ============================================================================
+
+  /// Add a comment to a capture
+  Future<String?> addComment({
+    required String captureId,
+    required String userId,
+    required String userName,
+    required String userAvatar,
+    required String text,
+  }) async {
+    try {
+      // Add comment to engagements collection with additional metadata
+      final docRef = await _firestore
+          .collection('engagements')
+          .add(<String, dynamic>{
+            'contentId': captureId,
+            'contentType': 'capture',
+            'userId': userId,
+            'type': 'comment',
+            'text': text,
+            'userName': userName,
+            'userAvatar': userAvatar,
+            'createdAt': FieldValue.serverTimestamp(),
+            'likeCount': 0,
+            'likedBy': <String>[],
+          });
+
+      // Update capture comment count
+      await _capturesRef.doc(captureId).update({
+        'engagementStats.commentCount': FieldValue.increment(1),
+        'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.info('✅ Comment added to capture $captureId');
+      return docRef.id;
+    } catch (e) {
+      AppLogger.error('Error adding comment: $e');
+      return null;
+    }
+  }
+
+  /// Get comments for a capture
+  Future<List<dynamic>> getComments(String captureId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: captureId)
+          .where('contentType', isEqualTo: 'capture')
+          .where('type', isEqualTo: 'comment')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final comments = <Map<String, dynamic>>[];
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+        comments.add({'id': doc.id, ...data});
+      }
+
+      return comments;
+    } catch (e) {
+      AppLogger.error('Error fetching comments: $e');
+      return [];
+    }
+  }
+
+  /// Delete a comment
+  Future<bool> deleteComment(String captureId, String commentId) async {
+    try {
+      // Delete the comment
+      await _firestore.collection('engagements').doc(commentId).delete();
+
+      // Update capture comment count
+      await _capturesRef.doc(captureId).update({
+        'engagementStats.commentCount': FieldValue.increment(-1),
+        'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.info('✅ Comment $commentId deleted from capture $captureId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error deleting comment: $e');
+      return false;
+    }
+  }
+
+  /// Like a comment
+  Future<bool> likeComment(String commentId, String userId) async {
+    try {
+      final commentRef = _firestore.collection('engagements').doc(commentId);
+
+      await commentRef.update({
+        'likedBy': FieldValue.arrayUnion([userId]),
+        'likeCount': FieldValue.increment(1),
+      });
+
+      AppLogger.info('✅ Comment $commentId liked by $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error liking comment: $e');
+      return false;
+    }
+  }
+
+  /// Unlike a comment
+  Future<bool> unlikeComment(String commentId, String userId) async {
+    try {
+      final commentRef = _firestore.collection('engagements').doc(commentId);
+
+      await commentRef.update({
+        'likedBy': FieldValue.arrayRemove([userId]),
+        'likeCount': FieldValue.increment(-1),
+      });
+
+      AppLogger.info('✅ Comment $commentId unliked by $userId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error unliking comment: $e');
+      return false;
+    }
+  }
 }

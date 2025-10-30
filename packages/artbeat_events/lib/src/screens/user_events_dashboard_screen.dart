@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/artbeat_event.dart';
+import 'events_list_screen.dart';
 
 import 'dart:developer' as developer;
 
@@ -293,7 +294,14 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                       color: ArtbeatColors.accentYellow,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/events/nearby');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EventsListScreen(
+                              title: 'Events Near You',
+                              tags: ['nearby'],
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ],

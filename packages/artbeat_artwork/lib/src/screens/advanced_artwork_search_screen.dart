@@ -6,7 +6,9 @@ import '../services/artwork_service.dart';
 
 /// Advanced search screen with multiple filters and saved searches
 class AdvancedArtworkSearchScreen extends StatefulWidget {
-  const AdvancedArtworkSearchScreen({super.key});
+  final String? initialQuery;
+
+  const AdvancedArtworkSearchScreen({super.key, this.initialQuery});
 
   @override
   State<AdvancedArtworkSearchScreen> createState() =>
@@ -57,6 +59,14 @@ class _AdvancedArtworkSearchScreenState
   @override
   void initState() {
     super.initState();
+    // Set initial query if provided
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _searchController.text = widget.initialQuery!;
+      // Auto-perform search with initial query
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _performAdvancedSearch();
+      });
+    }
     _loadSavedSearches();
     _loadSearchSuggestions();
   }

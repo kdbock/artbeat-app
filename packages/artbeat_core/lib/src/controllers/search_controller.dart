@@ -2,9 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/known_entity_model.dart';
 import '../repositories/known_entity_repository.dart';
+import '../services/search/search_history.dart';
 
 /// Search state enum
 enum SearchStatus { idle, loading, error }
+
+/// Search sort options
+enum SearchSortOption { relevant, recent, popular }
 
 /// Unified search controller using Provider pattern
 class SearchController extends ChangeNotifier {
@@ -17,15 +21,24 @@ class SearchController extends ChangeNotifier {
   List<KnownEntity> _results = [];
   String _errorMessage = '';
 
+  // Filter fields
+  final Set<KnownEntityType> _selectedFilters = {};
+  SearchSortOption _sortOption = SearchSortOption.relevant;
+
   // Getters
   String get query => _query;
   SearchStatus get status => _status;
-  List<KnownEntity> get results => _results;
+  List<KnownEntity> get results => _getFilteredAndSortedResults();
   String get errorMessage => _errorMessage;
   bool get isLoading => _status == SearchStatus.loading;
   bool get hasError => _status == SearchStatus.error;
   bool get hasResults => _results.isNotEmpty;
   bool get isEmpty => _results.isEmpty && _status != SearchStatus.loading;
+
+  // Filter and sort getters
+  Set<KnownEntityType> get selectedFilters => _selectedFilters;
+  SearchSortOption get sortOption => _sortOption;
+  bool get hasActiveFilters => _selectedFilters.isNotEmpty;
 
   SearchController({KnownEntityRepository? repository})
     : _repository = repository ?? KnownEntityRepository();
@@ -81,6 +94,9 @@ class SearchController extends ChangeNotifier {
 
       _status = SearchStatus.idle;
       _results = results;
+
+      // Save search to history
+      await SearchHistory().addSearch(query: query, filters: {});
 
       debugPrint('🎯 SearchController: Found ${results.length} results');
     } catch (error, stackTrace) {
@@ -138,6 +154,61 @@ class SearchController extends ChangeNotifier {
   /// Check if has results of specific type
   bool hasResultsOfType(KnownEntityType type) {
     return _results.any((entity) => entity.type == type);
+  }
+
+  /// Toggle filter for a specific entity type
+  void toggleFilter(KnownEntityType type) {
+    if (_selectedFilters.contains(type)) {
+      _selectedFilters.remove(type);
+    } else {
+      _selectedFilters.add(type);
+    }
+    notifyListeners();
+  }
+
+  /// Clear all filters
+  void clearFilters() {
+    _selectedFilters.clear();
+    notifyListeners();
+  }
+
+  /// Update sort option
+  void setSortOption(SearchSortOption option) {
+    _sortOption = option;
+    notifyListeners();
+  }
+
+  /// Get filtered and sorted results
+  List<KnownEntity> _getFilteredAndSortedResults() {
+    List<KnownEntity> filtered = _results;
+
+    // Apply type filters if any are selected
+    if (_selectedFilters.isNotEmpty) {
+      filtered = filtered
+          .where((entity) => _selectedFilters.contains(entity.type))
+          .toList();
+    }
+
+    // Apply sorting
+    switch (_sortOption) {
+      case SearchSortOption.recent:
+        filtered.sort((a, b) {
+          if (a.createdAt == null) return 1;
+          if (b.createdAt == null) return -1;
+          return b.createdAt!.compareTo(a.createdAt!);
+        });
+        break;
+      case SearchSortOption.popular:
+        // In a real app, this would be based on likes/views/engagement
+        // For now, we'll sort by type (content-based popularity)
+        filtered.sort((a, b) => b.type.index.compareTo(a.type.index));
+        break;
+      case SearchSortOption.relevant:
+        // Already sorted by relevance from repository
+        break;
+    }
+
+    return filtered;
   }
 
   @override

@@ -169,7 +169,6 @@ class MyApp extends StatelessWidget {
         eventService: context.read<events.EventService>(),
         artworkService: context.read<ArtworkService>(),
         artWalkService: context.read<ArtWalkService>(),
-        challengeService: context.read<ChallengeService>(),
         subscriptionService: context.read<core.SubscriptionService>(),
         userService: context.read<core.UserService>(),
         captureService: context.read<capture.CaptureService>(),

@@ -42,6 +42,9 @@ class _CreatePostScreenState extends State<CreatePostScreen>
   VideoPlayerController? _videoController;
   AudioPlayer? _audioPlayer;
 
+  // Guard against duplicate post submissions
+  bool _postSubmissionInProgress = false;
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -289,13 +292,46 @@ class _CreatePostScreenState extends State<CreatePostScreen>
     }
   }
 
+  /// Wrapper method with guard against duplicate submissions
+  Future<void> _createPostWithGuard() async {
+    // Double-check guard: prevent any concurrent post submissions
+    if (_postSubmissionInProgress) {
+      debugPrint(
+        'DEBUG: Post submission already in progress, ignoring duplicate tap',
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait while your post is being created...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    _postSubmissionInProgress = true;
+    try {
+      await _createPost();
+    } finally {
+      _postSubmissionInProgress = false;
+    }
+  }
+
   Future<void> _createPost() async {
+    // Validate content BEFORE setting loading state
     if (_contentController.text.trim().isEmpty &&
         _selectedImages.isEmpty &&
         _selectedVideo == null &&
         _selectedAudio == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add some content or media')),
+      );
+      return;
+    }
+
+    // Prevent duplicate submissions
+    if (_isLoading || _isUploadingMedia) {
+      debugPrint(
+        'DEBUG: Post creation already in progress, ignoring duplicate request',
       );
       return;
     }
@@ -324,6 +360,13 @@ class _CreatePostScreenState extends State<CreatePostScreen>
               backgroundColor: Colors.red,
             ),
           );
+        }
+        // IMPORTANT: Reset loading state before returning
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isUploadingMedia = false;
+          });
         }
         return;
       }
@@ -482,7 +525,9 @@ class _CreatePostScreenState extends State<CreatePostScreen>
           Container(
             margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
             child: ElevatedButton(
-              onPressed: (_isLoading || _isUploadingMedia) ? null : _createPost,
+              onPressed: (_isLoading || _isUploadingMedia)
+                  ? null
+                  : _createPostWithGuard,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: ArtbeatColors.primaryPurple,

@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/activity_model.dart';
@@ -737,6 +738,40 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildThemedActionButton(
+                context,
+                title: 'Commission Wizard',
+                subtitle: 'Set up commission settings',
+                icon: Icons.auto_awesome,
+                gradient: const LinearGradient(
+                  colors: [Colors.deepPurple, Colors.purple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => _navigateToCommissionWizard(context),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildThemedActionButton(
+                context,
+                title: 'Commission Hub',
+                subtitle: 'Manage your commissions',
+                icon: Icons.work_outline,
+                gradient: const LinearGradient(
+                  colors: [Colors.indigo, Colors.blue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => Navigator.pushNamed(context, '/commission/hub'),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -1012,6 +1047,17 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToCommissionWizard(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const community.CommissionSetupWizardScreen(
+          mode: community.SetupMode.firstTime,
         ),
       ),
     );

@@ -6,6 +6,8 @@ import '../theme/artbeat_colors.dart';
 import '../widgets/enhanced_universal_header.dart';
 import '../widgets/main_layout.dart';
 import '../widgets/artbeat_gradient_background.dart';
+import '../services/search/search_history.dart';
+export '../controllers/search_controller.dart' show SearchSortOption;
 
 /// Unified search results page that displays all search results
 class SearchResultsPage extends StatefulWidget {
@@ -58,6 +60,15 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         child: Column(
           children: [
             _buildSearchBar(),
+            Consumer<search_controller.SearchController>(
+              builder: (context, searchProvider, child) {
+                if (searchProvider.query.isNotEmpty &&
+                    !searchProvider.isEmpty) {
+                  return _buildFiltersAndSort(searchProvider);
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             Expanded(
               child: Consumer<search_controller.SearchController>(
                 builder: (context, searchProvider, child) {
@@ -158,6 +169,178 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     );
   }
 
+  Widget _buildFiltersAndSort(
+    search_controller.SearchController searchProvider,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Filter chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // "All" chip to clear filters
+                GestureDetector(
+                  onTap: searchProvider.hasActiveFilters
+                      ? searchProvider.clearFilters
+                      : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      gradient: searchProvider.hasActiveFilters
+                          ? null
+                          : ArtbeatColors.primaryGradient,
+                      color: searchProvider.hasActiveFilters
+                          ? Colors.transparent
+                          : null,
+                      border: Border.all(
+                        color: ArtbeatColors.primaryPurple.withValues(
+                          alpha: 0.3,
+                        ),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'All',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: searchProvider.hasActiveFilters
+                            ? ArtbeatColors.primaryPurple
+                            : Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                // Entity type filter chips
+                ...KnownEntityType.values
+                    .where((type) => type != KnownEntityType.unknown)
+                    .map((type) {
+                      final isSelected = searchProvider.selectedFilters
+                          .contains(type);
+                      return GestureDetector(
+                        onTap: () => searchProvider.toggleFilter(type),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            gradient: isSelected
+                                ? ArtbeatColors.primaryGradient
+                                : null,
+                            color: isSelected
+                                ? null
+                                : ArtbeatColors.primaryPurple.withValues(
+                                    alpha: 0.1,
+                                  ),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : ArtbeatColors.primaryPurple.withValues(
+                                      alpha: 0.3,
+                                    ),
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            type.label,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected
+                                  ? Colors.white
+                                  : ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    })
+                    .toList(),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Sort options
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Text(
+                  'Sort: ',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: ArtbeatColors.textSecondary.withValues(alpha: 0.7),
+                  ),
+                ),
+                ...search_controller.SearchSortOption.values.map((option) {
+                  final isSelected = searchProvider.sortOption == option;
+                  return GestureDetector(
+                    onTap: () => searchProvider.setSortOption(option),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? ArtbeatColors.primaryPurple.withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected
+                              ? ArtbeatColors.primaryPurple
+                              : ArtbeatColors.textSecondary.withValues(
+                                  alpha: 0.2,
+                                ),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _sortOptionLabel(option),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected
+                              ? ArtbeatColors.primaryPurple
+                              : ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _sortOptionLabel(search_controller.SearchSortOption option) {
+    switch (option) {
+      case search_controller.SearchSortOption.relevant:
+        return 'Relevant';
+      case search_controller.SearchSortOption.recent:
+        return 'Recent';
+      case search_controller.SearchSortOption.popular:
+        return 'Popular';
+    }
+  }
+
   Widget _buildContent(search_controller.SearchController searchProvider) {
     if (searchProvider.query.isEmpty) {
       return _buildEmptyState();
@@ -179,68 +362,148 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.all(32),
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Color(0xFFF8F9FA)],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.9),
-              blurRadius: 4,
-              offset: const Offset(-2, -2),
-            ),
-            BoxShadow(
-              color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: SearchHistory().getSearchHistory(),
+      builder: (context, snapshot) {
+        final hasHistory = snapshot.hasData && snapshot.data!.isNotEmpty;
+        final recentSearches = hasHistory
+            ? snapshot.data!.take(5).toList()
+            : <Map<String, dynamic>>[];
+
+        return SingleChildScrollView(
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                gradient: ArtbeatColors.primaryGradient,
-                borderRadius: BorderRadius.circular(40),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Color(0xFFF8F9FA)],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    blurRadius: 4,
+                    offset: const Offset(-2, -2),
+                  ),
+                  BoxShadow(
+                    color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.search, size: 48, color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Discover Amazing Art',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: ArtbeatColors.textPrimary,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: ArtbeatColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: const Icon(
+                      Icons.search,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Discover Amazing Art',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: ArtbeatColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Search for artists, artwork, captures, and more',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: ArtbeatColors.textSecondary.withValues(alpha: 0.8),
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (hasHistory) ...[
+                    const SizedBox(height: 32),
+                    Text(
+                      'Recent Searches',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: ArtbeatColors.textSecondary.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...recentSearches.map((search) {
+                          final query = search['query'] as String? ?? '';
+                          return GestureDetector(
+                            onTap: query.isNotEmpty
+                                ? () {
+                                    _searchController.text = query;
+                                    _searchProvider.search(query);
+                                  }
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: ArtbeatColors.primaryGradient,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                query,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () async {
+                        await SearchHistory().clearHistory();
+                        setState(() {});
+                      },
+                      child: Text(
+                        'Clear History',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: ArtbeatColors.error.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Search for artists, artwork, captures, and more',
-              style: TextStyle(
-                fontSize: 16,
-                color: ArtbeatColors.textSecondary.withValues(alpha: 0.8),
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -694,6 +957,8 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         return Icons.directions_walk;
       case KnownEntityType.location:
         return Icons.location_on;
+      case KnownEntityType.community:
+        return Icons.group;
       case KnownEntityType.unknown:
         return Icons.help_outline;
     }
@@ -711,6 +976,8 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         return Colors.green;
       case KnownEntityType.location:
         return Colors.red;
+      case KnownEntityType.community:
+        return Colors.indigo;
       case KnownEntityType.unknown:
         return ArtbeatColors.textSecondary;
     }
@@ -749,6 +1016,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         break;
       case KnownEntityType.location:
         // Handle location navigation
+        break;
+      case KnownEntityType.community:
+        // Handle community navigation
         break;
       case KnownEntityType.unknown:
         break;

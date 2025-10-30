@@ -257,8 +257,21 @@ class PresenceService {
         .snapshots()
         .map((snapshot) {
           final currentUserId = _auth.currentUser?.uid;
+          final now = DateTime.now();
+
           return snapshot.docs
               .where((doc) => doc.id != currentUserId) // Exclude current user
+              .where((doc) {
+                // Filter out users who haven't been seen in more than 5 minutes
+                final data = doc.data();
+                final lastSeen = (data['lastSeen'] as Timestamp?)?.toDate();
+                if (lastSeen != null) {
+                  final difference = now.difference(lastSeen);
+                  return difference.inMinutes <=
+                      5; // Only keep users active within 5 minutes
+                }
+                return true; // Keep if no lastSeen (shouldn't happen, but safe default)
+              })
               .map((doc) {
                 final data = doc.data();
                 return {
