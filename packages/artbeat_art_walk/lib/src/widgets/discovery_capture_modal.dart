@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:confetti/confetti.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_community/screens/feed/create_post_screen.dart';
 import '../models/public_art_model.dart';
 import '../services/instant_discovery_service.dart';
 import '../services/social_service.dart';
@@ -138,6 +139,59 @@ class _DiscoveryCaptureModalState extends State<DiscoveryCaptureModal> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error capturing discovery: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Navigate to discuss post screen with pre-filled discovery data
+  Future<void> _navigateToDiscussPost() async {
+    try {
+      // Build caption with discovery info
+      final caption =
+          '📍 Discussing "${widget.art.title}" by ${widget.art.artistName ?? "Unknown Artist"}\n\n';
+
+      debugPrint(
+        '🔍 DiscoveryCaptureModal: Navigating to discuss post for "${widget.art.title}"',
+      );
+
+      // Close modal first
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Wait a moment for modal to close, then navigate to create post
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+
+      if (mounted) {
+        debugPrint(
+          '🔍 DiscoveryCaptureModal: Navigating to CreatePostScreen with pre-filled data:\n'
+          'Image: ${widget.art.imageUrl}\n'
+          'Caption: $caption',
+        );
+
+        // Navigate to CreatePostScreen with pre-filled data from discovery
+        await Navigator.push<void>(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => CreatePostScreen(
+              prefilledImageUrl: widget.art.imageUrl,
+              prefilledCaption: caption,
+              isDiscussionPost: true,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        '🔍 DiscoveryCaptureModal: Error navigating to discuss post: $e',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening discussion: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -360,27 +414,62 @@ class _DiscoveryCaptureModalState extends State<DiscoveryCaptureModal> {
                           ),
                   )
                 else
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: ArtWalkDesignSystem.primaryTeal,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'Discovery Captured!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Success message
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ArtWalkDesignSystem.primaryTeal,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Discovery Captured!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Discuss button
+                      ElevatedButton(
+                        onPressed: _navigateToDiscussPost,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtWalkDesignSystem.accentOrange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                      ],
-                    ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.comment),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Discuss Discovery',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
 
                 // XP info

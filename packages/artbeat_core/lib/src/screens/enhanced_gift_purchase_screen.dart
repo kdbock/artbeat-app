@@ -4,20 +4,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/enhanced_gift_service.dart';
 import '../models/gift_campaign_model.dart';
-import '../models/gift_subscription_model.dart';
 import '../models/artist_profile_model.dart';
 import '../utils/order_review_helpers.dart';
 import '../utils/logger.dart';
 import '../widgets/main_layout.dart';
 import '../theme/artbeat_colors.dart';
 
-/// Enhanced screen for purchasing gifts with custom amounts, campaigns, and subscriptions
+/// Enhanced screen for purchasing gifts with preset and custom amounts
 /// Modern themed design with glassmorphism and gradient backgrounds
 class EnhancedGiftPurchaseScreen extends StatefulWidget {
   final String recipientId;
   final String recipientName;
   final GiftCampaignModel? campaign; // Optional campaign context
-  final int initialTab; // 0: preset, 1: custom, 2: subscription
+  final int initialTab; // 0: preset, 1: custom
 
   const EnhancedGiftPurchaseScreen({
     super.key,
@@ -46,12 +45,9 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   ArtistProfileModel? _recipientProfile;
 
   // Gift Type Selection
-  String _giftMode = 'preset'; // preset, custom, subscription
+  String _giftMode = 'preset'; // preset, custom
   String? _selectedPresetGift;
   double _selectedAmount = 0.0;
-
-  // Subscription Settings
-  SubscriptionFrequency _subscriptionFrequency = SubscriptionFrequency.monthly;
 
   // Search Functionality
   final TextEditingController _searchController = TextEditingController();
@@ -65,7 +61,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: 2,
       vsync: this,
       initialIndex: widget.initialTab,
     );
@@ -94,7 +90,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
       case 0:
         _giftMode = 'preset';
         // Set a default amount for preset mode to prevent $0.00 payments
-        _selectedAmount = 4.99; // Default to "Small Gift" amount
+        _selectedAmount = 4.99; // Default to "Supporter Gift" amount
         _selectedPresetGift = 'Small Gift (50 Credits)';
         debugPrint(
           '🎁 Set default amount: \$${_selectedAmount.toStringAsFixed(2)}',
@@ -102,9 +98,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
         break;
       case 1:
         _giftMode = 'custom';
-        break;
-      case 2:
-        _giftMode = 'subscription';
         break;
     }
 
@@ -355,11 +348,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   Widget _buildUnifiedScrollableContent() {
     return TabBarView(
       controller: _tabController,
-      children: [
-        _buildPresetGiftsContent(),
-        _buildCustomAmountContent(),
-        _buildSubscriptionContent(),
-      ],
+      children: [_buildPresetGiftsContent(), _buildCustomAmountContent()],
     );
   }
 
@@ -409,7 +398,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   }
 
   Widget _buildCustomAmountContent() {
-    final suggestions = _giftService.getCustomGiftSuggestions();
+    final suggestions = [5.0, 10.0, 15.0, 25.0, 50.0];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -482,122 +471,8 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
                     spacing: 8,
                     runSpacing: 8,
                     children: suggestions
-                        .map((amount) => _buildQuickAmountChip(amount))
+                        .map((double amount) => _buildQuickAmountChip(amount))
                         .toList(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildMessageSection(),
-          const SizedBox(height: 24),
-          _buildOrderSummarySection(),
-          const SizedBox(height: 24),
-          _buildPurchaseButtonSection(),
-          const SizedBox(height: 100), // Bottom padding
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubscriptionContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildRecipientInfo(),
-          const SizedBox(height: 24),
-
-          Container(
-            decoration: _buildGlassDecoration(),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Recurring Gift Subscription',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Support this artist with regular gifts. Different from sponsorships, these are simple recurring donations.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Amount input
-                  TextField(
-                    controller: _customAmountController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}'),
-                      ),
-                    ],
-                    decoration: InputDecoration(
-                      labelText: 'Amount per payment',
-                      prefixText: '\$',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedAmount = double.tryParse(value) ?? 0.0;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Frequency selection
-                  const Text(
-                    'Payment Frequency',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  SegmentedButton<SubscriptionFrequency>(
-                    segments: SubscriptionFrequency.values
-                        .map(
-                          (frequency) => ButtonSegment<SubscriptionFrequency>(
-                            value: frequency,
-                            label: Text(
-                              frequency.name.toUpperCase(),
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    selected: {_subscriptionFrequency},
-                    onSelectionChanged: (selected) {
-                      setState(() {
-                        _subscriptionFrequency = selected.first;
-                      });
-                    },
-                    style: ButtonStyle(
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      ),
-                      minimumSize: WidgetStateProperty.all(const Size(0, 36)),
-                    ),
                   ),
                 ],
               ),
@@ -624,9 +499,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
             _selectedPresetGift != null && _selectedPresetGift!.isNotEmpty;
         break;
       case 'custom':
-        hasValidSelection = _customAmountController.text.isNotEmpty;
-        break;
-      case 'subscription':
         hasValidSelection = _customAmountController.text.isNotEmpty;
         break;
     }
@@ -686,18 +558,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
                 ),
               ],
             ),
-            if (_giftMode == 'subscription')
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  _subscriptionFrequency.name.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -828,9 +688,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
               case 1:
                 _giftMode = 'custom';
                 break;
-              case 2:
-                _giftMode = 'subscription';
-                break;
             }
             _selectedAmount = 0.0;
             _selectedPresetGift = null;
@@ -853,12 +710,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           Tab(
             child: Text(
               'Custom Amount',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          Tab(
-            child: Text(
-              'Subscription',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -1179,12 +1030,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     if (_selectedAmount < 0) return 'Select Amount';
     if (_selectedAmount == 0.0) return 'Send Free Gift';
 
-    switch (_giftMode) {
-      case 'subscription':
-        return 'Start Subscription - \$${_selectedAmount.toStringAsFixed(2)}/${_subscriptionFrequency.name}';
-      default:
-        return 'Send Gift - \$${_selectedAmount.toStringAsFixed(2)}';
-    }
+    return 'Send Gift - \$${_selectedAmount.toStringAsFixed(2)}';
   }
 
   String _getGiftTypeDisplay() {
@@ -1193,8 +1039,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
         return _selectedPresetGift ?? 'Preset Gift';
       case 'custom':
         return 'Custom Gift';
-      case 'subscription':
-        return 'Gift Subscription';
       default:
         return 'Gift';
     }
@@ -1215,9 +1059,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
             _selectedPresetGift != null && _selectedPresetGift!.isNotEmpty;
         break;
       case 'custom':
-        hasValidSelection = _customAmountController.text.isNotEmpty;
-        break;
-      case 'subscription':
         hasValidSelection = _customAmountController.text.isNotEmpty;
         break;
     }
@@ -1322,18 +1163,11 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   }
 
   String _getSuccessTitle() {
-    switch (_giftMode) {
-      case 'subscription':
-        return 'Gift Subscription Created!';
-      default:
-        return 'Gift Sent Successfully!';
-    }
+    return 'Gift Sent Successfully!';
   }
 
   String _getSuccessMessage() {
     switch (_giftMode) {
-      case 'subscription':
-        return 'Your ${_subscriptionFrequency.name} gift subscription of \$${_selectedAmount.toStringAsFixed(2)} has been set up for ${widget.recipientName}. They will receive regular gifts and notifications!';
       case 'custom':
         if (widget.campaign != null) {
           return 'Your custom gift of \$${_selectedAmount.toStringAsFixed(2)} has been sent to ${widget.recipientName} and contributed to their campaign "${widget.campaign!.title}". They will receive a notification about your generous support!';

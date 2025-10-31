@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -70,48 +69,102 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return core.MainLayout(
-      currentIndex: 3,
-      appBar: core.EnhancedUniversalHeader(
-        title: _commission!.title,
-        showBackButton: true,
-        showSearch: false,
-        backgroundGradient: CommunityColors.communityGradient,
-        titleGradient: const LinearGradient(
-          colors: [Colors.white, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        foregroundColor: Colors.white,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: _handleMenuAction,
-            itemBuilder: (context) => [
-              if (_isArtist && _commission!.status == CommissionStatus.pending)
-                const PopupMenuItem(
-                  value: 'provide_quote',
-                  child: Text('Provide Quote'),
-                ),
-              if (_isClient && _commission!.status == CommissionStatus.quoted)
-                const PopupMenuItem(
-                  value: 'accept_quote',
-                  child: Text('Accept Quote'),
-                ),
-              if (_isArtist &&
-                  _commission!.status == CommissionStatus.inProgress)
-                const PopupMenuItem(
-                  value: 'mark_complete',
-                  child: Text('Mark Complete'),
-                ),
-              const PopupMenuItem(
-                value: 'cancel',
-                child: Text('Cancel Commission'),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
               ),
             ],
           ),
-        ],
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _getStatusIcon(_commission!.status),
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _commission!.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Text(
+                        'Commission Details',
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            actions: [
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onSelected: _handleMenuAction,
+                itemBuilder: (context) => [
+                  if (_isArtist &&
+                      _commission!.status == CommissionStatus.pending)
+                    const PopupMenuItem(
+                      value: 'provide_quote',
+                      child: Text('Provide Quote'),
+                    ),
+                  if (_isClient &&
+                      _commission!.status == CommissionStatus.quoted)
+                    const PopupMenuItem(
+                      value: 'accept_quote',
+                      child: Text('Accept Quote'),
+                    ),
+                  if (_isArtist &&
+                      _commission!.status == CommissionStatus.inProgress)
+                    const PopupMenuItem(
+                      value: 'mark_complete',
+                      child: Text('Mark Complete'),
+                    ),
+                  const PopupMenuItem(
+                    value: 'cancel',
+                    child: Text('Cancel Commission'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Column(
+      backgroundColor: CommunityColors.background,
+      body: Column(
         children: [
           // Status Banner
           _buildStatusBanner(),

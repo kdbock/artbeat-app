@@ -39,7 +39,7 @@ export 'src/services/enhanced_payment_service_working.dart'
 export 'src/services/in_app_purchase_manager.dart'
     show InAppPurchaseManager, PurchaseEvent, PurchaseEventType;
 export 'src/models/in_app_purchase_models.dart' show CompletedPurchase;
-export 'src/services/sponsorship_service.dart' show SponsorshipService;
+export 'src/services/in_app_ad_service.dart' show InAppAdService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
 export 'src/services/feedback_service.dart' show FeedbackService;
@@ -52,6 +52,12 @@ export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
 export 'src/services/coupon_service.dart' show CouponService;
 export 'src/services/stripe_payment_service.dart' show StripePaymentService;
+// CRITICAL: Crash prevention services (2025 stability fixes)
+export 'src/services/stripe_safety_service.dart'
+    show StripeSafetyService, PaymentSheetResult;
+export 'src/services/auth_safety_service.dart' show AuthSafetyService;
+export 'src/services/crash_recovery_service.dart'
+    show CrashRecoveryService, CrashRecoveryConfig;
 export 'src/services/enhanced_share_service.dart' show EnhancedShareService;
 export 'src/services/offline_caching_service.dart' show OfflineCachingService;
 export 'src/screens/order_review_screen.dart';
@@ -114,13 +120,6 @@ export 'src/models/feedback_model.dart'
     show FeedbackModel, FeedbackType, FeedbackPriority, FeedbackStatus;
 export 'src/models/engagement_model.dart'
     show EngagementStats, EngagementType, EngagementModel;
-export 'src/models/sponsorship_model.dart'
-    show
-        SponsorshipModel,
-        SponsorshipTier,
-        SponsorshipStatus,
-        SponsorshipBenefit,
-        SponsorshipPayment;
 export 'src/models/coupon_model.dart'
     show CouponModel, CouponType, CouponStatus;
 // 2025 Enhanced Models

@@ -260,98 +260,155 @@ class _ArtworkDiscoveryScreenState extends State<ArtworkDiscoveryScreen>
   }
 
   Widget _buildArtworkCard(ArtworkModel artwork) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Artwork image
-          Expanded(
-            flex: 3,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                image: DecorationImage(
-                  image: NetworkImage(artwork.imageUrl),
-                  fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to artwork detail screen
+        Navigator.pushNamed(
+          context,
+          '/artwork/detail',
+          arguments: {'artworkId': artwork.id},
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Artwork image
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  image: DecorationImage(
+                    image: NetworkImage(artwork.imageUrl),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-            ),
-          ),
-
-          // Artwork details
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    artwork.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  const SizedBox(height: 2),
-
-                  // Medium
-                  Text(
-                    artwork.medium,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 10,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  // Price if for sale
-                  if (artwork.isForSale && artwork.price != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '\$${artwork.price!.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
+                child: Stack(
+                  children: [
+                    // Tap hint overlay
+                    Positioned.fill(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/artwork/detail',
+                              arguments: {'artworkId': artwork.id},
+                            );
+                          },
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.touch_app,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
 
-                  // View count
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.visibility,
-                        size: 12,
-                        color: Colors.grey[600],
+            // Artwork details
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      artwork.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
-                      const SizedBox(width: 2),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    // Medium
+                    Text(
+                      artwork.medium,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    // Price if for sale
+                    if (artwork.isForSale && artwork.price != null) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        '${artwork.viewCount}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 10,
+                        '\$${artwork.price!.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
                         ),
                       ),
                     ],
-                  ),
-                ],
+
+                    // Comment count for engagement
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.comment,
+                          size: 12,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${artwork.commentCount}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.visibility,
+                          size: 12,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${artwork.viewCount}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

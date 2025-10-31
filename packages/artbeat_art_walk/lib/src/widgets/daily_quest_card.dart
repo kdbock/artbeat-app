@@ -216,6 +216,11 @@ class _DailyQuestCardState extends State<DailyQuestCard>
 
                   const SizedBox(height: 16),
 
+                  // How to Complete section
+                  _buildHowToCompleteSection(challenge),
+
+                  const SizedBox(height: 16),
+
                   // Progress section
                   if (!isCompleted) ...[
                     // Progress bar
@@ -348,6 +353,179 @@ class _DailyQuestCardState extends State<DailyQuestCard>
       ),
       child: const Center(child: CircularProgressIndicator()),
     );
+  }
+
+  Widget _buildHowToCompleteSection(ChallengeModel challenge) {
+    final steps = _getCompletionSteps(challenge.title);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.help_outline, color: Colors.white70, size: 16),
+              SizedBox(width: 8),
+              Text(
+                'How to Complete',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...steps.asMap().entries.map((entry) {
+            final index = entry.key + 1;
+            final step = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$index',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      step,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  List<String> _getCompletionSteps(String title) {
+    final lowerTitle = title.toLowerCase();
+
+    // Comment-related quests
+    if (lowerTitle.contains('comment')) {
+      return [
+        'Navigate to "Captures" or "Local Art" section',
+        'Browse other users\' art discoveries',
+        'Tap on an art piece to open details',
+        'Scroll to the "Comments" section',
+        'Type your comment and press send',
+        'Repeat for ${title.contains('3')
+            ? '3'
+            : title.contains('5')
+            ? '5'
+            : '10'} different artworks',
+      ];
+    }
+
+    // Discovery/Explorer quests
+    if (lowerTitle.contains('discover') || lowerTitle.contains('explorer')) {
+      return [
+        'Open the "Art Walk" or "Radar" feature',
+        'Check nearby art using location services',
+        'Tap on artworks to view details',
+        'Mark as discovered to log your find',
+        'Complete the target number of discoveries',
+      ];
+    }
+
+    // Photo/Capture quests
+    if (lowerTitle.contains('photo') || lowerTitle.contains('hunter')) {
+      return [
+        'Tap the camera icon in the capture section',
+        'Take a photo of public art you find',
+        'Add title, artist, location details',
+        'Choose art type and medium',
+        'Review and confirm before posting',
+      ];
+    }
+
+    // Walking quests
+    if (lowerTitle.contains('walk') || lowerTitle.contains('step')) {
+      return [
+        'Enable location tracking in app settings',
+        'Go on a walk or explore your neighborhood',
+        'The app will track your steps automatically',
+        'Keep app open or use background tracking',
+        'Complete the distance/step goal',
+      ];
+    }
+
+    // Sharing/Social quests
+    if (lowerTitle.contains('share') || lowerTitle.contains('social')) {
+      return [
+        'Find an artwork or capture you like',
+        'Tap the share button',
+        'Choose where to share (Messages, Social)',
+        'Send to friends or post on social media',
+        'Complete the target number of shares',
+      ];
+    }
+
+    // Like/Applause quests
+    if (lowerTitle.contains('like') || lowerTitle.contains('applause')) {
+      return [
+        'Browse artworks or captures',
+        'Tap the like/applause icon on items',
+        'Each like counts toward your quest',
+        'Like different artworks to complete',
+        'Check progress on the quest card',
+      ];
+    }
+
+    // Community/Mastery quests
+    if (lowerTitle.contains('community') || lowerTitle.contains('master')) {
+      return [
+        'Participate in community activities',
+        'Engage with other users\' content',
+        'Complete daily or weekly challenges',
+        'Build your reputation and streaks',
+        'Reach quest completion milestone',
+      ];
+    }
+
+    // Default fallback
+    return [
+      'Open the relevant app section',
+      'Look for the activity described in the quest',
+      'Engage with content as instructed',
+      'Track your progress in real-time',
+      'Complete to earn rewards',
+    ];
   }
 
   IconData _getQuestIcon(String title) {

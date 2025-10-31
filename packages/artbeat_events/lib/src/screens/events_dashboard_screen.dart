@@ -849,9 +849,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                     if (currentUser != null) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => MyTicketsScreen(
-                            userId: currentUser.uid,
-                          ),
+                          builder: (context) =>
+                              MyTicketsScreen(userId: currentUser.uid),
                         ),
                       );
                     } else {

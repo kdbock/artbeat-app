@@ -84,127 +84,173 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return core.MainLayout(
-      currentIndex: 3,
-      scaffoldKey: _scaffoldKey,
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Direct Commissions',
-        showBackButton: true,
-        showSearch: false,
-        showDeveloperTools: true,
-        backgroundGradient: CommunityColors.communityGradient,
-        titleGradient: LinearGradient(
-          colors: [Colors.white, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        foregroundColor: Colors.white,
-      ),
-      drawer: const core.ArtbeatDrawer(),
-      child: Scaffold(
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showArtistSelection(),
-          backgroundColor: CommunityColors.primary,
-          foregroundColor: Colors.white,
-          icon: const Icon(Icons.add),
-          label: const Text('New Commission'),
-        ),
-        body: Column(
-          children: [
-            // Summary Cards
-            if (!_isLoading) _buildSummaryCards(),
-
-            // Tabs for filtering commissions
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.pending_actions, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Active (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted, CommissionStatus.accepted, CommissionStatus.inProgress]).length})',
-                      ),
-                    ],
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.handshake,
+                    color: Colors.white,
+                    size: 24,
                   ),
                 ),
-                Tab(
-                  child: Row(
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.schedule, size: 16),
-                      const SizedBox(width: 4),
                       Text(
-                        'Pending (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted]).length})',
+                        'Direct Commissions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.check_circle, size: 16),
-                      const SizedBox(width: 4),
                       Text(
-                        'Completed (${_getCommissionsByStatus([CommissionStatus.completed, CommissionStatus.delivered]).length})',
+                        'Manage active commissions',
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.list, size: 16),
-                      const SizedBox(width: 4),
-                      Text('All (${_allCommissions.length})'),
                     ],
                   ),
                 ),
               ],
             ),
-
-            // Commission list
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // Active commissions
-                        _buildCommissionList(
-                          _getCommissionsByStatus([
-                            CommissionStatus.pending,
-                            CommissionStatus.quoted,
-                            CommissionStatus.accepted,
-                            CommissionStatus.inProgress,
-                          ]),
-                        ),
-                        // Pending commissions
-                        _buildCommissionList(
-                          _getCommissionsByStatus([
-                            CommissionStatus.pending,
-                            CommissionStatus.quoted,
-                          ]),
-                        ),
-                        // Completed commissions
-                        _buildCommissionList(
-                          _getCommissionsByStatus([
-                            CommissionStatus.completed,
-                            CommissionStatus.delivered,
-                          ]),
-                        ),
-                        // All commissions
-                        _buildCommissionList(_allCommissions),
-                      ],
-                    ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-          ],
+          ),
         ),
+      ),
+      backgroundColor: CommunityColors.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showArtistSelection(),
+        backgroundColor: CommunityColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('New Commission'),
+      ),
+      body: Column(
+        children: [
+          // Summary Cards
+          if (!_isLoading) _buildSummaryCards(),
+
+          // Tabs for filtering commissions
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabs: [
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.pending_actions, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Active (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted, CommissionStatus.accepted, CommissionStatus.inProgress]).length})',
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.schedule, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Pending (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted]).length})',
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Completed (${_getCommissionsByStatus([CommissionStatus.completed, CommissionStatus.delivered]).length})',
+                    ),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.list, size: 16),
+                    const SizedBox(width: 4),
+                    Text('All (${_allCommissions.length})'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Commission list
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Active commissions
+                      _buildCommissionList(
+                        _getCommissionsByStatus([
+                          CommissionStatus.pending,
+                          CommissionStatus.quoted,
+                          CommissionStatus.accepted,
+                          CommissionStatus.inProgress,
+                        ]),
+                      ),
+                      // Pending commissions
+                      _buildCommissionList(
+                        _getCommissionsByStatus([
+                          CommissionStatus.pending,
+                          CommissionStatus.quoted,
+                        ]),
+                      ),
+                      // Completed commissions
+                      _buildCommissionList(
+                        _getCommissionsByStatus([
+                          CommissionStatus.completed,
+                          CommissionStatus.delivered,
+                        ]),
+                      ),
+                      // All commissions
+                      _buildCommissionList(_allCommissions),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }

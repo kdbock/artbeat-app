@@ -7,6 +7,7 @@ export 'src/models/ad_size.dart';
 export 'src/models/ad_status.dart';
 export 'src/models/ad_location.dart';
 export 'src/models/ad_zone.dart'; // New simplified zone system
+export 'src/models/ad_package.dart'; // Fixed IAP package system
 export 'src/models/ad_duration.dart';
 export 'src/models/image_fit.dart';
 

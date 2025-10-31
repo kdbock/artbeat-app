@@ -36,17 +36,27 @@ class InAppPurchaseService {
       'artbeat_enterprise_yearly',
     ],
     'gifts': [
-      'artbeat_gift_small', // $5
-      'artbeat_gift_medium', // $10
-      'artbeat_gift_large', // $25
-      'artbeat_gift_premium', // $50
-      'artbeat_gift_custom', // Custom amount
+      'artbeat_gift_supporter', // $4.99 - aligned with sponsorship tiers
+      'artbeat_gift_fan', // $9.99
+      'artbeat_gift_patron', // $24.99
+      'artbeat_gift_benefactor', // $49.99
+      // Removed: custom amounts (Apple IAP compliance)
     ],
     'ads': [
       'artbeat_ad_basic', // Basic ad package
       'artbeat_ad_standard', // Standard ad package
       'artbeat_ad_premium', // Premium ad package
       'artbeat_ad_enterprise', // Enterprise ad package
+    ],
+    'sponsorships': [
+      'sponsor_supporter_monthly',
+      'sponsor_fan_monthly',
+      'sponsor_patron_monthly',
+      'sponsor_benefactor_monthly',
+      'sponsor_supporter_yearly',
+      'sponsor_fan_yearly',
+      'sponsor_patron_yearly',
+      'sponsor_benefactor_yearly',
     ],
   };
 

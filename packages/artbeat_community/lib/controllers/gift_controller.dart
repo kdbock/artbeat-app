@@ -43,9 +43,9 @@ class GiftController extends ChangeNotifier {
     }
   }
 
-  Future<void> sendCustomGift({
+  Future<void> sendPresetGift({
     required String recipientId,
-    required double amount,
+    required String giftType,
     String? message,
     String? campaignId,
   }) async {
@@ -57,9 +57,9 @@ class GiftController extends ChangeNotifier {
         );
       }
 
-      await _enhancedGiftService.sendCustomGift(
+      await _enhancedGiftService.sendPresetGift(
         recipientId: recipientId,
-        amount: amount,
+        giftType: giftType,
         paymentMethodId: paymentMethodId,
         message: message,
         campaignId: campaignId,
@@ -68,7 +68,7 @@ class GiftController extends ChangeNotifier {
       // Refresh sent gifts
       await fetchSentGifts();
     } catch (e) {
-      AppLogger.error('Error sending custom gift: $e');
+      AppLogger.error('Error sending preset gift: $e');
       rethrow;
     }
   }
@@ -130,7 +130,7 @@ class GiftController extends ChangeNotifier {
 
   // Get custom gift amount suggestions
   List<double> getCustomGiftSuggestions() {
-    return _enhancedGiftService.getCustomGiftSuggestions();
+    return [5.0, 10.0, 15.0, 25.0, 50.0];
   }
 
   void handleGift(GiftModel gift) {

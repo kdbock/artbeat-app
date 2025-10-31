@@ -189,21 +189,71 @@ Please contact me with any questions before placing your commission request.
 
   @override
   Widget build(BuildContext context) {
-    return core.MainLayout(
-      currentIndex: 3,
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Commission Settings',
-        showBackButton: true,
-        showSearch: false,
-        backgroundGradient: CommunityColors.communityGradient,
-        titleGradient: LinearGradient(
-          colors: [Colors.white, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.palette,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Commission Settings',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Configure your commission preferences',
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
         ),
-        foregroundColor: Colors.white,
       ),
-      child: _isLoading
+      backgroundColor: CommunityColors.background,
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
@@ -239,25 +289,58 @@ Please contact me with any questions before placing your commission request.
                   const SizedBox(height: 24),
 
                   // Save Button
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _saveSettings,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: CommunityColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      gradient: CommunityColors.communityGradient,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CommunityColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveSettings,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                               ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.save, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Save Settings',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                ),
+                              ],
                             ),
-                          )
-                        : const Text('Save Settings'),
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -267,55 +350,103 @@ Please contact me with any questions before placing your commission request.
   }
 
   Widget _buildStatusCard() {
-    return Card(
-      color: _acceptingCommissions
-          ? Colors.green.shade50
-          : Colors.orange.shade50,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _acceptingCommissions
+              ? [Colors.green.shade50, Colors.green.shade100]
+              : [Colors.orange.shade50, Colors.orange.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _acceptingCommissions
+              ? Colors.green.shade200
+              : Colors.orange.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  _acceptingCommissions
-                      ? Icons.check_circle
-                      : Icons.pause_circle,
-                  color: _acceptingCommissions ? Colors.green : Colors.orange,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _acceptingCommissions
+                        ? Colors.green.shade100
+                        : Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
                     _acceptingCommissions
-                        ? 'Currently Accepting Commissions'
-                        : 'Not Accepting Commissions',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: _acceptingCommissions
-                          ? Colors.green.shade700
-                          : Colors.orange.shade700,
-                    ),
+                        ? Icons.check_circle
+                        : Icons.pause_circle,
+                    color: _acceptingCommissions
+                        ? Colors.green.shade700
+                        : Colors.orange.shade700,
+                    size: 24,
                   ),
                 ),
-                Switch(
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _acceptingCommissions
+                            ? 'Accepting Commissions'
+                            : 'Not Accepting Commissions',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: CommunityColors.textPrimary,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _acceptingCommissions
+                            ? 'Your commission request form is visible to clients'
+                            : 'Clients cannot request new commissions from you',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: CommunityColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
                   value: _acceptingCommissions,
                   onChanged: (value) {
                     setState(() => _acceptingCommissions = value);
                   },
-                  thumbColor: WidgetStateProperty.all(Colors.green),
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.white;
+                    }
+                    return Colors.grey.shade300;
+                  }),
+                  trackColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return Colors.green.shade600;
+                    }
+                    return Colors.grey.shade400;
+                  }),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _acceptingCommissions
-                  ? 'Your commission request form is visible to clients'
-                  : 'Clients cannot request new commissions from you',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
             ),
           ],
         ),

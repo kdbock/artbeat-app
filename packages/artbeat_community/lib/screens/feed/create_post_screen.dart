@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/art_community_service.dart';
 import '../../services/firebase_storage_service.dart';
 import '../../services/moderation_service.dart';
@@ -14,7 +15,21 @@ import 'package:artbeat_core/artbeat_core.dart';
 
 /// Enhanced create post screen with multimedia support and AI moderation
 class CreatePostScreen extends StatefulWidget {
-  const CreatePostScreen({super.key});
+  /// Optional: Pre-filled image URL (e.g., from discovery)
+  final String? prefilledImageUrl;
+
+  /// Optional: Pre-filled initial caption text
+  final String? prefilledCaption;
+
+  /// Optional: Flag indicating this is from a discovery
+  final bool isDiscussionPost;
+
+  const CreatePostScreen({
+    super.key,
+    this.prefilledImageUrl,
+    this.prefilledCaption,
+    this.isDiscussionPost = false,
+  });
 
   @override
   State<CreatePostScreen> createState() => _CreatePostScreenState();
@@ -31,6 +46,9 @@ class _CreatePostScreenState extends State<CreatePostScreen>
   List<File> _selectedImages = [];
   File? _selectedVideo;
   File? _selectedAudio;
+
+  /// Pre-filled image URL (e.g., from discovery)
+  String? _prefilledImageUrl;
 
   bool _isLoading = false;
   bool _isPickingMedia = false;
@@ -59,7 +77,32 @@ class _CreatePostScreenState extends State<CreatePostScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Load pre-filled data if provided
+    if (widget.prefilledCaption != null) {
+      _contentController.text = widget.prefilledCaption!;
+    }
+
     _checkIfUserIsArtist();
+    _loadPrefilledImage();
+  }
+
+  /// Load pre-filled image from URL (e.g., from discovery)
+  Future<void> _loadPrefilledImage() async {
+    if (widget.prefilledImageUrl == null) return;
+
+    try {
+      debugPrint(
+        'DEBUG: Loading pre-filled image from discovery: ${widget.prefilledImageUrl}',
+      );
+      if (mounted) {
+        setState(() {
+          _prefilledImageUrl = widget.prefilledImageUrl;
+        });
+      }
+    } catch (e) {
+      debugPrint('DEBUG: Error loading pre-filled image: $e');
+    }
   }
 
   @override
@@ -386,6 +429,14 @@ class _CreatePostScreenState extends State<CreatePostScreen>
         debugPrint('DEBUG: Uploading ${_selectedImages.length} images');
         imageUrls = await _storageService.uploadImages(_selectedImages);
         debugPrint('DEBUG: Upload complete. Image URLs: $imageUrls');
+      }
+
+      // Include pre-filled image URL from discovery if available
+      if (_prefilledImageUrl != null && _prefilledImageUrl!.isNotEmpty) {
+        debugPrint(
+          'DEBUG: Including pre-filled discovery image: $_prefilledImageUrl',
+        );
+        imageUrls.insert(0, _prefilledImageUrl!);
       }
 
       if (_selectedVideo != null) {
@@ -781,7 +832,8 @@ class _CreatePostScreenState extends State<CreatePostScreen>
   Widget _buildMediaPreview() {
     if (_selectedImages.isEmpty &&
         _selectedVideo == null &&
-        _selectedAudio == null) {
+        _selectedAudio == null &&
+        _prefilledImageUrl == null) {
       return const SizedBox.shrink();
     }
 
@@ -796,6 +848,9 @@ class _CreatePostScreenState extends State<CreatePostScreen>
           ),
           const SizedBox(height: 12),
 
+          // Pre-filled image preview (from discovery)
+          if (_prefilledImageUrl != null) _buildPrefilledImagePreview(),
+
           // Images preview
           if (_selectedImages.isNotEmpty) _buildImagesPreview(),
 
@@ -804,6 +859,57 @@ class _CreatePostScreenState extends State<CreatePostScreen>
 
           // Audio preview
           if (_selectedAudio != null) _buildAudioPreview(),
+        ],
+      ),
+    );
+  }
+
+  /// Build preview for pre-filled image from discovery
+  Widget _buildPrefilledImagePreview() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: _prefilledImageUrl!,
+              width: 120,
+              height: 120,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                width: 120,
+                height: 120,
+                color: Colors.grey[300],
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                width: 120,
+                height: 120,
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image, color: Colors.red),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: ArtbeatColors.primaryPurple,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'Discovery',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

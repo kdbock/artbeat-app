@@ -69,11 +69,55 @@ Future<void> main() async {
     // Wait for critical services
     await Future.wait(criticalInitializations);
 
-    // Initialize Firebase (most critical)
+    // Initialize Firebase (most critical) - MUST be first
     await SecureFirebaseConfig.ensureInitialized(
       teamId: 'H49R32NPY6',
       debug: kDebugMode,
     );
+
+    // Initialize auth safety service BEFORE any auth operations
+    try {
+      await AuthSafetyService.initialize();
+    } on Object catch (e) {
+      AppLogger.warning('⚠️ Auth Safety Service initialization failed: $e');
+      // Continue - auth will be retried later
+    }
+
+    // Initialize Stripe safety service BEFORE any payment operations
+    try {
+      final envLoader = EnvLoader();
+      final stripeKey = envLoader.get('STRIPE_PUBLISHABLE_KEY');
+      if (stripeKey.isNotEmpty) {
+        await StripeSafetyService.initialize(publishableKey: stripeKey);
+      } else {
+        AppLogger.warning('⚠️ STRIPE_PUBLISHABLE_KEY not found in environment');
+      }
+    } on Object catch (e) {
+      AppLogger.warning('⚠️ Stripe Safety Service initialization failed: $e');
+      // Continue - Stripe will be unavailable but app won't crash
+    }
+
+    // Initialize in-app purchase service with retry logic
+    try {
+      final crashRecovery = CrashRecoveryService();
+      final iapInitialized = await crashRecovery
+          .executeInitializationWithPanicRecovery(
+            initialization: () async {
+              await InAppPurchaseSetup().initialize();
+              return true;
+            },
+            initName: 'InAppPurchaseSetup',
+          );
+
+      if (!iapInitialized) {
+        AppLogger.warning(
+          '⚠️ In-app purchase initialization failed - purchases will not be available',
+        );
+      }
+    } on Object catch (e) {
+      AppLogger.warning('⚠️ In-app purchase initialization error: $e');
+      // Continue - purchases will be unavailable but app won't crash
+    }
 
     // Initialize non-critical services in background after app starts
     _initializeNonCriticalServices();

@@ -637,8 +637,20 @@ class ChatService extends ChangeNotifier {
       await _firestore.collection('chats').doc(chatId).update({
         'unreadCounts.$userId': 0,
       });
+
+      // Decrement badge count when user reads messages
+      await _notificationService.decrementBadgeCount();
     } catch (e) {
       core.AppLogger.error('Error marking chat as read: $e');
+    }
+  }
+
+  /// Called when user opens the messaging screen - clears badge and marks notifications as read
+  Future<void> onOpenMessaging() async {
+    try {
+      await _notificationService.onMessagingScreenOpened();
+    } catch (e) {
+      core.AppLogger.error('Error on open messaging: $e');
     }
   }
 

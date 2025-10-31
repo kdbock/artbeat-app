@@ -234,7 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _TermsSection(
                         title: '3. Accounts & Registration',
                         content:
-                            'Users must provide a valid name, email, password, and ZIP code during registration.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms.',
+                            'Users must provide a valid name, email, and password during registration. ZIP code is optional and helps personalize content.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms.',
                       ),
                       _TermsSection(
                         title: '4. User Types & Roles',
@@ -574,14 +574,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: ArtbeatInput(
                             controller: _zipCodeController,
-                            label: 'ZIP Code',
+                            label: 'ZIP Code (Optional)',
                             keyboardType: TextInputType.number,
                             prefixIcon: const Icon(Icons.location_on_outlined),
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Required';
-                              }
-                              if (value.length != 5) {
+                              // Made optional for App Store compliance (Guideline 5.1.1)
+                              if (value != null &&
+                                  value.isNotEmpty &&
+                                  value.length != 5) {
                                 return 'Invalid ZIP';
                               }
                               return null;

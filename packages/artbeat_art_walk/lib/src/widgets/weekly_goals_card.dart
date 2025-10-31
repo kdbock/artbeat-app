@@ -241,6 +241,12 @@ class WeeklyGoalsCard extends StatelessWidget {
             ],
           ),
 
+          // Milestones if available
+          if (goal.milestones.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildMilestonesSection(goal),
+          ],
+
           const SizedBox(height: 8),
 
           // Reward Info
@@ -283,5 +289,74 @@ class WeeklyGoalsCard extends StatelessWidget {
 
   int _getCompletedCount() {
     return goals.where((goal) => goal.isCompleted).length;
+  }
+
+  Widget _buildMilestonesSection(WeeklyGoalModel goal) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Milestones',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ...goal.milestones.asMap().entries.map((entry) {
+            final index = entry.key;
+            final milestone = entry.value;
+            final isReached = index <= goal.currentMilestoneIndex;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isReached
+                          ? Colors.green
+                          : Colors.white.withValues(alpha: 0.2),
+                      border: Border.all(
+                        color: isReached
+                            ? Colors.green
+                            : Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: isReached
+                        ? const Icon(Icons.check, size: 10, color: Colors.white)
+                        : null,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      milestone,
+                      style: TextStyle(
+                        color: Colors.white.withValues(
+                          alpha: isReached ? 1.0 : 0.6,
+                        ),
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
   }
 }

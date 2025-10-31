@@ -12,7 +12,7 @@ import '../../services/direct_commission_service.dart';
 import '../../widgets/group_post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../theme/community_colors.dart';
-import '../sponsorships/sponsor_tier_selection_dialog.dart';
+
 import 'create_group_post_screen.dart';
 
 /// Screen showing an individual artist's community feed
@@ -282,29 +282,8 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleSponsor(BaseGroupPost post) {
-    // Show sponsorship dialog for the artist
-    showDialog<void>(
-      context: context,
-      builder: (context) => SponsorTierSelectionDialog(
-        artistId: post.userId,
-        artistName: post.userName,
-        onSponsorshipCreated: () {
-          // Close the dialog
-          Navigator.pop(context);
-          // Show success message
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Successfully started sponsoring ${post.userName}!',
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        },
-      ),
-    );
+    // Redirect to gift system (sponsorship removed for simplicity)
+    _handleGift(post);
   }
 
   void _handleCommission(BaseGroupPost post) {

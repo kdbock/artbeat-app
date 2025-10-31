@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum GiftType {
-  preset, // Preset gifts ($4.99, $9.99, $24.99, $49.99)
-  custom, // Custom amount gifts
-  campaign, // Campaign-related gifts
-  subscription, // Recurring gift subscriptions
+  preset, // Fixed preset gifts only ($4.99, $9.99, $24.99, $49.99) - Apple compliant
+  campaign, // Campaign-related gifts (preset amounts only)
+  // Removed: custom amounts (Apple IAP compliance)
+  // Removed: subscription gifts (replaced by sponsorship system)
 }
 
 class GiftModel {
@@ -77,22 +77,19 @@ class GiftModel {
 
   static GiftType _parseGiftType(String? typeString) {
     switch (typeString) {
-      case 'custom':
-        return GiftType.custom;
       case 'campaign':
         return GiftType.campaign;
-      case 'subscription':
-        return GiftType.subscription;
       default:
         return GiftType.preset;
     }
   }
 
   // Helper methods
-  bool get isCustomAmount => type == GiftType.custom;
+  bool get isCustomAmount =>
+      false; // No custom amounts allowed (Apple IAP compliance)
   bool get isCampaignGift => type == GiftType.campaign && campaignId != null;
   bool get isSubscriptionGift =>
-      type == GiftType.subscription && subscriptionId != null;
+      false; // No subscription gifts (replaced by sponsorship system)
   bool get isPending => status == 'pending';
   bool get isCompleted => status == 'completed';
   bool get isFailed => status == 'failed';

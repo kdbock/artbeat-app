@@ -60,6 +60,9 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
 
     _fadeController.forward();
     _slideController.forward();
+
+    // Clear badge when messaging screen opens
+    _clearBadgeWhenScreenOpens();
   }
 
   @override
@@ -67,6 +70,16 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
+  }
+
+  /// Clear badge when messaging screen opens
+  Future<void> _clearBadgeWhenScreenOpens() async {
+    try {
+      final chatService = Provider.of<ChatService>(context, listen: false);
+      await chatService.onOpenMessaging();
+    } catch (e) {
+      AppLogger.error('Error clearing badge: $e');
+    }
   }
 
   void _showSearchModal(BuildContext context) {

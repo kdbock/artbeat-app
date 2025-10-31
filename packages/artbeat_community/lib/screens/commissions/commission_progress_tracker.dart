@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/direct_commission_model.dart';
+import '../../theme/community_colors.dart';
 
 class CommissionProgressTracker extends StatelessWidget {
   final DirectCommissionModel commission;
@@ -10,7 +11,69 @@ class CommissionProgressTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Commission Progress'), elevation: 0),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.timeline,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Commission Progress',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Track commission milestones',
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
+      ),
+      backgroundColor: CommunityColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

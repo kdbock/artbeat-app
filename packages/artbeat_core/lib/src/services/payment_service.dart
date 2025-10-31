@@ -223,24 +223,36 @@ class PaymentService {
       final paymentArgs = {
         'customerId': customerId,
         'setupIntentClientSecret': setupIntentClientSecret,
+        'merchantDisplayName': 'ARTbeat',
       };
 
       if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
         throw Exception('Invalid payment setup parameters provided');
       }
 
-      // Use safeExecute to wrap the Stripe SDK call
-      await CrashPreventionService.safeExecute(
-        operation: () => Stripe.instance.initPaymentSheet(
+      // Additional validation for Android Payment Sheet args
+      if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+        paymentArgs,
+      )) {
+        throw Exception('Invalid Android payment sheet configuration');
+      }
+
+      // Initialize payment sheet with explicit error handling
+      try {
+        await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             customerId: customerId,
             style: ThemeMode.system,
             merchantDisplayName: 'ARTbeat',
             setupIntentClientSecret: setupIntentClientSecret,
           ),
-        ),
-        operationName: 'setupPaymentSheet',
-      );
+        );
+      } on StripeException catch (e) {
+        AppLogger.error(
+          'Stripe initPaymentSheet failed: ${e.error.code} - ${e.error.localizedMessage}',
+        );
+        rethrow;
+      }
     } catch (e) {
       AppLogger.error('Error setting up payment sheet: $e');
       rethrow;
@@ -1828,30 +1840,52 @@ class PaymentService {
       // Step 2: Initialize and present payment sheet
       try {
         // Validate Stripe payment arguments before calling SDK
-        final paymentArgs = {'paymentIntentClientSecret': clientSecret};
+        final paymentArgs = {
+          'paymentIntentClientSecret': clientSecret,
+          'merchantDisplayName': 'ArtBeat',
+        };
 
         if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
           throw Exception('Invalid payment parameters for gift purchase');
         }
 
-        // Use safeExecute to wrap Stripe SDK calls
-        await CrashPreventionService.safeExecute(
-          operation: () => Stripe.instance.initPaymentSheet(
+        // Additional validation for Android Payment Sheet args
+        if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+          paymentArgs,
+        )) {
+          throw Exception('Invalid Android payment sheet configuration');
+        }
+
+        // Initialize payment sheet with explicit error handling
+        // DO NOT use safeExecute here - we need to see the actual error
+        try {
+          await Stripe.instance.initPaymentSheet(
             paymentSheetParameters: SetupPaymentSheetParameters(
               paymentIntentClientSecret: clientSecret,
               merchantDisplayName: 'ArtBeat',
               style: ThemeMode.system,
             ),
-          ),
-          operationName: 'initPaymentSheet_gift',
-        );
+          );
+        } on StripeException catch (e) {
+          AppLogger.error(
+            'Stripe initPaymentSheet failed for gift: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
 
-        await CrashPreventionService.safeExecute(
-          operation: () => Stripe.instance.presentPaymentSheet(),
-          operationName: 'presentPaymentSheet_gift',
-        );
-
-        AppLogger.info('✅ Payment confirmed with Stripe');
+        // Present payment sheet
+        try {
+          await Stripe.instance.presentPaymentSheet();
+          AppLogger.info('✅ Payment confirmed with Stripe');
+        } on StripeException catch (e) {
+          if (e.error.code == FailureCode.Canceled) {
+            throw Exception('Payment was cancelled by user');
+          }
+          AppLogger.error(
+            'Stripe presentPaymentSheet failed for gift: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {
           throw Exception('Payment was cancelled by user');
@@ -2008,16 +2042,51 @@ class PaymentService {
 
       // Step 2: Initialize and present payment sheet
       try {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ArtBeat',
-            style: ThemeMode.system,
-          ),
-        );
+        // Validate payment args before initializing Payment Sheet
+        final paymentArgs = {
+          'paymentIntentClientSecret': clientSecret,
+          'merchantDisplayName': 'ArtBeat',
+        };
 
-        await Stripe.instance.presentPaymentSheet();
-        AppLogger.info('✅ Payment confirmed with Stripe');
+        if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+          throw Exception('Invalid payment parameters for subscription');
+        }
+
+        if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+          paymentArgs,
+        )) {
+          throw Exception('Invalid Android payment sheet configuration');
+        }
+
+        // Initialize payment sheet with proper error handling
+        try {
+          await Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: clientSecret,
+              merchantDisplayName: 'ArtBeat',
+              style: ThemeMode.system,
+            ),
+          );
+        } on StripeException catch (e) {
+          AppLogger.error(
+            'Stripe initPaymentSheet failed for subscription: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
+
+        // Present payment sheet
+        try {
+          await Stripe.instance.presentPaymentSheet();
+          AppLogger.info('✅ Payment confirmed with Stripe');
+        } on StripeException catch (e) {
+          if (e.error.code == FailureCode.Canceled) {
+            throw Exception('Payment was cancelled by user');
+          }
+          AppLogger.error(
+            'Stripe presentPaymentSheet failed for subscription: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {
           throw Exception('Payment was cancelled by user');
@@ -2174,16 +2243,51 @@ class PaymentService {
 
       // Step 2: Initialize and present payment sheet
       try {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ArtBeat',
-            style: ThemeMode.system,
-          ),
-        );
+        // Validate payment args before initializing Payment Sheet
+        final paymentArgs = {
+          'paymentIntentClientSecret': clientSecret,
+          'merchantDisplayName': 'ArtBeat',
+        };
 
-        await Stripe.instance.presentPaymentSheet();
-        AppLogger.info('✅ Payment confirmed with Stripe');
+        if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+          throw Exception('Invalid payment parameters for advertisement');
+        }
+
+        if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+          paymentArgs,
+        )) {
+          throw Exception('Invalid Android payment sheet configuration');
+        }
+
+        // Initialize payment sheet
+        try {
+          await Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: clientSecret,
+              merchantDisplayName: 'ArtBeat',
+              style: ThemeMode.system,
+            ),
+          );
+        } on StripeException catch (e) {
+          AppLogger.error(
+            'Stripe initPaymentSheet failed for ad: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
+
+        // Present payment sheet
+        try {
+          await Stripe.instance.presentPaymentSheet();
+          AppLogger.info('✅ Payment confirmed with Stripe');
+        } on StripeException catch (e) {
+          if (e.error.code == FailureCode.Canceled) {
+            throw Exception('Payment was cancelled by user');
+          }
+          AppLogger.error(
+            'Stripe presentPaymentSheet failed for ad: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {
           throw Exception('Payment was cancelled by user');
@@ -2341,16 +2445,51 @@ class PaymentService {
 
       // Step 2: Initialize and present payment sheet
       try {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ArtBeat',
-            style: ThemeMode.system,
-          ),
-        );
+        // Validate payment args before initializing Payment Sheet
+        final paymentArgs = {
+          'paymentIntentClientSecret': clientSecret,
+          'merchantDisplayName': 'ArtBeat',
+        };
 
-        await Stripe.instance.presentPaymentSheet();
-        AppLogger.info('✅ Payment confirmed with Stripe');
+        if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+          throw Exception('Invalid payment parameters for sponsorship');
+        }
+
+        if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+          paymentArgs,
+        )) {
+          throw Exception('Invalid Android payment sheet configuration');
+        }
+
+        // Initialize payment sheet
+        try {
+          await Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: clientSecret,
+              merchantDisplayName: 'ArtBeat',
+              style: ThemeMode.system,
+            ),
+          );
+        } on StripeException catch (e) {
+          AppLogger.error(
+            'Stripe initPaymentSheet failed for sponsorship: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
+
+        // Present payment sheet
+        try {
+          await Stripe.instance.presentPaymentSheet();
+          AppLogger.info('✅ Payment confirmed with Stripe');
+        } on StripeException catch (e) {
+          if (e.error.code == FailureCode.Canceled) {
+            throw Exception('Payment was cancelled by user');
+          }
+          AppLogger.error(
+            'Stripe presentPaymentSheet failed for sponsorship: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {
           throw Exception('Payment was cancelled by user');
@@ -2509,16 +2648,51 @@ class PaymentService {
 
       // Step 2: Initialize and present payment sheet
       try {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ArtBeat',
-            style: ThemeMode.system,
-          ),
-        );
+        // Validate payment args before initializing Payment Sheet
+        final paymentArgs = {
+          'paymentIntentClientSecret': clientSecret,
+          'merchantDisplayName': 'ArtBeat',
+        };
 
-        await Stripe.instance.presentPaymentSheet();
-        AppLogger.info('✅ Payment confirmed with Stripe');
+        if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+          throw Exception('Invalid payment parameters for commission');
+        }
+
+        if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
+          paymentArgs,
+        )) {
+          throw Exception('Invalid Android payment sheet configuration');
+        }
+
+        // Initialize payment sheet
+        try {
+          await Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: clientSecret,
+              merchantDisplayName: 'ArtBeat',
+              style: ThemeMode.system,
+            ),
+          );
+        } on StripeException catch (e) {
+          AppLogger.error(
+            'Stripe initPaymentSheet failed for commission: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
+
+        // Present payment sheet
+        try {
+          await Stripe.instance.presentPaymentSheet();
+          AppLogger.info('✅ Payment confirmed with Stripe');
+        } on StripeException catch (e) {
+          if (e.error.code == FailureCode.Canceled) {
+            throw Exception('Payment was cancelled by user');
+          }
+          AppLogger.error(
+            'Stripe presentPaymentSheet failed for commission: ${e.error.code} - ${e.error.localizedMessage}',
+          );
+          rethrow;
+        }
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {
           throw Exception('Payment was cancelled by user');

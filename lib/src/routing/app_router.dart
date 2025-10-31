@@ -530,8 +530,9 @@ class AppRouter {
         );
 
       case AppRoutes.communitySponsorships:
+        // Sponsorship functionality removed - redirect to gifts
         return RouteUtils.createMainLayoutRoute(
-          child: const community.EnhancedSponsorshipScreen(),
+          child: const community.GiftsScreen(),
         );
 
       case AppRoutes.communitySettings:

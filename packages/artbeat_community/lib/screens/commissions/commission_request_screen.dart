@@ -194,22 +194,72 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Request Commission',
-        showLogo: false,
-        showBackButton: true,
-        showDeveloperTools: false,
-        backgroundGradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [Color.fromARGB(255, 128, 30, 148), Color.fromARGB(255, 17, 196, 92)],
-        ),
-        titleGradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [Color.fromARGB(255, 145, 12, 175), Color.fromARGB(255, 17, 201, 66)],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.request_page,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Request Commission',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'From ${widget.artistName}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white70,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
         ),
       ),
+      backgroundColor: CommunityColors.background,
       body: Container(
         decoration: const BoxDecoration(
           gradient: CommunityColors.communityBackgroundGradient,

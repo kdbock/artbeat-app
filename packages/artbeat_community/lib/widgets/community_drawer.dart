@@ -10,7 +10,7 @@ import '../screens/portfolios/portfolios_screen.dart';
 import '../screens/studios/studios_screen.dart';
 import '../screens/commissions/commission_hub_screen.dart';
 import '../screens/gifts/gifts_screen.dart';
-import '../screens/sponsorships/enhanced_sponsorship_screen.dart';
+
 import '../src/screens/community_artists_screen.dart';
 import '../screens/settings/quiet_mode_screen.dart';
 import '../screens/moderation/moderation_queue_screen.dart';
@@ -140,14 +140,6 @@ class _CommunityDrawerState extends State<CommunityDrawer> {
                         title: 'Gifts',
                         onTap: () =>
                             _navigateToScreen(context, const GiftsScreen()),
-                      ),
-                      _buildDrawerItem(
-                        icon: Icons.business_center,
-                        title: 'Sponsorships',
-                        onTap: () => _navigateToScreen(
-                          context,
-                          const EnhancedSponsorshipScreen(),
-                        ),
                       ),
                       const Divider(),
                       _buildDrawerItem(

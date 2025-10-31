@@ -12,7 +12,7 @@ export 'models/artwork_model.dart';
 export 'models/studio_model.dart';
 export 'models/gift_model_export.dart'; // Use export file to avoid conflicts
 export 'models/direct_commission_model.dart';
-export 'models/sponsor_model.dart';
+
 export 'models/group_models.dart' show GroupType;
 
 // NEW SIMPLIFIED EXPORTS

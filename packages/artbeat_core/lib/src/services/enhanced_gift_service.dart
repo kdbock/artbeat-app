@@ -292,10 +292,10 @@ class EnhancedGiftService extends ChangeNotifier {
         );
   }
 
-  // Enhanced Gift Processing
-  Future<Map<String, dynamic>> sendCustomGift({
+  // Apple IAP Compliant Gift Processing (Preset amounts only)
+  Future<Map<String, dynamic>> sendPresetGift({
     required String recipientId,
-    required double amount,
+    required String giftType,
     required String paymentMethodId,
     String? message,
     String? campaignId,
@@ -303,14 +303,15 @@ class EnhancedGiftService extends ChangeNotifier {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    // Validate custom amount (minimum $1, maximum $1000)
-    if (amount < 1.0 || amount > 1000.0) {
-      throw Exception(
-        'Custom gift amount must be between \$1.00 and \$1,000.00',
-      );
+    // Validate gift type and get amount
+    final presetGifts = getPresetGiftTypes();
+    if (!presetGifts.containsKey(giftType)) {
+      throw Exception('Invalid gift type: $giftType');
     }
 
-    // Process payment
+    final amount = presetGifts[giftType]!;
+
+    // Process payment using preset amount
     final paymentResult = await _paymentService.processCustomGiftPayment(
       recipientId: recipientId,
       amount: amount,
@@ -323,10 +324,10 @@ class EnhancedGiftService extends ChangeNotifier {
       id: '', // Will be set by Firestore
       senderId: user.uid,
       recipientId: recipientId,
-      giftType: 'Custom Gift',
+      giftType: giftType,
       amount: amount,
       createdAt: Timestamp.now(),
-      type: GiftType.custom,
+      type: GiftType.preset,
       message: message,
       campaignId: campaignId,
       paymentIntentId: paymentResult['paymentIntentId'] as String?,
@@ -424,30 +425,29 @@ class EnhancedGiftService extends ChangeNotifier {
     }
   }
 
-  // Preset gift types (maintaining backward compatibility)
+  // Fixed preset gift types (Apple IAP compliant - no custom amounts)
   Map<String, double> getPresetGiftTypes() {
     return {
-      'Small Gift (50 Credits)': 4.99,
-      'Medium Gift (100 Credits)': 9.99,
-      'Large Gift (250 Credits)': 24.99,
-      'Premium Gift (500 Credits)': 49.99,
+      'Supporter Gift': 4.99,
+      'Fan Gift': 9.99,
+      'Patron Gift': 24.99,
+      'Benefactor Gift': 49.99,
     };
   }
 
-  // Custom gift amount suggestions
-  List<double> getCustomGiftSuggestions() {
-    return [1.0, 3.0, 5.0, 10.0, 15.0, 25.0, 50.0, 100.0];
+  // Apple IAP Compliance: Only preset amounts allowed
+  bool isValidGiftType(String giftType) {
+    return getPresetGiftTypes().containsKey(giftType);
   }
 
   // ========================================
   // MISSING GIFT SYSTEM METHODS (From to_do.md)
   // ========================================
 
-  /// Purchase a gift for someone (convenience wrapper around sendCustomGift)
+  /// Purchase a gift for someone (Apple IAP compliant - preset amounts only)
   Future<String> purchaseGift({
     required String recipientId,
     required String giftType,
-    required double amount,
     required String paymentMethodId,
     String? message,
     String? campaignId,
@@ -457,17 +457,18 @@ class EnhancedGiftService extends ChangeNotifier {
     if (user == null) throw Exception('User not authenticated');
 
     try {
-      // Validate gift type and amount
+      // Validate gift type exists in preset options
       final presetGifts = getPresetGiftTypes();
-      if (presetGifts.containsKey(giftType)) {
-        // Use preset gift amount
-        amount = presetGifts[giftType]!;
+      if (!presetGifts.containsKey(giftType)) {
+        throw Exception('Invalid gift type. Only preset gifts are allowed.');
       }
 
-      // Process payment using existing sendCustomGift method
-      final paymentResult = await sendCustomGift(
+      final amount = presetGifts[giftType]!;
+
+      // Process payment using preset gift method
+      final paymentResult = await sendPresetGift(
         recipientId: recipientId,
-        amount: amount,
+        giftType: giftType,
         paymentMethodId: paymentMethodId,
         message: message,
         campaignId: campaignId,
@@ -481,9 +482,7 @@ class EnhancedGiftService extends ChangeNotifier {
         giftType: giftType,
         amount: amount,
         createdAt: Timestamp.now(),
-        type: presetGifts.containsKey(giftType)
-            ? GiftType.preset
-            : GiftType.custom,
+        type: GiftType.preset, // Always preset now
         message: message,
         campaignId: campaignId,
         paymentIntentId: paymentResult['paymentIntentId'] as String?,

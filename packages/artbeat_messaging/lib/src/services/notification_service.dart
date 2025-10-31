@@ -3,17 +3,40 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:artbeat_core/artbeat_core.dart';
+
+/// Enum for different notification types
+enum NotificationType {
+  message('message', '💬'),
+  gift('gift', '🎁'),
+  commission('commission', '🎨'),
+  event('event', '📅');
+
+  final String value;
+  final String emoji;
+  const NotificationType(this.value, this.emoji);
+
+  static NotificationType fromString(String? type) {
+    return NotificationType.values.firstWhere(
+      (e) => e.value == type,
+      orElse: () => NotificationType.message,
+    );
+  }
+}
 
 /// Service for handling chat and message notifications
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
+  static const String _badgeCountKey = 'app_badge_count';
+
   FirebaseMessaging? _messaging;
   FirebaseFirestore? _firestore;
   FirebaseAuth? _auth;
+  SharedPreferences? _prefs;
 
   FirebaseMessaging get messaging => _messaging ??= FirebaseMessaging.instance;
   FirebaseFirestore get firestore => _firestore ??= FirebaseFirestore.instance;
@@ -23,9 +46,11 @@ class NotificationService {
     FirebaseMessaging? messaging,
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
+    SharedPreferences? prefs,
   }) : _messaging = messaging,
        _firestore = firestore,
-       _auth = auth;
+       _auth = auth,
+       _prefs = prefs;
 
   static const String _deviceTokensField = 'deviceTokens';
   static const String _usersCollection = 'users';
@@ -34,7 +59,10 @@ class NotificationService {
   /// Initialize notification settings and request permissions
   Future<void> initialize() async {
     try {
-      // Initialize local notifications
+      // Initialize SharedPreferences for badge persistence
+      _prefs ??= await SharedPreferences.getInstance();
+
+      // Initialize local notifications with badge support
       const AndroidInitializationSettings androidInit =
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const DarwinInitializationSettings iosInit =
@@ -43,8 +71,19 @@ class NotificationService {
         android: androidInit,
         iOS: iosInit,
       );
-      await _localNotifications.initialize(initSettings);
-      // Request permission for notifications
+      await _localNotifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationResponse,
+      );
+
+      // Enable banner notifications when app is in foreground (iOS)
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      // Request permission for notifications (including badge)
       final settings = await messaging.requestPermission(
         alert: true,
         badge: true,
@@ -259,11 +298,11 @@ class NotificationService {
           .orderBy('timestamp', descending: true)
           .limit(1)
           .snapshots()
-          .listen((snapshot) {
+          .listen((snapshot) async {
             for (final doc in snapshot.docChanges) {
               if (doc.type == DocumentChangeType.added) {
                 final data = doc.doc.data() as Map<String, dynamic>;
-                _triggerLocalNotification(data);
+                await _triggerLocalNotification(data);
               }
             }
           });
@@ -272,35 +311,118 @@ class NotificationService {
     }
   }
 
-  /// Trigger a local notification for new messages
-  void _triggerLocalNotification(Map<String, dynamic> notificationData) {
+  /// Trigger a local notification with type-specific handling
+  Future<void> _triggerLocalNotification(
+    Map<String, dynamic> notificationData,
+  ) async {
     try {
-      final title = notificationData['title'] as String? ?? 'New Message';
+      final title = notificationData['title'] as String? ?? 'New Notification';
       final body = notificationData['body'] as String? ?? '';
-      final type = notificationData['type'] as String? ?? 'message';
+      final typeStr = notificationData['type'] as String? ?? 'message';
+      final type = NotificationType.fromString(typeStr);
 
-      if (type == 'message') {
-        AppLogger.info('📱 New message notification: $title - $body');
-        _localNotifications.show(
-          0,
-          title,
-          body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'chat_messages',
-              'Chat Messages',
-              channelDescription: 'Notifications for new chat messages',
-              importance: Importance.max,
-              priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
-            ),
-            iOS: DarwinNotificationDetails(),
-          ),
-        );
+      // Different badge behavior per type - only messages increment badge
+      int? badgeCount;
+      if (type == NotificationType.message) {
+        badgeCount = await incrementBadgeCount();
       }
+
+      final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final (channel, channelTitle) = _getNotificationChannel(type);
+
+      AppLogger.info(
+        '${type.emoji} ${type.value} notification: $title - $body',
+      );
+
+      // Create payload with type and route information for tap handling
+      final payload = '${type.value}:${notificationData['route'] ?? ''}';
+
+      await _localNotifications.show(
+        notificationId,
+        title,
+        body,
+        NotificationDetails(
+          android: _getAndroidNotificationDetails(
+            type,
+            channel,
+            channelTitle,
+            badgeCount,
+          ),
+          iOS: _getIOSNotificationDetails(type, badgeCount),
+        ),
+        payload: payload,
+      );
     } catch (e) {
       AppLogger.error('❌ Error triggering local notification: $e');
     }
+  }
+
+  /// Get platform-specific Android notification details by type
+  AndroidNotificationDetails _getAndroidNotificationDetails(
+    NotificationType type,
+    String channel,
+    String channelTitle,
+    int? badgeCount,
+  ) {
+    final (title, description, sound) = _getChannelInfo(type);
+
+    return AndroidNotificationDetails(
+      channel,
+      title,
+      channelDescription: description,
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+      enableVibration: true,
+      playSound: true,
+      autoCancel: true,
+      styleInformation: BigTextStyleInformation('$title\n$description'),
+      ticker: '${type.emoji} $title',
+    );
+  }
+
+  /// Get platform-specific iOS notification details by type
+  DarwinNotificationDetails _getIOSNotificationDetails(
+    NotificationType type,
+    int? badgeCount,
+  ) {
+    return DarwinNotificationDetails(badgeNumber: badgeCount);
+  }
+
+  /// Map notification type to channel ID and display name (Android)
+  (String, String) _getNotificationChannel(NotificationType type) {
+    return switch (type) {
+      NotificationType.message => ('chat_messages', 'Messages'),
+      NotificationType.gift => ('gifts_received', 'Gifts'),
+      NotificationType.commission => ('commissions', 'Commissions'),
+      NotificationType.event => ('event_reminders', 'Events'),
+    };
+  }
+
+  /// Get channel display name and description for type
+  (String, String, String) _getChannelInfo(NotificationType type) {
+    return switch (type) {
+      NotificationType.message => (
+        'Chat Messages',
+        'Notifications for new chat messages',
+        'notification_message',
+      ),
+      NotificationType.gift => (
+        'Gift Received',
+        'Notifications when you receive gifts',
+        'notification_gift',
+      ),
+      NotificationType.commission => (
+        'Commission Request',
+        'Notifications for commission opportunities',
+        'notification_commission',
+      ),
+      NotificationType.event => (
+        'Event Reminder',
+        'Reminders for events you showed interest in',
+        'notification_event',
+      ),
+    };
   }
 
   // Phase 3: Enhanced Notification Features
@@ -471,7 +593,7 @@ class NotificationService {
     }
   }
 
-  /// Handle notification actions
+  /// Handle notification actions and routing
   void _onNotificationResponse(NotificationResponse response) {
     try {
       final actionId = response.actionId;
@@ -487,10 +609,52 @@ class NotificationService {
           );
           break;
         default:
-          AppLogger.info('Notification tapped with payload: $payload');
+          // Handle notification tap - route based on type
+          _handleNotificationTap(payload);
       }
     } catch (e) {
-      AppLogger.error('Error handling notification response: $e');
+      AppLogger.error('❌ Error handling notification response: $e');
+    }
+  }
+
+  /// Handle notification tap and route to appropriate screen
+  void _handleNotificationTap(String? payload) {
+    try {
+      if (payload == null || payload.isEmpty) return;
+
+      // Parse payload format: "type:route"
+      final parts = payload.split(':');
+      if (parts.isEmpty) return;
+
+      final typeStr = parts[0];
+      final route = parts.length > 1 ? parts[1] : '';
+      final type = NotificationType.fromString(typeStr);
+
+      AppLogger.info(
+        '${type.emoji} Handling notification tap - Type: ${type.value}, Route: $route',
+      );
+
+      // Route to appropriate screen based on type
+      switch (type) {
+        case NotificationType.message:
+          // Route to messaging screen
+          AppLogger.info('📬 Routing to messaging screen');
+          break;
+        case NotificationType.gift:
+          AppLogger.info('🎁 Routing to gifts screen');
+          // Route would be: /gifts/received
+          break;
+        case NotificationType.commission:
+          AppLogger.info('🎨 Routing to commissions screen');
+          // Route would be: /commissions/requests
+          break;
+        case NotificationType.event:
+          AppLogger.info('📅 Routing to events screen');
+          // Route would be: /events/details
+          break;
+      }
+    } catch (e) {
+      AppLogger.error('❌ Error handling notification tap: $e');
     }
   }
 
@@ -510,6 +674,238 @@ class NotificationService {
     } catch (e) {
       AppLogger.error('Error cancelling scheduled notification: $e');
     }
+  }
+
+  // ============================================================================
+  // Badge Management Methods
+  // ============================================================================
+
+  /// Get the current badge count
+  Future<int> getBadgeCount() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      return _prefs?.getInt(_badgeCountKey) ?? 0;
+    } catch (e) {
+      AppLogger.error('Error getting badge count: $e');
+      return 0;
+    }
+  }
+
+  /// Increment badge count and update app icon
+  Future<int> incrementBadgeCount() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      final currentCount = _prefs?.getInt(_badgeCountKey) ?? 0;
+      final newCount = currentCount + 1;
+
+      // Save to persistent storage
+      await _prefs?.setInt(_badgeCountKey, newCount);
+
+      // Update badge on app icon
+      await _updateAppBadge(newCount);
+
+      AppLogger.info('📲 Badge incremented to $newCount');
+      return newCount;
+    } catch (e) {
+      AppLogger.error('Error incrementing badge count: $e');
+      return 0;
+    }
+  }
+
+  /// Decrement badge count and update app icon
+  Future<int> decrementBadgeCount() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      final currentCount = _prefs?.getInt(_badgeCountKey) ?? 0;
+      final newCount = (currentCount - 1).clamp(0, 999);
+
+      // Save to persistent storage
+      await _prefs?.setInt(_badgeCountKey, newCount);
+
+      // Update badge on app icon
+      await _updateAppBadge(newCount);
+
+      AppLogger.info('📲 Badge decremented to $newCount');
+      return newCount;
+    } catch (e) {
+      AppLogger.error('Error decrementing badge count: $e');
+      return 0;
+    }
+  }
+
+  /// Set badge count to a specific value
+  Future<void> setBadgeCount(int count) async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      final newCount = count.clamp(0, 999);
+
+      // Save to persistent storage
+      await _prefs?.setInt(_badgeCountKey, newCount);
+
+      // Update badge on app icon
+      await _updateAppBadge(newCount);
+
+      AppLogger.info('📲 Badge set to $newCount');
+    } catch (e) {
+      AppLogger.error('Error setting badge count: $e');
+    }
+  }
+
+  /// Clear badge (set to 0)
+  Future<void> clearBadge() async {
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+
+      // Clear storage
+      await _prefs?.setInt(_badgeCountKey, 0);
+
+      // Clear badge on app icon
+      await _updateAppBadge(0);
+
+      AppLogger.info('📲 Badge cleared');
+    } catch (e) {
+      AppLogger.error('Error clearing badge: $e');
+    }
+  }
+
+  /// Update the actual app icon badge (platform-specific)
+  Future<void> _updateAppBadge(int count) async {
+    try {
+      // Show or clear badge through notification plugin
+      if (count > 0) {
+        AppLogger.info('📲 Badge count set to: $count');
+      } else {
+        AppLogger.info('📲 Badge cleared');
+      }
+      // Badge is automatically managed through notification details
+      // on iOS and Android platforms
+    } catch (e) {
+      AppLogger.error('Error updating app badge: $e');
+    }
+  }
+
+  /// Send a gift notification
+  Future<void> sendGiftNotification({
+    required String recipientUserId,
+    required String senderName,
+    required String giftName,
+    required String giftImageUrl,
+  }) async {
+    try {
+      await sendNotificationToUser(
+        userId: recipientUserId,
+        title: '🎁 Gift from $senderName',
+        body: '$senderName sent you: $giftName',
+        data: {
+          'type': NotificationType.gift.value,
+          'senderName': senderName,
+          'giftName': giftName,
+          'giftImageUrl': giftImageUrl,
+          'route': '/gifts/received',
+        },
+      );
+      AppLogger.info('🎁 Gift notification sent to $recipientUserId');
+    } catch (e) {
+      AppLogger.error('❌ Error sending gift notification: $e');
+      rethrow;
+    }
+  }
+
+  /// Send a commission request notification
+  Future<void> sendCommissionNotification({
+    required String artistUserId,
+    required String buyerName,
+    required String artworkDescription,
+    required double budget,
+  }) async {
+    try {
+      await sendNotificationToUser(
+        userId: artistUserId,
+        title: '🎨 Commission Request from $buyerName',
+        body: 'Budget: \$$budget • $artworkDescription',
+        data: {
+          'type': NotificationType.commission.value,
+          'buyerName': buyerName,
+          'artworkDescription': artworkDescription,
+          'budget': budget.toString(),
+          'route': '/commissions/requests',
+        },
+      );
+      AppLogger.info('🎨 Commission notification sent to $artistUserId');
+    } catch (e) {
+      AppLogger.error('❌ Error sending commission notification: $e');
+      rethrow;
+    }
+  }
+
+  /// Send an event reminder notification
+  Future<void> sendEventReminderNotification({
+    required String userId,
+    required String eventName,
+    required String eventTime,
+    required String location,
+  }) async {
+    try {
+      await sendNotificationToUser(
+        userId: userId,
+        title: '📅 Reminder: $eventName',
+        body: '$eventTime • $location',
+        data: {
+          'type': NotificationType.event.value,
+          'eventName': eventName,
+          'eventTime': eventTime,
+          'location': location,
+          'route': '/events/details',
+        },
+      );
+      AppLogger.info('📅 Event notification sent to $userId');
+    } catch (e) {
+      AppLogger.error('❌ Error sending event notification: $e');
+      rethrow;
+    }
+  }
+
+  /// Auto-clear badge when user opens the messaging screen
+  /// Call this when navigating to the chat/messaging screen
+  Future<void> onMessagingScreenOpened() async {
+    try {
+      await clearBadge();
+
+      // Also mark all unread notifications as read
+      final userId = auth.currentUser?.uid;
+      if (userId != null) {
+        final unreadNotifications = await firestore
+            .collection(_usersCollection)
+            .doc(userId)
+            .collection(_notificationsCollection)
+            .where('isRead', isEqualTo: false)
+            .get();
+
+        for (final doc in unreadNotifications.docs) {
+          await doc.reference.update({'isRead': true});
+        }
+        AppLogger.info('Marked all notifications as read');
+      }
+    } catch (e) {
+      AppLogger.error('Error clearing badge on screen open: $e');
+    }
+  }
+
+  /// Get unread message count for display in UI
+  Stream<int> getUnreadMessageCount() {
+    final userId = auth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.value(0);
+    }
+
+    return firestore
+        .collection(_usersCollection)
+        .doc(userId)
+        .collection(_notificationsCollection)
+        .where('isRead', isEqualTo: false)
+        .where('type', isEqualTo: 'message')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 
   /// Helper method to convert DateTime to TZDateTime

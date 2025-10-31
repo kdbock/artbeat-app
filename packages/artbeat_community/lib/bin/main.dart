@@ -203,12 +203,6 @@ class CommunityModuleHome extends StatelessWidget {
                 const CommissionHubScreen(),
                 Icons.work,
               ),
-              _buildNavButton(
-                context,
-                'Sponsorships',
-                const SponsorshipScreen(),
-                Icons.volunteer_activism,
-              ),
             ]),
           ],
         ),

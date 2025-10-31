@@ -2000,6 +2000,7 @@ class _TopicsTabState extends State<TopicsTab> {
                 // Insert ads every 6 topics (3 rows in 2-column grid)
                 if (index > 0 && index % 6 == 0) {
                   return Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Ad placement
                       const ZoneAdPlacementWidget(
@@ -2008,8 +2009,8 @@ class _TopicsTabState extends State<TopicsTab> {
                         showIfEmpty: true,
                       ),
                       const SizedBox(height: 8),
-                      // Topic card
-                      Expanded(child: _buildTopicCard(topic)),
+                      // Topic card - use Flexible to allow shrinking if needed
+                      Flexible(child: _buildTopicCard(topic)),
                     ],
                   );
                 }

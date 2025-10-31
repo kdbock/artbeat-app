@@ -1,9 +1,6 @@
 // Screens barrel file for artbeat_community
 // Generated on Wed Jun 15 10:30:12 EDT 2025
 
-// Import for typedef
-import 'sponsorships/enhanced_sponsorship_screen.dart';
-
 // Dashboard
 export '../src/screens/community_artists_screen.dart';
 export 'unified_community_hub.dart';
@@ -51,14 +48,5 @@ export 'commissions/commission_progress_tracker.dart';
 export 'commissions/commission_dispute_screen.dart';
 export 'commissions/commission_gallery_screen.dart';
 
-// Sponsorship screens
-export 'sponsorships/enhanced_sponsorship_screen.dart';
-export 'sponsorships/sponsor_artist_screen.dart';
-export 'sponsorships/my_sponsorships_screen.dart';
-export 'sponsorships/sponsor_tier_selection_dialog.dart';
-
 // Settings screens
 export 'settings/quiet_mode_screen.dart';
-
-// Alias for backward compatibility
-typedef SponsorshipScreen = EnhancedSponsorshipScreen;

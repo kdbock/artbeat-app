@@ -71,10 +71,10 @@ class PaymentStrategyService {
     return PaymentMethod.stripe;
   }
 
-  /// Ads module payment strategy - Stripe only (Apple policy)
+  /// Ads module payment strategy - IAP required (Apple policy)
   PaymentMethod _getAdsPaymentMethod(PurchaseType purchaseType) {
-    // Advertising purchases must use Stripe (Apple forbids IAP for ads)
-    return PaymentMethod.stripe;
+    // Advertising purchases are digital goods and MUST use IAP (Apple Guideline 3.1.1)
+    return PaymentMethod.iap;
   }
 
   /// Events module payment strategy - hybrid based on event type

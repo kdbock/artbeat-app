@@ -9,6 +9,6 @@ export 'commission_analytics_model.dart' show ArtistCommissionAnalytics;
 export 'gift_model_export.dart'; // Using the export version to avoid conflicts
 export 'group_models.dart';
 export 'post_model.dart';
-export 'sponsor_model.dart';
+
 export 'studio_model.dart';
 export 'user_model.dart';

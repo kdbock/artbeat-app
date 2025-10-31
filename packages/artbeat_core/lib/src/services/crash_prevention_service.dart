@@ -149,6 +149,7 @@ class CrashPreventionService {
   }
 
   /// Validate Stripe payment arguments to prevent crashes
+  /// Checks for both setup/payment intent secrets and Android-specific args
   static bool validateStripePaymentArgs(Map<String, dynamic>? args) {
     if (args == null || args.isEmpty) {
       logCrashPrevention(
@@ -159,22 +160,95 @@ class CrashPreventionService {
       return false;
     }
 
-    // Check for common required fields based on crash reports
-    final requiredFields = [
-      'client_secret', // Required for most Stripe operations
-      'payment_method', // Required for payment processing
-      'amount', // Required for payment amount
-    ];
+    // Check for either paymentIntentClientSecret OR setupIntentClientSecret
+    // (Dart flutter_stripe uses camelCase, not snake_case)
+    final hasPaymentSecret =
+        args.containsKey('paymentIntentClientSecret') &&
+        args['paymentIntentClientSecret'] != null;
+    final hasSetupSecret =
+        args.containsKey('setupIntentClientSecret') &&
+        args['setupIntentClientSecret'] != null;
+    final hasClientSecret =
+        args.containsKey('client_secret') && args['client_secret'] != null;
 
-    for (final field in requiredFields) {
-      if (!args.containsKey(field) || args[field] == null) {
+    if (!hasPaymentSecret && !hasSetupSecret && !hasClientSecret) {
+      logCrashPrevention(
+        operation: 'stripe_payment_validation',
+        errorType: 'missing_client_secret',
+        additionalInfo:
+            'Missing paymentIntentClientSecret or setupIntentClientSecret',
+      );
+      return false;
+    }
+
+    // Validate customer ID if present (required for setup intent flows)
+    if (args.containsKey('customerId') && args['customerId'] == null) {
+      logCrashPrevention(
+        operation: 'stripe_payment_validation',
+        errorType: 'null_customer_id',
+        additionalInfo: 'Customer ID is null',
+      );
+      return false;
+    }
+
+    // Validate amount if present (required for payment intent flows)
+    if (args.containsKey('amount')) {
+      final amount = args['amount'];
+      if (amount == null || (amount is num && amount <= 0)) {
         logCrashPrevention(
           operation: 'stripe_payment_validation',
-          errorType: 'missing_required_field',
-          additionalInfo: 'Missing required field: $field',
+          errorType: 'invalid_amount',
+          additionalInfo: 'Amount is null or <= 0',
         );
         return false;
       }
+    }
+
+    return true;
+  }
+
+  /// Validate Android-specific Stripe args for Payment Sheet flows
+  /// Prevents crashes from CVC Recollection, 3D Secure, and Polling activities
+  static bool validateAndroidStripePaymentSheetArgs(
+    Map<String, dynamic>? args,
+  ) {
+    if (args == null || args.isEmpty) {
+      logCrashPrevention(
+        operation: 'android_payment_sheet_validation',
+        errorType: 'null_or_empty_args',
+        additionalInfo:
+            'Payment sheet args are null or empty - will cause native crash',
+      );
+      return false;
+    }
+
+    // Check for either setupIntentClientSecret or paymentIntentClientSecret
+    final hasSetupSecret =
+        args.containsKey('setupIntentClientSecret') &&
+        args['setupIntentClientSecret'] != null;
+    final hasPaymentSecret =
+        args.containsKey('paymentIntentClientSecret') &&
+        args['paymentIntentClientSecret'] != null;
+
+    if (!hasSetupSecret && !hasPaymentSecret) {
+      logCrashPrevention(
+        operation: 'android_payment_sheet_validation',
+        errorType: 'missing_secret_for_native_activity',
+        additionalInfo:
+            'Missing client secret - CVC/Challenge/Polling activities will crash',
+      );
+      return false;
+    }
+
+    // Validate merchant display name (required for UI)
+    if (!args.containsKey('merchantDisplayName') ||
+        args['merchantDisplayName'] == null) {
+      logCrashPrevention(
+        operation: 'android_payment_sheet_validation',
+        errorType: 'missing_merchant_name',
+        additionalInfo: 'Merchant display name required for Payment Sheet UI',
+      );
+      return false;
     }
 
     return true;
