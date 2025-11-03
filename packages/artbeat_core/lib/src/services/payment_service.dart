@@ -219,6 +219,11 @@ class PaymentService {
     required String setupIntentClientSecret,
   }) async {
     try {
+      // Validate inputs are not null or empty
+      if (customerId.isEmpty || setupIntentClientSecret.isEmpty) {
+        throw Exception('Customer ID and setup intent client secret are required');
+      }
+
       // Validate Stripe payment arguments before calling SDK
       final paymentArgs = {
         'customerId': customerId,
@@ -227,6 +232,7 @@ class PaymentService {
       };
 
       if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+        AppLogger.error('Stripe validation failed for payment arguments');
         throw Exception('Invalid payment setup parameters provided');
       }
 
@@ -234,8 +240,17 @@ class PaymentService {
       if (!CrashPreventionService.validateAndroidStripePaymentSheetArgs(
         paymentArgs,
       )) {
+        AppLogger.error('Android validation failed for payment sheet');
         throw Exception('Invalid Android payment sheet configuration');
       }
+
+      // Additional BACS-specific validation for UK banking
+      if (!CrashPreventionService.validateBacsPaymentArgs(paymentArgs)) {
+        AppLogger.error('BACS validation failed for payment');
+        throw Exception('Invalid BACS payment configuration');
+      }
+
+      AppLogger.info('📱 Initializing Stripe payment sheet with customerId: $customerId');
 
       // Initialize payment sheet with explicit error handling
       try {
@@ -247,14 +262,78 @@ class PaymentService {
             setupIntentClientSecret: setupIntentClientSecret,
           ),
         );
+        AppLogger.info('✅ Stripe payment sheet initialized successfully');
       } on StripeException catch (e) {
         AppLogger.error(
           'Stripe initPaymentSheet failed: ${e.error.code} - ${e.error.localizedMessage}',
+          error: e,
         );
+        rethrow;
+      } catch (e) {
+        AppLogger.error('Unexpected error during Stripe initialization: $e', error: e);
         rethrow;
       }
     } catch (e) {
-      AppLogger.error('Error setting up payment sheet: $e');
+      AppLogger.error('Error setting up payment sheet: $e', error: e);
+      rethrow;
+    }
+  }
+
+  /// Safely present the payment sheet with error handling to prevent Android crashes
+  /// This wrapper prevents crashes in Stripe native activities (Address, CVC, Challenge, etc.)
+  Future<void> safelyPresentPaymentSheet({
+    required String operationName,
+  }) async {
+    try {
+      AppLogger.info('🔄 Presenting Stripe payment sheet for: $operationName');
+      
+      try {
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe for: $operationName');
+      } on StripeException catch (e) {
+        // Handle specific Stripe exceptions
+        if (e.error.code == FailureCode.Canceled) {
+          AppLogger.info('ℹ️ Payment cancelled by user for: $operationName');
+          throw Exception('Payment was cancelled by user');
+        }
+        
+        // Log the specific error for debugging native crashes
+        AppLogger.error(
+          'Stripe presentPaymentSheet failed for $operationName: ${e.error.code} - ${e.error.localizedMessage}',
+          error: e,
+        );
+        
+        // Check for BACS mandate confirmation activity crashes (UK direct debit)
+        final errorMsg = e.error.message ?? '';
+        final errorLocalizedMsg = e.error.localizedMessage ?? '';
+        if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+            errorMsg.contains('Cannot start Bacs mandate') ||
+            errorLocalizedMsg.contains('Bacs') ||
+            errorLocalizedMsg.contains('mandate') ||
+            errorMsg.contains('IllegalStateException')) {
+          AppLogger.error(
+            'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for $operationName - falling back to alternative payment methods',
+          );
+          throw Exception(
+            'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+          );
+        }
+        
+        // Check if this is a native activity crash (null args)
+        if (errorMsg.contains('null') ||
+            errorMsg.contains('Null') ||
+            errorMsg.contains('Required value was null') ||
+            errorLocalizedMsg.contains('null') ||
+            errorLocalizedMsg.contains('Null')) {
+          AppLogger.error(
+            'NATIVE CRASH DETECTED: Stripe activity received null arguments for $operationName',
+          );
+        }
+        
+        rethrow;
+      }
+    } catch (e) {
+      AppLogger.error('Error presenting payment sheet for $operationName: $e', error: e);
       rethrow;
     }
   }
@@ -1881,6 +1960,23 @@ class PaymentService {
           if (e.error.code == FailureCode.Canceled) {
             throw Exception('Payment was cancelled by user');
           }
+          
+          // Check for BACS mandate confirmation activity crashes
+          final errorMsg = e.error.message ?? '';
+          final errorLocalizedMsg = e.error.localizedMessage ?? '';
+          if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+              errorMsg.contains('Cannot start Bacs mandate') ||
+              errorLocalizedMsg.contains('Bacs') ||
+              errorLocalizedMsg.contains('mandate') ||
+              errorMsg.contains('IllegalStateException')) {
+            AppLogger.error(
+              'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for gift - falling back',
+            );
+            throw Exception(
+              'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+            );
+          }
+          
           AppLogger.error(
             'Stripe presentPaymentSheet failed for gift: ${e.error.code} - ${e.error.localizedMessage}',
           );
@@ -2082,6 +2178,23 @@ class PaymentService {
           if (e.error.code == FailureCode.Canceled) {
             throw Exception('Payment was cancelled by user');
           }
+          
+          // Check for BACS mandate confirmation activity crashes
+          final errorMsg = e.error.message ?? '';
+          final errorLocalizedMsg = e.error.localizedMessage ?? '';
+          if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+              errorMsg.contains('Cannot start Bacs mandate') ||
+              errorLocalizedMsg.contains('Bacs') ||
+              errorLocalizedMsg.contains('mandate') ||
+              errorMsg.contains('IllegalStateException')) {
+            AppLogger.error(
+              'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for subscription - falling back',
+            );
+            throw Exception(
+              'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+            );
+          }
+          
           AppLogger.error(
             'Stripe presentPaymentSheet failed for subscription: ${e.error.code} - ${e.error.localizedMessage}',
           );
@@ -2283,6 +2396,23 @@ class PaymentService {
           if (e.error.code == FailureCode.Canceled) {
             throw Exception('Payment was cancelled by user');
           }
+          
+          // Check for BACS mandate confirmation activity crashes
+          final errorMsg = e.error.message ?? '';
+          final errorLocalizedMsg = e.error.localizedMessage ?? '';
+          if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+              errorMsg.contains('Cannot start Bacs mandate') ||
+              errorLocalizedMsg.contains('Bacs') ||
+              errorLocalizedMsg.contains('mandate') ||
+              errorMsg.contains('IllegalStateException')) {
+            AppLogger.error(
+              'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for ad - falling back',
+            );
+            throw Exception(
+              'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+            );
+          }
+          
           AppLogger.error(
             'Stripe presentPaymentSheet failed for ad: ${e.error.code} - ${e.error.localizedMessage}',
           );
@@ -2485,6 +2615,23 @@ class PaymentService {
           if (e.error.code == FailureCode.Canceled) {
             throw Exception('Payment was cancelled by user');
           }
+          
+          // Check for BACS mandate confirmation activity crashes
+          final errorMsg = e.error.message ?? '';
+          final errorLocalizedMsg = e.error.localizedMessage ?? '';
+          if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+              errorMsg.contains('Cannot start Bacs mandate') ||
+              errorLocalizedMsg.contains('Bacs') ||
+              errorLocalizedMsg.contains('mandate') ||
+              errorMsg.contains('IllegalStateException')) {
+            AppLogger.error(
+              'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for sponsorship - falling back',
+            );
+            throw Exception(
+              'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+            );
+          }
+          
           AppLogger.error(
             'Stripe presentPaymentSheet failed for sponsorship: ${e.error.code} - ${e.error.localizedMessage}',
           );
@@ -2688,6 +2835,23 @@ class PaymentService {
           if (e.error.code == FailureCode.Canceled) {
             throw Exception('Payment was cancelled by user');
           }
+          
+          // Check for BACS mandate confirmation activity crashes
+          final errorMsg = e.error.message ?? '';
+          final errorLocalizedMsg = e.error.localizedMessage ?? '';
+          if (errorMsg.contains('BacsMandateConfirmationActivity') ||
+              errorMsg.contains('Cannot start Bacs mandate') ||
+              errorLocalizedMsg.contains('Bacs') ||
+              errorLocalizedMsg.contains('mandate') ||
+              errorMsg.contains('IllegalStateException')) {
+            AppLogger.error(
+              'BACS PAYMENT METHOD CRASH: BacsMandateConfirmationActivity failed for commission - falling back',
+            );
+            throw Exception(
+              'Bank transfer payment method is temporarily unavailable. Please try another payment method.',
+            );
+          }
+          
           AppLogger.error(
             'Stripe presentPaymentSheet failed for commission: ${e.error.code} - ${e.error.localizedMessage}',
           );

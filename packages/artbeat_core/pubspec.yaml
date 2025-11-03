@@ -41,7 +41,7 @@ dependencies:
   in_app_purchase: ^3.2.3
   in_app_purchase_android: ^0.4.0+6
   in_app_purchase_storekit: ^0.4.6
-  flutter_stripe: ^11.2.0
+  flutter_stripe: ^12.1.0
   http: ^1.1.0
 
   # JWT for service account authentication
@@ -56,6 +56,7 @@ dependencies:
   intl: ^0.20.2
   logging: ^1.2.0
   provider: ^6.0.5
+  easy_localization: ^3.0.7
   uuid: ^4.0.0
   path: ^1.8.3
   device_info_plus: ^11.5.0
@@ -79,8 +80,6 @@ dependencies:
     path: ../artbeat_artwork
   artbeat_auth:
     path: ../artbeat_auth
-  artbeat_capture:
-    path: ../artbeat_capture
   artbeat_community:
     path: ../artbeat_community
   artbeat_events:

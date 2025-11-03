@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/payment_service.dart';
 import '../models/subscription_tier.dart';
-import '../screens/enhanced_gift_purchase_screen.dart';
 import '../screens/subscription_purchase_screen.dart';
 // Note: PaymentMethodsScreen is now available in artbeat_artist package
 
@@ -15,8 +13,6 @@ class PaymentIntegrationExample extends StatefulWidget {
 }
 
 class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
-  final PaymentService _paymentService = PaymentService();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -172,58 +168,21 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: const Padding(
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Send Gifts to Artists',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Support artists by sending them thoughtful gifts.',
+            SizedBox(height: 8),
+            Text(
+              'Gifts are now sent via quick purchase flow (InAppGiftService).',
               style: TextStyle(color: Colors.grey),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const EnhancedGiftPurchaseScreen(
-                      recipientId: 'example_artist_id',
-                      recipientName: 'Example Artist',
-                    ),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.card_giftcard),
-              label: const Text('Send Gift'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Available Gift Types:',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            ..._paymentService.getGiftTypes().entries.map(
-              (entry) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('• ${entry.key}'),
-                    Text('\$${entry.value.toStringAsFixed(2)}'),
-                  ],
-                ),
-              ),
-            ),
+            SizedBox(height: 16),
           ],
         ),
       ),
@@ -310,7 +269,7 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
             ),
             _buildIntegrationStep(
               '4. One-time Payments',
-              'Use EnhancedGiftPurchaseScreen and AdPaymentScreen for single purchases.',
+              'Use AdPaymentScreen for ad purchases. Use InAppGiftService.purchaseQuickGift() for gifts.',
             ),
             _buildIntegrationStep(
               '5. Webhooks',

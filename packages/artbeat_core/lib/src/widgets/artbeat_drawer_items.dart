@@ -379,14 +379,14 @@ class ArtbeatDrawerItems {
   static const manageMyAds = ArtbeatDrawerItem(
     title: 'My Ads',
     icon: Icons.ads_click_outlined,
-    route: '/ads/my-ads',
+    route: '/ads/management',
     requiredRoles: ['artist', 'gallery'],
   );
 
   static const myAdStatistics = ArtbeatDrawerItem(
     title: 'Ad Performance',
     icon: Icons.analytics_outlined,
-    route: '/ads/my-statistics',
+    route: '/ads/statistics',
     color: ArtbeatColors.primaryGreen,
     requiredRoles: ['artist', 'gallery'],
   );

@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show
-        UserType,
-        SubscriptionTier,
-        ArtistProfileModel,
-        UserAvatar,
-        EnhancedUniversalHeader,
-        EnhancedGiftPurchaseScreen;
-import 'package:artbeat_core/src/widgets/secure_network_image.dart';
+import 'package:artbeat_core/artbeat_core.dart' hide SubscriptionService;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_community/artbeat_community.dart'
     show DirectCommissionService, ArtistCommissionSettings;
 import 'package:url_launcher/url_launcher.dart';
-import '../services/subscription_service.dart';
+import '../services/subscription_service.dart' as artist_subscription;
 import '../services/analytics_service.dart';
 import '../widgets/commission_badge_widget.dart';
 
@@ -31,7 +23,8 @@ class ArtistPublicProfileScreen extends StatefulWidget {
 }
 
 class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
-  final SubscriptionService _subscriptionService = SubscriptionService();
+  final artist_subscription.SubscriptionService _subscriptionService =
+      artist_subscription.SubscriptionService();
   final artwork.ArtworkService _artworkService = artwork.ArtworkService();
   final AnalyticsService _analyticsService = AnalyticsService();
   final DirectCommissionService _commissionService = DirectCommissionService();
@@ -327,12 +320,6 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                                   label: 'Gift',
                                   color: Colors.amber,
                                   onTap: () => _handleGiftAction(),
-                                ),
-                                _buildEngagementButton(
-                                  icon: Icons.attach_money,
-                                  label: 'Sponsor',
-                                  color: Colors.green,
-                                  onTap: () => _handleSponsorAction(),
                                 ),
                                 _buildEngagementButton(
                                   icon: Icons.message,
@@ -741,26 +728,44 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   }
 
   void _handleGiftAction() {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: _artistProfile!.userId,
-          recipientName: _artistProfile!.displayName,
-        ),
-      ),
-    );
-  }
+    if (_artistProfile == null) return;
 
-  void _handleSponsorAction() {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: _artistProfile!.userId,
-          recipientName: _artistProfile!.displayName,
-          initialTab: 2, // Open the subscription tab
+    // Debug: Add logging to understand what's happening
+    AppLogger.info(
+        '🎁 Gift action triggered for artist: ${_artistProfile!.userId}');
+    AppLogger.info('🎁 Artist name: ${_artistProfile!.displayName}');
+
+    // Check if user is authenticated
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to send gifts'),
+          backgroundColor: Colors.red,
         ),
+      );
+      return;
+    }
+
+    // Check if user is trying to gift themselves
+    if (_currentUserId == _artistProfile!.userId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You cannot send gifts to yourself'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => GiftSelectionWidget(
+        recipientId: _artistProfile!.userId,
+        recipientName: _artistProfile!.displayName,
       ),
     );
   }

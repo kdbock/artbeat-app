@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/services/in_app_gift_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -40,6 +41,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   final int _postsPerPage = 10;
   late ScrollController _scrollController;
   bool _isCurrentUserArtist = false;
+  final InAppGiftService _giftService = InAppGiftService();
 
   @override
   void initState() {
@@ -269,14 +271,15 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleGift(BaseGroupPost post) {
-    // Navigate to enhanced gift purchasing flow for the artist
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: post.userId,
-          recipientName: post.userName,
-        ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => GiftSelectionWidget(
+        recipientId: post.userId,
+        recipientName: post.userName,
       ),
     );
   }
@@ -368,17 +371,35 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
     );
   }
 
-  void _handleArtistGift() {
-    // Navigate to enhanced gift purchasing flow for the artist
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: widget.artist.userId,
-          recipientName: widget.artist.displayName,
-        ),
+  void _handleArtistGift() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Processing gift...'),
+        duration: Duration(seconds: 1),
       ),
     );
+
+    final success = await _giftService.purchaseQuickGift(widget.artist.userId);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gift purchase initiated! 🎁'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to send gift. Please try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _handleArtistSponsor() {

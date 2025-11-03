@@ -4,7 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/engagement_model.dart';
 import '../services/engagement_config_service.dart';
 import '../services/content_engagement_service.dart';
-import '../screens/enhanced_gift_purchase_screen.dart';
+import '../services/in_app_gift_service.dart';
 
 /// Content-specific engagement bar for ARTbeat content types
 /// Replaces the universal engagement bar with content-specific engagement options
@@ -42,6 +42,7 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   late EngagementStats _stats;
   final Map<EngagementType, bool> _userEngagements = {};
   bool _isLoading = false;
+  final InAppGiftService _giftService = InAppGiftService();
 
   @override
   void initState() {
@@ -539,87 +540,47 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showGiftDialog() async {
-    if (widget.artistId == null || widget.artistName == null) {
-      // Show a dialog to collect recipient information
-      await _showRecipientSelectionDialog();
+    if (widget.artistId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot send gift - artist not found.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
-    // Navigate to gift purchase screen
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: widget.artistId!,
-          recipientName: widget.artistName!,
-        ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Processing gift...'),
+        duration: Duration(seconds: 1),
       ),
     );
-  }
 
-  Future<void> _showRecipientSelectionDialog() async {
-    final TextEditingController recipientController = TextEditingController();
+    final success = await _giftService.purchaseQuickGift(widget.artistId!);
 
-    final result = await showDialog<Map<String, String>?>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Send Gift'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Enter the username or email of the recipient:'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: recipientController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Username or email',
-                  prefixIcon: Icon(Icons.person),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Note: The recipient must be a registered ARTbeat user.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final input = recipientController.text.trim();
-                if (input.isNotEmpty) {
-                  // For now, use the input as both ID and name
-                  // In a real implementation, you'd lookup the user
-                  Navigator.pop(context, {
-                    'recipientId': input,
-                    'recipientName': input,
-                  });
-                }
-              },
-              child: const Text('Continue'),
-            ),
-          ],
-        );
-      },
-    );
+    if (!mounted) return;
 
-    if (result != null) {
-      // Navigate to gift purchase screen with the selected recipient
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) => EnhancedGiftPurchaseScreen(
-            recipientId: result['recipientId']!,
-            recipientName: result['recipientName']!,
-          ),
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gift purchase initiated! 🎁'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to send gift. Please try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
         ),
       );
     }
   }
+
+
 
   Future<void> _handleShare() async {
     try {

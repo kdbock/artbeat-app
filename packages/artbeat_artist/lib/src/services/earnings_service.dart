@@ -29,6 +29,7 @@ class EarningsService {
           sponsorshipEarnings: 0.0,
           commissionEarnings: 0.0,
           subscriptionEarnings: 0.0,
+          artworkSalesEarnings: 0.0,
           lastUpdated: DateTime.now(),
           monthlyBreakdown: {},
           recentTransactions: [],
@@ -113,6 +114,7 @@ class EarningsService {
         'sponsorshipEarnings': 0.0,
         'commissionEarnings': 0.0,
         'subscriptionEarnings': 0.0,
+        'artworkSalesEarnings': 0.0,
         'transactionCount': transactions.length,
         'averageTransaction': 0.0,
         'dailyBreakdown': <String, double>{},
@@ -139,6 +141,10 @@ class EarningsService {
           case 'subscription':
             stats['subscriptionEarnings'] =
                 (stats['subscriptionEarnings'] as double) + amount;
+            break;
+          case 'artwork_sale':
+            stats['artworkSalesEarnings'] =
+                (stats['artworkSalesEarnings'] as double) + amount;
             break;
         }
 
@@ -374,6 +380,7 @@ class EarningsService {
             sponsorshipEarnings: type == 'sponsorship' ? amount : 0.0,
             commissionEarnings: type == 'commission' ? amount : 0.0,
             subscriptionEarnings: type == 'subscription' ? amount : 0.0,
+            artworkSalesEarnings: type == 'artwork_sale' ? amount : 0.0,
             lastUpdated: DateTime.now(),
             monthlyBreakdown: {
               DateTime.now().month.toString(): amount,
@@ -413,6 +420,9 @@ class EarningsService {
               break;
             case 'subscription':
               updates['subscriptionEarnings'] = FieldValue.increment(amount);
+              break;
+            case 'artwork_sale':
+              updates['artworkSalesEarnings'] = FieldValue.increment(amount);
               break;
           }
 
@@ -459,6 +469,7 @@ class EarningsService {
           'sponsorships': earnings.sponsorshipEarnings,
           'commissions': earnings.commissionEarnings,
           'subscriptions': earnings.subscriptionEarnings,
+          'artworkSales': earnings.artworkSalesEarnings,
         },
         'monthlyTrend': earnings.monthlyBreakdown,
       };

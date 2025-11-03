@@ -37,6 +37,7 @@ class ArtCommunityService extends ChangeNotifier {
           .get();
 
       final artists = <ArtistProfile>[];
+      final currentUser = FirebaseAuth.instance.currentUser;
 
       for (final doc in snapshot.docs) {
         try {
@@ -76,16 +77,53 @@ class ArtCommunityService extends ChangeNotifier {
             }
           }
 
-          // Create artist with portfolio images
-          final artistWithPortfolio = artist.copyWith(
+          // Check if current user is following this artist and get updated follower count
+          bool isFollowing = false;
+          int updatedFollowersCount = artist.followersCount;
+
+          if (currentUser != null && currentUser.uid != artist.userId) {
+            try {
+              final followDoc = await _firestore
+                  .collection('follows')
+                  .doc('${currentUser.uid}_${artist.userId}')
+                  .get();
+              isFollowing = followDoc.exists;
+            } catch (e) {
+              AppLogger.warning(
+                '🎨 Could not check follow status for ${artist.displayName}: $e',
+              );
+            }
+          }
+
+          // Get updated follower count from users collection
+          try {
+            final userDoc = await _firestore
+                .collection('users')
+                .doc(artist.userId)
+                .get();
+            if (userDoc.exists) {
+              final userData = userDoc.data() ?? {};
+              updatedFollowersCount =
+                  userData['followersCount'] as int? ?? artist.followersCount;
+            }
+          } catch (e) {
+            AppLogger.warning(
+              '🎨 Could not get updated follower count for ${artist.displayName}: $e',
+            );
+          }
+
+          // Create artist with portfolio images, follow status, and updated follower count
+          final artistWithData = artist.copyWith(
             portfolioImages: portfolioImages,
+            isFollowedByCurrentUser: isFollowing,
+            followersCount: updatedFollowersCount,
           );
 
           AppLogger.info(
-            '🎨 Loaded artist: ${artistWithPortfolio.displayName}, avatar: ${artistWithPortfolio.avatarUrl}, portfolio: ${artistWithPortfolio.portfolioImages.length} images',
+            '🎨 Loaded artist: ${artistWithData.displayName}, avatar: ${artistWithData.avatarUrl}, portfolio: ${artistWithData.portfolioImages.length} images, following: $isFollowing, followers: $updatedFollowersCount',
           );
 
-          artists.add(artistWithPortfolio);
+          artists.add(artistWithData);
         } catch (e) {
           AppLogger.error('🎨 Error parsing artist doc ${doc.id}: $e');
         }

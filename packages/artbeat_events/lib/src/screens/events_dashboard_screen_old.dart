@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
 import 'events_list_screen.dart';
 import 'my_tickets_screen.dart';
@@ -503,10 +502,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 const SizedBox(height: 16),
 
                 // Events & Experiences Zone ad placement
-                const ZoneAdPlacementWidget(
-                  zone: AdZone.events,
-                  showIfEmpty: true,
-                ),
+                
                 const SizedBox(height: 24),
 
                 // Quick Actions

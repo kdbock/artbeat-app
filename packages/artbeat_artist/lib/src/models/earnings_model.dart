@@ -11,6 +11,7 @@ class EarningsModel {
   final double sponsorshipEarnings;
   final double commissionEarnings;
   final double subscriptionEarnings;
+  final double artworkSalesEarnings;
   final DateTime lastUpdated;
   final Map<String, double> monthlyBreakdown;
   final List<EarningsTransaction> recentTransactions;
@@ -25,6 +26,7 @@ class EarningsModel {
     required this.sponsorshipEarnings,
     required this.commissionEarnings,
     required this.subscriptionEarnings,
+    required this.artworkSalesEarnings,
     required this.lastUpdated,
     required this.monthlyBreakdown,
     required this.recentTransactions,
@@ -46,6 +48,8 @@ class EarningsModel {
           (data['commissionEarnings'] as num?)?.toDouble() ?? 0.0,
       subscriptionEarnings:
           (data['subscriptionEarnings'] as num?)?.toDouble() ?? 0.0,
+      artworkSalesEarnings:
+          (data['artworkSalesEarnings'] as num?)?.toDouble() ?? 0.0,
       lastUpdated:
           (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
       monthlyBreakdown: Map<String, double>.from(
@@ -69,6 +73,7 @@ class EarningsModel {
       'sponsorshipEarnings': sponsorshipEarnings,
       'commissionEarnings': commissionEarnings,
       'subscriptionEarnings': subscriptionEarnings,
+      'artworkSalesEarnings': artworkSalesEarnings,
       'lastUpdated': Timestamp.fromDate(lastUpdated),
       'monthlyBreakdown': monthlyBreakdown,
       'recentTransactions': recentTransactions.map((t) => t.toMap()).toList(),
@@ -96,6 +101,7 @@ class EarningsModel {
       'Sponsorships': (sponsorshipEarnings / totalEarnings) * 100,
       'Commissions': (commissionEarnings / totalEarnings) * 100,
       'Subscriptions': (subscriptionEarnings / totalEarnings) * 100,
+      'Artwork Sales': (artworkSalesEarnings / totalEarnings) * 100,
     };
   }
 }
@@ -104,7 +110,7 @@ class EarningsModel {
 class EarningsTransaction {
   final String id;
   final String artistId;
-  final String type; // gift, sponsorship, commission, subscription
+  final String type; // gift, sponsorship, commission, subscription, artwork_sale
   final double amount;
   final String fromUserId;
   final String fromUserName;

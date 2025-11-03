@@ -1,0 +1,172 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/index.dart';
+import '../services/local_ad_service.dart';
+import '../widgets/ad_card.dart';
+import 'create_local_ad_screen.dart';
+
+class MyAdsScreen extends StatefulWidget {
+  const MyAdsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MyAdsScreen> createState() => _MyAdsScreenState();
+}
+
+class _MyAdsScreenState extends State<MyAdsScreen> {
+  late final String _userId;
+  final _adService = LocalAdService();
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+    _userId = user.uid;
+  }
+
+  Future<void> _deleteAd(String adId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Ad?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _adService.deleteAd(adId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ad deleted')),
+          );
+          setState(() {});
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Ads'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (context) => const CreateLocalAdScreen(),
+            ),
+          ).then((_) => setState(() {}));
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: FutureBuilder<List<LocalAd>>(
+        future: _adService.getMyAds(_userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+
+          final ads = snapshot.data ?? [];
+          final activeAds = ads
+              .where((ad) => ad.status == LocalAdStatus.active && !ad.isExpired)
+              .toList();
+          final expiredAds = ads
+              .where((ad) =>
+                  ad.status == LocalAdStatus.expired ||
+                  (ad.status == LocalAdStatus.active && ad.isExpired))
+              .toList();
+
+          if (ads.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.ads_click,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No ads yet',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Post your first ad to get started',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView(
+            children: [
+              if (activeAds.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Active Ads (${activeAds.length})',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                ...activeAds
+                    .map((ad) => AdCard(
+                          ad: ad,
+                          onDelete: () => _deleteAd(ad.id),
+                        ))
+                    .toList(),
+              ],
+              if (expiredAds.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Expired Ads (${expiredAds.length})',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.grey,
+                        ),
+                  ),
+                ),
+                ...expiredAds
+                    .map((ad) => AdCard(
+                          ad: ad,
+                          onDelete: () => _deleteAd(ad.id),
+                        ))
+                    .toList(),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+}

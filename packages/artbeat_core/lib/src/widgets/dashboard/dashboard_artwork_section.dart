@@ -475,15 +475,16 @@ class DashboardArtworkSection extends StatelessWidget {
     }
   }
 
-  void _handleGiftArtist(BuildContext context, ArtworkModel artwork) async {
-    // Navigate to enhanced gift purchasing flow for the artist
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: artwork.artistId,
-          recipientName: artwork.artistName,
-        ),
+  void _handleGiftArtist(BuildContext context, ArtworkModel artwork) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => GiftSelectionWidget(
+        recipientId: artwork.artistId,
+        recipientName: artwork.artistName,
       ),
     );
   }

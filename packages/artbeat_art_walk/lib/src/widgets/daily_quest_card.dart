@@ -26,6 +26,7 @@ class _DailyQuestCardState extends State<DailyQuestCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  bool _showHelpOverlay = false;
 
   @override
   void initState() {
@@ -56,6 +57,19 @@ class _DailyQuestCardState extends State<DailyQuestCard>
     final isCompleted = challenge.isCompleted;
     final progressPercent = challenge.progressPercentage;
 
+    return Stack(
+      children: [
+        _buildMainCard(challenge, isCompleted, progressPercent),
+        if (_showHelpOverlay) _buildHelpOverlayWidget(challenge),
+      ],
+    );
+  }
+
+  Widget _buildMainCard(
+    ChallengeModel challenge,
+    bool isCompleted,
+    double progressPercent,
+  ) {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
@@ -136,6 +150,28 @@ class _DailyQuestCardState extends State<DailyQuestCard>
                                     letterSpacing: 1.2,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _showHelpOverlay = true;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.help_outline,
+                                      color: Colors.white70,
+                                      size: 12,
+                                    ),
+                                  ),
+                                ),
                                 if (isCompleted) ...[
                                   const SizedBox(width: 8),
                                   const Icon(
@@ -213,11 +249,6 @@ class _DailyQuestCardState extends State<DailyQuestCard>
                       height: 1.4,
                     ),
                   ),
-
-                  const SizedBox(height: 16),
-
-                  // How to Complete section
-                  _buildHowToCompleteSection(challenge),
 
                   const SizedBox(height: 16),
 
@@ -343,6 +374,89 @@ class _DailyQuestCardState extends State<DailyQuestCard>
     );
   }
 
+  Widget _buildHelpOverlayWidget(ChallengeModel challenge) {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _showHelpOverlay = false;
+          });
+        },
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.7),
+          child: Center(
+            child: GestureDetector(
+              onTap: () {}, // Prevent closing when tapping content
+              child: Container(
+                margin: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
+                constraints: const BoxConstraints(maxHeight: 500),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'How to Complete',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _showHelpOverlay = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _buildHelpSteps(challenge),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoadingCard() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -355,82 +469,53 @@ class _DailyQuestCardState extends State<DailyQuestCard>
     );
   }
 
-  Widget _buildHowToCompleteSection(ChallengeModel challenge) {
+  List<Widget> _buildHelpSteps(ChallengeModel challenge) {
     final steps = _getCompletionSteps(challenge.title);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.help_outline, color: Colors.white70, size: 16),
-              SizedBox(width: 8),
-              Text(
-                'How to Complete',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+    return steps.asMap().entries.map((entry) {
+      final index = entry.key + 1;
+      final step = entry.value;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...steps.asMap().entries.map((entry) {
-            final index = entry.key + 1;
-            final step = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$index',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+              child: Center(
+                child: Text(
+                  '$index',
+                  style: const TextStyle(
+                    color: ArtbeatColors.primaryPurple,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      step,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                step,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 
   List<String> _getCompletionSteps(String title) {

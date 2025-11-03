@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' show MainLayout;
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artwork_model.dart';
 import '../widgets/artwork_header.dart';
-import '../widgets/artwork_grid_widget.dart';
 
 /// Screen for browsing all artwork, with filtering options
 class ArtworkBrowseScreen extends StatefulWidget {
@@ -158,11 +158,107 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
         final artworks =
             docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
 
-        return ArtworkGridWidget(
-          artworks: artworks,
-          onArtworkTap: (artwork) => _navigateToArtworkDetail(artwork.id),
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
+        return CustomScrollView(
+          slivers: [
+            // Slot 1: Header banner
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: AdSmallBannerWidget(
+                  zone: LocalAdZone.artists,
+                  height: 80,
+                ),
+              ),
+            ),
+
+            // Grid with interspersed ads
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    // Slot 2: Interspersed ad every 6th item
+                    if (index > 0 && (index - 1) % 6 == 0) {
+                      return const AdGridCardWidget(
+                        zone: LocalAdZone.artists,
+                        size: 150,
+                      );
+                    }
+
+                    // Calculate actual artwork index accounting for ads
+                    final int adsShown = (index - 1) ~/ 6;
+                    final int artworkIndex = index - adsShown;
+
+                    if (artworkIndex >= artworks.length) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final artwork = artworks[artworkIndex];
+                    return GestureDetector(
+                      onTap: () => _navigateToArtworkDetail(artwork.id),
+                      child: Card(
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                color: Colors.grey[300],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                artwork.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: artworks.length + (artworks.length ~/ 6),
+                ),
+              ),
+            ),
+
+            // Slot 3: Filter section ad
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: AdSmallBannerWidget(
+                  zone: LocalAdZone.artists,
+                  height: 120,
+                ),
+              ),
+            ),
+
+            // Slot 4: Bottom load-more banner
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: AdSmallBannerWidget(
+                  zone: LocalAdZone.artists,
+                  height: 100,
+                ),
+              ),
+            ),
+
+            // Bottom padding
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 80),
+            ),
+          ],
         );
       },
     );

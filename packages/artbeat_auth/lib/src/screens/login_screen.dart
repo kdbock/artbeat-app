@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -203,20 +204,20 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 24),
 
         // Divider with "OR" text
-        const Row(
+        Row(
           children: [
-            Expanded(child: Divider()),
+            const Expanded(child: Divider()),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'OR',
-                style: TextStyle(
+                'common_or'.tr(),
+                style: const TextStyle(
                   color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Expanded(child: Divider()),
+            const Expanded(child: Divider()),
           ],
         ),
 
@@ -230,9 +231,9 @@ class _LoginScreenState extends State<LoginScreen> {
             key: const Key('google_sign_in_button'),
             onPressed: _isLoading ? null : _handleGoogleSignIn,
             icon: const Icon(Icons.g_mobiledata, color: Colors.red, size: 24),
-            label: const Text(
-              'Continue with Google',
-              style: TextStyle(
+            label: Text(
+              'auth_sign_in_with_google'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
@@ -258,9 +259,9 @@ class _LoginScreenState extends State<LoginScreen> {
               key: const Key('apple_sign_in_button'),
               onPressed: _isLoading ? null : _handleAppleSignIn,
               icon: const Icon(Icons.apple, color: Colors.black, size: 24),
-              label: const Text(
-                'Continue with Apple',
-                style: TextStyle(
+              label: Text(
+                'auth_sign_in_with_apple'.tr(),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Colors.black87,
@@ -332,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Welcome Back!',
+                          'auth_welcome'.tr(),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.displaySmall
                               ?.copyWith(
@@ -342,7 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sign in to continue your artistic journey',
+                          'auth_sign_in_continue'.tr(),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: ArtbeatColors.textSecondary),
@@ -351,12 +352,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ArtbeatInput(
                           key: const Key('emailField'),
                           controller: _emailController,
-                          label: 'Email',
+                          label: 'auth_email'.tr(),
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(Icons.email_outlined),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
+                              return 'auth_error_email_required'.tr();
                             }
                             return null;
                           },
@@ -365,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ArtbeatInput(
                           key: const Key('passwordField'),
                           controller: _passwordController,
-                          label: 'Password',
+                          label: 'auth_password'.tr(),
                           obscureText: _obscurePassword,
                           prefixIcon: const Icon(Icons.lock_outlined),
                           suffixIcon: IconButton(
@@ -383,7 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
+                              return 'auth_error_password_required'.tr();
                             }
                             return null;
                           },
@@ -406,7 +407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Login'),
+                                : Text('auth_sign_in'.tr()),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -437,7 +438,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ).pushReplacementNamed(AuthRoutes.register),
                                     child: Center(
                                       child: Text(
-                                        'Create Account',
+                                        'auth_create_account'.tr(),
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge
@@ -475,7 +476,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ).pushNamed(AuthRoutes.forgotPassword),
                                     child: Center(
                                       child: Text(
-                                        'Forgot Password?',
+                                        'auth_forgot_password'.tr(),
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge

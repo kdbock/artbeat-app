@@ -296,6 +296,72 @@ class CrashPreventionService {
     return true;
   }
 
+  /// Validate BACS Direct Debit payment arguments (UK banking)
+  /// Prevents BacsMandateConfirmationActivity crashes
+  static bool validateBacsPaymentArgs(Map<String, dynamic>? args) {
+    if (args == null || args.isEmpty) {
+      logCrashPrevention(
+        operation: 'bacs_payment_validation',
+        errorType: 'null_or_empty_args',
+        additionalInfo: 'BACS payment args are null or empty',
+      );
+      return false;
+    }
+
+    // Check for required BACS mandate information
+    final hasPaymentSecret =
+        args.containsKey('paymentIntentClientSecret') &&
+        args['paymentIntentClientSecret'] != null;
+    final hasSetupSecret =
+        args.containsKey('setupIntentClientSecret') &&
+        args['setupIntentClientSecret'] != null;
+
+    if (!hasPaymentSecret && !hasSetupSecret) {
+      logCrashPrevention(
+        operation: 'bacs_payment_validation',
+        errorType: 'missing_client_secret_for_bacs',
+        additionalInfo: 'BACS mandate requires client secret',
+      );
+      return false;
+    }
+
+    // Validate merchant display name (required for mandate UI)
+    if (!args.containsKey('merchantDisplayName') ||
+        args['merchantDisplayName'] == null ||
+        args['merchantDisplayName'].toString().isEmpty) {
+      logCrashPrevention(
+        operation: 'bacs_payment_validation',
+        errorType: 'missing_merchant_name_for_bacs',
+        additionalInfo: 'BACS mandate requires merchant display name',
+      );
+      return false;
+    }
+
+    // Check for customer ID (often required for BACS)
+    if (args.containsKey('customerId') && args['customerId'] == null) {
+      logCrashPrevention(
+        operation: 'bacs_payment_validation',
+        errorType: 'null_customer_id_for_bacs',
+        additionalInfo: 'BACS mandate requires valid customer ID',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Check if an error message indicates a BACS mandate confirmation activity crash
+  /// These crashes occur when BacsMandateConfirmationActivity is launched without proper args
+  static bool isBacsMandateCrash(String? errorMessage) {
+    if (errorMessage == null || errorMessage.isEmpty) return false;
+    
+    final lowerMsg = errorMessage.toLowerCase();
+    return lowerMsg.contains('bacsmandateconfirmationactivity') ||
+        lowerMsg.contains('cannot start bacs mandate') ||
+        lowerMsg.contains('bacs') && lowerMsg.contains('mandate') ||
+        lowerMsg.contains('illegalstateexception') && lowerMsg.contains('bacs');
+  }
+
   /// Validate billing purchase data to prevent null PendingIntent crashes
   static bool validateBillingPurchaseData(dynamic purchaseData) {
     if (purchaseData == null) {

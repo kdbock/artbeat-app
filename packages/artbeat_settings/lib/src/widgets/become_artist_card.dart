@@ -19,6 +19,7 @@ class BecomeArtistCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -29,6 +30,8 @@ class BecomeArtistCard extends StatelessWidget {
             Text(
               'Share your artwork with the world, connect with galleries, and grow your artistic career.',
               style: Theme.of(context).textTheme.bodyMedium,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 16),
             SizedBox(

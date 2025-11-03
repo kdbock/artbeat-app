@@ -30,6 +30,22 @@ enum SubscriptionTier {
     }
   }
 
+  /// Returns the yearly price in dollars
+  double get yearlyPrice {
+    switch (this) {
+      case SubscriptionTier.free:
+        return 0.0;
+      case SubscriptionTier.starter:
+        return 47.99; // 20% savings
+      case SubscriptionTier.creator:
+        return 124.99; // 20% savings
+      case SubscriptionTier.business:
+        return 289.99; // Yearly price for Apple App Store
+      case SubscriptionTier.enterprise:
+        return 769.99; // Yearly price for Apple App Store
+    }
+  }
+
   /// Returns a list of features included in this subscription tier
   /// Updated with 2025 usage-based limits and modern features
   List<String> get features {

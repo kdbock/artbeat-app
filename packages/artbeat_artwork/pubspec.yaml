@@ -24,6 +24,8 @@ dependencies:
     path: ../artbeat_artist
   artbeat_art_walk:
     path: ../artbeat_art_walk
+  artbeat_ads:
+    path: ../artbeat_ads
 
   # Required packages for artwork functionality
   image_picker: ^1.0.7

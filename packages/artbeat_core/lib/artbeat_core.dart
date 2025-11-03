@@ -52,6 +52,8 @@ export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
 export 'src/services/coupon_service.dart' show CouponService;
 export 'src/services/stripe_payment_service.dart' show StripePaymentService;
+export 'src/services/capture_service_interface.dart'
+    show CaptureServiceInterface, DefaultCaptureService;
 // CRITICAL: Crash prevention services (2025 stability fixes)
 export 'src/services/stripe_safety_service.dart'
     show StripeSafetyService, PaymentSheetResult;
@@ -76,7 +78,6 @@ export 'src/services/content_engagement_service.dart'
     show ContentEngagementService;
 export 'src/services/engagement_config_service.dart'
     show EngagementConfigService;
-export 'src/services/enhanced_gift_service.dart' show EnhancedGiftService;
 export 'src/services/accessibility_service.dart'
     show AccessibilityService, AccessibleNavItem, AccessibilityMixin;
 export 'src/services/performance_optimization_service.dart'
@@ -99,9 +100,7 @@ export 'src/controllers/search_controller.dart'
 export 'src/repositories/known_entity_repository.dart'
     show KnownEntityRepository;
 
-// Export Enhanced Gift Screens
-export 'src/screens/enhanced_gift_purchase_screen.dart'
-    show EnhancedGiftPurchaseScreen;
+// Export Screens
 export 'src/screens/leaderboard_screen.dart' show LeaderboardScreen;
 export 'src/screens/help_support_screen.dart' show HelpSupportScreen;
 

@@ -146,7 +146,7 @@ class InAppSubscriptionService {
   /// Get subscription pricing for display
   Map<String, dynamic> getSubscriptionPricing(SubscriptionTier tier) {
     final monthlyPrice = tier.monthlyPrice;
-    final yearlyPrice = monthlyPrice * 12 * 0.8; // 20% discount for yearly
+    final yearlyPrice = tier.yearlyPrice;
     final yearlySavings = (monthlyPrice * 12) - yearlyPrice;
 
     return {

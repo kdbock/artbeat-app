@@ -59,8 +59,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
         targetSdk = 36  // Updated to match compileSdk
-        versionCode = 63
-        versionName = "2.3.1"
+        versionCode = 67
+        versionName = "2.3.5"
         
         // Enable multidex for large app
         multiDexEnabled = true
@@ -112,4 +112,13 @@ dependencies {
     
     // Multidex support
     implementation("androidx.multidex:multidex:2.0.1")
+    
+    // Explicit Google Play Services versions to fix crashes
+    // Prevents null object reference crashes in Google Sign-In and related services
+    implementation("com.google.android.gms:play-services-auth:21.1.0")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
+    
+    // Ensure AndroidX compatibility
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.activity:activity-ktx:1.10.0")
 }

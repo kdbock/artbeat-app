@@ -126,7 +126,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
 
   Widget _buildModernProgressBar() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           for (int i = 0; i < 4; i++)
@@ -155,8 +155,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
             opacity: _slideAnimation.value.clamp(0.0, 1.0),
-            child: Padding(
-              padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -285,8 +285,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
             opacity: _slideAnimation.value.clamp(0.0, 1.0),
-            child: Padding(
-              padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -306,69 +306,69 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 2.5,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      itemCount: _artistInterests.length,
-                      itemBuilder: (context, index) {
-                        final interest = _artistInterests[index];
-                        final isSelected =
-                            _selectedInterests.contains(interest);
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 2.5,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: _artistInterests.length,
+                    itemBuilder: (context, index) {
+                      final interest = _artistInterests[index];
+                      final isSelected =
+                          _selectedInterests.contains(interest);
 
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedInterests.remove(interest);
-                                  } else {
-                                    _selectedInterests.add(interest);
-                                  }
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedInterests.remove(interest);
+                                } else {
+                                  _selectedInterests.add(interest);
+                                }
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey.shade300,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                color: isSelected
+                                    ? Theme.of(context)
+                                        .primaryColor
+                                        .withValues(alpha: 0.1)
+                                    : Colors.white,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  interest,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                     color: isSelected
                                         ? Theme.of(context).primaryColor
-                                        : Colors.grey.shade300,
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                  color: isSelected
-                                      ? Theme.of(context)
-                                          .primaryColor
-                                          .withValues(alpha: 0.1)
-                                      : Colors.white,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    interest,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? Theme.of(context).primaryColor
-                                          : Colors.grey.shade700,
-                                    ),
+                                        : Colors.grey.shade700,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -387,8 +387,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
             opacity: _slideAnimation.value.clamp(0.0, 1.0),
-            child: Padding(
-              padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -408,85 +408,81 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Expanded(
-                    child: ListView(
-                      children: _experienceLevels.entries.map((entry) {
-                        final isSelected = _experienceLevel == entry.key;
+                  ..._experienceLevels.entries.map((entry) {
+                    final isSelected = _experienceLevel == entry.key;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _experienceLevel = entry.key;
-                                });
-                              },
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _experienceLevel = entry.key;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              color: isSelected
+                                  ? Theme.of(context)
+                                      .primaryColor
+                                      .withValues(alpha: 0.1)
+                                  : Colors.white,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey.shade400,
+                                      width: 2,
+                                    ),
                                     color: isSelected
                                         ? Theme.of(context).primaryColor
-                                        : Colors.grey.shade300,
-                                    width: isSelected ? 2 : 1,
+                                        : Colors.transparent,
                                   ),
-                                  color: isSelected
-                                      ? Theme.of(context)
-                                          .primaryColor
-                                          .withValues(alpha: 0.1)
-                                      : Colors.white,
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 16,
+                                          color: Colors.white,
+                                        )
+                                      : null,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Theme.of(context).primaryColor
-                                              : Colors.grey.shade400,
-                                          width: 2,
-                                        ),
-                                        color: isSelected
-                                            ? Theme.of(context).primaryColor
-                                            : Colors.transparent,
-                                      ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check,
-                                              size: 16,
-                                              color: Colors.white,
-                                            )
-                                          : null,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    entry.value,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey.shade700,
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Text(
-                                        entry.value,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: isSelected
-                                              ? Theme.of(context).primaryColor
-                                              : Colors.grey.shade700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ],
               ),
             ),
@@ -509,180 +505,172 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
             opacity: _slideAnimation.value.clamp(0.0, 1.0),
-            child: Padding(
-              padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Perfect plan for you',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Based on your interests: ${_selectedInterests.take(2).join(", ")}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-
-                          // AI recommendation card
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Theme.of(context)
-                                      .primaryColor
-                                      .withValues(alpha: 0.1),
-                                  Colors.purple.shade50,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .primaryColor
-                                    .withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.auto_awesome,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'AI Recommended',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  recommendedPlan['name'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  recommendedPlan['price'] as String,
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  recommendedPlan['description'] as String,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-                          // Feature preview
-                          const Text(
-                            'What you\'ll get:',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Plan selection
-                          const Text(
-                            'Choose a plan',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Plan cards
-                          Column(
-                            children: [
-                              for (final tier in [
-                                SubscriptionTier.free,
-                                SubscriptionTier.starter,
-                                SubscriptionTier.creator,
-                                SubscriptionTier.business,
-                              ])
-                                _buildSelectablePlanCard(
-                                  details: SubscriptionService()
-                                      .getSubscriptionDetails(tier),
-                                  tier: tier,
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Selected plan features (non-scrollable list inside scroll view)
-                          Column(
-                            children:
-                                (recommendedPlan['features'] as List).map((f) {
-                              final feature = f as String;
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        Icons.check,
-                                        size: 16,
-                                        color: Colors.green.shade700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        feature,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
+                  const Text(
+                    'Perfect plan for you',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Based on your interests: ${_selectedInterests.take(2).join(", ")}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // AI recommendation card
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.1),
+                          Colors.purple.shade50,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .primaryColor
+                            .withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.auto_awesome,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'AI Recommended',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          recommendedPlan['name'] as String,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          recommendedPlan['price'] as String,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          recommendedPlan['description'] as String,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  // Feature preview
+                  const Text(
+                    'What you\'ll get:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Plan selection
+                  const Text(
+                    'Choose a plan',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Plan cards
+                  Column(
+                    children: [
+                      for (final tier in [
+                        SubscriptionTier.free,
+                        SubscriptionTier.starter,
+                        SubscriptionTier.creator,
+                        SubscriptionTier.business,
+                      ])
+                        _buildSelectablePlanCard(
+                          details: SubscriptionService()
+                              .getSubscriptionDetails(tier),
+                          tier: tier,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Selected plan features (non-scrollable list inside scroll view)
+                  Column(
+                    children:
+                        (recommendedPlan['features'] as List).map((f) {
+                      final feature = f as String;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.check,
+                                size: 16,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                feature,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -782,51 +770,77 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
   }
 
   Future<void> _completeOnboarding() async {
-    // Confirm with the user before making subscription changes
-    if (_selectedPlanName != null) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Confirm Plan'),
-          content: Text(
-              'Switch to "$_selectedPlanName"? This will update your subscription.'),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel')),
-            ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Confirm')),
-          ],
-        ),
-      );
+    final tier = _selectedPlanName != null ? _tierForPlanName(_selectedPlanName!) : null;
+    
+    if (tier == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a plan')),
+        );
+      }
+      return;
+    }
 
-      if (confirmed != true) return;
-
-      final tier = _tierForPlanName(_selectedPlanName!);
-      if (tier != null) {
-        setState(() => _isProcessingPlan = true);
+    // For free tier, just update the subscription and continue
+    if (tier == SubscriptionTier.free) {
+      setState(() => _isProcessingPlan = true);
+      try {
         final result = await SubscriptionService()
             .changeTierWithValidation(tier, validateOnly: false);
         setState(() => _isProcessingPlan = false);
 
         if ((result['isValid'] as bool? ?? false) == false) {
-          final msg = result['message'] ?? 'Failed to change plan';
-          if (mounted)
+          final msg = result['message'] ?? 'Failed to set free plan';
+          if (mounted) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(msg.toString())));
+          }
           return;
         }
-      }
-    }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Plan updated — continuing to profile setup')));
-      Navigator.pushReplacement(
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Welcome! Setting up your profile...')),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(
+              builder: (context) => const ArtistProfileEditScreen(),
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() => _isProcessingPlan = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
+      }
+    } else {
+      // For paid tiers, navigate to payment screen
+      if (mounted) {
+        final purchaseSuccess = await Navigator.push<bool>(
           context,
-          MaterialPageRoute<void>(
-              builder: (context) => const ArtistProfileEditScreen()));
+          MaterialPageRoute<bool>(
+            builder: (context) => SubscriptionPurchaseScreen(tier: tier),
+          ),
+        );
+
+        if (purchaseSuccess == true && mounted) {
+          // Payment successful, continue to profile setup
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Welcome! Setting up your profile...')),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(
+              builder: (context) => const ArtistProfileEditScreen(),
+            ),
+          );
+        }
+        // If purchaseSuccess is null or false, user cancelled - stay on this screen
+      }
     }
   }
 
@@ -899,7 +913,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
 
   Widget _buildModernNavigation() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -920,7 +934,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                   curve: Curves.easeInOut,
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -928,7 +942,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                 child: const Text('Back'),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
           ],
           Expanded(
             flex: _currentPage == 0 ? 1 : 2,
@@ -937,7 +951,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

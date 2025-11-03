@@ -17,26 +17,26 @@ class InAppGiftService {
   // Gift product configurations
   static const Map<String, Map<String, dynamic>> _giftProducts = {
     'artbeat_gift_small': {
-      'amount': 5.0,
-      'title': 'Small Gift',
+      'amount': 4.99,
+      'title': 'Supporter Gift',
       'description': 'A small token of appreciation',
       'credits': 50,
     },
     'artbeat_gift_medium': {
-      'amount': 10.0,
-      'title': 'Medium Gift',
+      'amount': 9.99,
+      'title': 'Fan Gift',
       'description': 'A thoughtful gift for an artist',
       'credits': 100,
     },
     'artbeat_gift_large': {
-      'amount': 25.0,
-      'title': 'Large Gift',
+      'amount': 24.99,
+      'title': 'Patron Gift',
       'description': 'A generous gift to support creativity',
       'credits': 250,
     },
     'artbeat_gift_premium': {
-      'amount': 50.0,
-      'title': 'Premium Gift',
+      'amount': 49.99,
+      'title': 'Benefactor Gift',
       'description': 'A premium gift for exceptional artists',
       'credits': 500,
     },
@@ -50,26 +50,42 @@ class InAppGiftService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      AppLogger.info('🎁 Starting gift purchase process...');
+      AppLogger.info('🎁 Product ID: $giftProductId');
+      AppLogger.info('🎁 Recipient ID: $recipientId');
+
       final user = _auth.currentUser;
       if (user == null) {
-        AppLogger.error('User not authenticated for gift purchase');
+        AppLogger.error('❌ User not authenticated for gift purchase');
         return false;
       }
+      AppLogger.info('✅ User authenticated: ${user.uid}');
+
+      // Check if in-app purchases are available
+      if (!_purchaseService.isAvailable) {
+        AppLogger.error('❌ In-app purchases not available');
+        return false;
+      }
+      AppLogger.info('✅ In-app purchases are available');
 
       // Validate recipient exists
       final recipientExists = await _validateRecipient(recipientId);
       if (!recipientExists) {
-        AppLogger.error('Recipient not found: $recipientId');
+        AppLogger.error('❌ Recipient not found: $recipientId');
         return false;
       }
+      AppLogger.info('✅ Recipient validated');
 
       // Validate gift product
       if (!_giftProducts.containsKey(giftProductId)) {
-        AppLogger.error('Invalid gift product: $giftProductId');
+        AppLogger.error('❌ Invalid gift product: $giftProductId');
+        AppLogger.error('Available products: ${_giftProducts.keys.join(', ')}');
         return false;
       }
+      AppLogger.info('✅ Gift product validated');
 
       // Purchase the gift product
+      AppLogger.info('🎁 Initiating purchase with metadata...');
       final success = await _purchaseService.purchaseProduct(
         giftProductId,
         metadata: {
@@ -100,7 +116,7 @@ class InAppGiftService {
 
       return success;
     } catch (e) {
-      AppLogger.error('Error purchasing gift: $e');
+      AppLogger.error('❌ Error purchasing gift: $e');
       return false;
     }
   }
@@ -430,5 +446,45 @@ class InAppGiftService {
   /// Get gift product details
   Map<String, dynamic>? getGiftProductDetails(String productId) {
     return _giftProducts[productId];
+  }
+
+  /// Check if in-app purchases are available
+  bool get isAvailable => _purchaseService.isAvailable;
+
+  /// Quick one-tap gift purchase (default $4.99 small gift)
+  /// Returns true if purchase was initiated successfully
+  Future<bool> purchaseQuickGift(String recipientId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        AppLogger.error('User not authenticated for quick gift purchase');
+        return false;
+      }
+
+      if (user.uid == recipientId) {
+        AppLogger.warning('Cannot send gift to yourself');
+        return false;
+      }
+
+      final recipientExists = await _validateRecipient(recipientId);
+      if (!recipientExists) {
+        AppLogger.error('Recipient not found: $recipientId');
+        return false;
+      }
+
+      const giftProductId = 'artbeat_gift_small';
+      const defaultMessage = 'A gift from an ArtBeat user';
+
+      final success = await purchaseGift(
+        recipientId: recipientId,
+        giftProductId: giftProductId,
+        message: defaultMessage,
+      );
+
+      return success;
+    } catch (e) {
+      AppLogger.error('Error purchasing quick gift: $e');
+      return false;
+    }
   }
 }

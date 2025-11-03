@@ -12,11 +12,16 @@ import 'package:crypto/crypto.dart';
 class AuthService {
   late FirebaseAuth _auth;
   late FirebaseFirestore _firestore;
+  
+  /// Initialize Google Sign-In with proper error handling
+  /// Late-init to prevent null reference crashes during app startup
+  late final GoogleSignIn _googleSignIn;
 
   /// Constructor with optional dependencies for testing
   AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore}) {
     _auth = auth ?? FirebaseAuth.instance;
     _firestore = firestore ?? FirebaseFirestore.instance;
+    _initializeGoogleSignIn();
   }
 
   /// For dependency injection in tests (deprecated - use constructor)
@@ -168,35 +173,99 @@ class AuthService {
     }
   }
 
-  // Initialize Google Sign-In
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  /// Constructor with dependencies - ensures Google Sign-In is properly initialized
+  void _initializeGoogleSignIn() {
+    try {
+      // Initialize with email scope to prevent SignInHubActivity crashes
+      _googleSignIn = GoogleSignIn(
+        scopes: [
+          'email',
+          'profile',
+        ],
+      );
+      AppLogger.info('✅ Google Sign-In initialized with email and profile scopes');
+    } catch (e) {
+      AppLogger.error('⚠️ Error initializing Google Sign-In: $e');
+      // Fall back to default initialization
+      _googleSignIn = GoogleSignIn();
+    }
+  }
 
   /// Sign in with Google
+  /// This method includes comprehensive error handling to prevent native crashes
+  /// in SignInHubActivity when configuration is missing
   Future<UserCredential> signInWithGoogle() async {
     try {
       AppLogger.info('🔄 Starting Google Sign-In process');
 
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // Pre-validate that we can proceed with Google Sign-In
+      try {
+        // Check if user is already signed in
+        final isSignedIn = await _googleSignIn.isSignedIn();
+        if (isSignedIn) {
+          // Sign out first to get fresh credentials
+          await _googleSignIn.signOut();
+          AppLogger.info('ℹ️ Previous Google Sign-In session cleared');
+        }
+      } catch (e) {
+        AppLogger.warning('Could not check Google Sign-In status: $e');
+      }
+
+      // Trigger the authentication flow with error handling
+      GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await _googleSignIn.signIn();
+      } catch (e) {
+        AppLogger.error('Google Sign-In flow failed (SignInHubActivity crash possible): $e');
+        
+        // Check if this looks like a null object reference crash
+        if (e.toString().contains('null') || e.toString().contains('Null')) {
+          throw Exception(
+            'Google Sign-In configuration error. Please ensure Google Services are properly configured in your app.',
+          );
+        }
+        rethrow;
+      }
 
       if (googleUser == null) {
+        AppLogger.info('ℹ️ Google Sign-In was cancelled by user');
         throw Exception('Google Sign-In was cancelled by user');
       }
 
+      AppLogger.info('✅ Google Sign-In successful for: ${googleUser.email}');
+
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      GoogleSignInAuthentication googleAuth;
+      try {
+        googleAuth = await googleUser.authentication;
+      } catch (e) {
+        AppLogger.error('Failed to obtain Google authentication: $e');
+        throw Exception('Failed to obtain Google authentication credentials');
+      }
+
+      // Validate we have required tokens
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        AppLogger.error('Google authentication tokens are null');
+        throw Exception('Invalid Google authentication tokens received');
+      }
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken!,
+        idToken: googleAuth.idToken!,
       );
 
       // Sign in to Firebase with the Google credential
-      final userCredential = await _auth.signInWithCredential(credential);
+      UserCredential userCredential;
+      try {
+        userCredential = await _auth.signInWithCredential(credential);
+      } catch (e) {
+        AppLogger.error('Firebase sign-in with Google credential failed: $e');
+        throw Exception('Failed to sign in to Firebase with Google account');
+      }
+
       AppLogger.auth(
-        '✅ Google Sign-In successful: ${userCredential.user?.uid}',
+        '✅ Google Sign-In and Firebase authentication successful: ${userCredential.user?.uid}',
       );
 
       // Create user document if this is first sign-in
@@ -204,7 +273,7 @@ class AuthService {
 
       return userCredential;
     } catch (e) {
-      AppLogger.error('❌ Google Sign-In failed: $e');
+      AppLogger.error('❌ Google Sign-In failed: $e', error: e);
       rethrow;
     }
   }

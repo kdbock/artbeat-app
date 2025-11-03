@@ -453,10 +453,10 @@ class _ArtPostCardState extends State<ArtPostCard>
 }
 
 /// Artist profile card for the gallery view
-class ArtistCard extends StatelessWidget {
+class ArtistCard extends StatefulWidget {
   final ArtistProfile artist;
   final VoidCallback? onTap;
-  final VoidCallback? onFollow;
+  final void Function(bool isFollowing)? onFollow;
 
   const ArtistCard({
     super.key,
@@ -466,22 +466,88 @@ class ArtistCard extends StatelessWidget {
   });
 
   @override
+  State<ArtistCard> createState() => _ArtistCardState();
+}
+
+class _ArtistCardState extends State<ArtistCard> {
+  late bool _isFollowing;
+  late int _followersCount;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFollowing = widget.artist.isFollowedByCurrentUser;
+    _followersCount = widget.artist.followersCount;
+  }
+
+  @override
+  void didUpdateWidget(ArtistCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.artist.isFollowedByCurrentUser !=
+        widget.artist.isFollowedByCurrentUser) {
+      _isFollowing = widget.artist.isFollowedByCurrentUser;
+    }
+    if (oldWidget.artist.followersCount != widget.artist.followersCount) {
+      _followersCount = widget.artist.followersCount;
+    }
+  }
+
+  void _handleFollowToggle() async {
+    if (_isLoading) return;
+
+    // Store original values in case we need to revert
+    final originalFollowing = _isFollowing;
+    final originalFollowersCount = _followersCount;
+
+    setState(() {
+      _isLoading = true;
+      // Optimistic update
+      _isFollowing = !_isFollowing;
+      _followersCount = _isFollowing
+          ? _followersCount + 1
+          : _followersCount - 1;
+    });
+
+    try {
+      // Call the parent callback
+      if (widget.onFollow != null) {
+        widget.onFollow!(_isFollowing);
+      }
+    } catch (e) {
+      // If parent callback fails, revert optimistic update
+      setState(() {
+        _isFollowing = originalFollowing;
+        _followersCount = originalFollowersCount;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Debug logging
     if (kDebugMode) {
-      print('🎨 ArtistCard for ${artist.displayName}:');
-      print('   Portfolio images count: ${artist.portfolioImages.length}');
-      if (artist.portfolioImages.isNotEmpty) {
-        print('   First portfolio image: ${artist.portfolioImages.first}');
+      print('🎨 ArtistCard for ${widget.artist.displayName}:');
+      print(
+        '   Portfolio images count: ${widget.artist.portfolioImages.length}',
+      );
+      if (widget.artist.portfolioImages.isNotEmpty) {
+        print(
+          '   First portfolio image: ${widget.artist.portfolioImages.first}',
+        );
       }
-      print('   Avatar URL: ${artist.avatarUrl}');
+      print('   Avatar URL: ${widget.artist.avatarUrl}');
     }
 
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           height: 200,
@@ -499,12 +565,12 @@ class ArtistCard extends StatelessWidget {
           child: Stack(
             children: [
               // Background image if available
-              if (artist.portfolioImages.isNotEmpty)
+              if (widget.artist.portfolioImages.isNotEmpty)
                 Positioned.fill(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: SecureNetworkImage(
-                      imageUrl: artist.portfolioImages.first,
+                      imageUrl: widget.artist.portfolioImages.first,
                       fit: BoxFit.cover,
                       enableThumbnailFallback: true,
                       placeholder: Container(
@@ -588,9 +654,9 @@ class ArtistCard extends StatelessWidget {
                             border: Border.all(color: Colors.white, width: 2),
                           ),
                           child: ClipOval(
-                            child: artist.avatarUrl.isNotEmpty
+                            child: widget.artist.avatarUrl.isNotEmpty
                                 ? SecureNetworkImage(
-                                    imageUrl: artist.avatarUrl,
+                                    imageUrl: widget.artist.avatarUrl,
                                     fit: BoxFit.cover,
                                     enableThumbnailFallback: true,
                                     placeholder: Container(
@@ -625,20 +691,42 @@ class ArtistCard extends StatelessWidget {
                         ),
                         const Spacer(),
                         // Follow button
-                        if (onFollow != null)
+                        if (widget.onFollow != null)
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: _isFollowing
+                                  ? ArtbeatColors.primaryGreen.withValues(
+                                      alpha: 0.3,
+                                    )
+                                  : Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: IconButton(
-                              onPressed: onFollow,
-                              icon: const Icon(
-                                Icons.person_add,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              tooltip: 'Follow ${artist.displayName}',
+                              onPressed: _isLoading
+                                  ? null
+                                  : _handleFollowToggle,
+                              icon: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      _isFollowing
+                                          ? Icons.person_remove
+                                          : Icons.person_add,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                              tooltip: _isFollowing
+                                  ? 'Unfollow ${widget.artist.displayName}'
+                                  : 'Follow ${widget.artist.displayName}',
                             ),
                           ),
                       ],
@@ -652,7 +740,7 @@ class ArtistCard extends StatelessWidget {
                       children: [
                         // Name
                         Text(
-                          artist.displayName,
+                          widget.artist.displayName,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -665,9 +753,9 @@ class ArtistCard extends StatelessWidget {
                         const SizedBox(height: 4),
 
                         // Bio
-                        if (artist.bio.isNotEmpty)
+                        if (widget.artist.bio.isNotEmpty)
                           Text(
-                            artist.bio,
+                            widget.artist.bio,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white.withValues(alpha: 0.9),
@@ -679,11 +767,11 @@ class ArtistCard extends StatelessWidget {
                         const SizedBox(height: 8),
 
                         // Specialties
-                        if (artist.specialties.isNotEmpty)
+                        if (widget.artist.specialties.isNotEmpty)
                           Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: artist.specialties.take(3).map((
+                            children: widget.artist.specialties.take(3).map((
                               specialty,
                             ) {
                               return Container(
@@ -719,13 +807,13 @@ class ArtistCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${artist.followersCount} followers',
+                              '$_followersCount followers',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
-                            if (artist.isVerified) ...[
+                            if (widget.artist.isVerified) ...[
                               const SizedBox(width: 8),
                               const Icon(
                                 Icons.verified,

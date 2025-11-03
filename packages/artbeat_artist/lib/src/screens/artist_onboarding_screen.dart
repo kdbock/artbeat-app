@@ -116,14 +116,14 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
         decoration: const BoxDecoration(
           gradient: core.ArtbeatColors.primaryGradient,
         ),
-        child: Center(
+        child: SafeArea(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Card(
               elevation: 10,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
               ),
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
               color: core.ArtbeatColors.cardBackground.withValues(alpha: 0.98),
               child: Padding(
                 padding:
@@ -131,6 +131,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
                 child: Form(
                   key: _formKey,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(

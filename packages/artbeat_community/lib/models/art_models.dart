@@ -123,6 +123,7 @@ class ArtistProfile {
   final bool isVerified;
   final int followersCount;
   final DateTime createdAt;
+  final bool isFollowedByCurrentUser;
 
   const ArtistProfile({
     required this.userId,
@@ -134,6 +135,7 @@ class ArtistProfile {
     this.isVerified = false,
     this.followersCount = 0,
     required this.createdAt,
+    this.isFollowedByCurrentUser = false,
   });
 
   /// Create from Firestore document
@@ -213,6 +215,7 @@ class ArtistProfile {
     bool? isVerified,
     int? followersCount,
     DateTime? createdAt,
+    bool? isFollowedByCurrentUser,
   }) {
     return ArtistProfile(
       userId: userId ?? this.userId,
@@ -224,6 +227,8 @@ class ArtistProfile {
       isVerified: isVerified ?? this.isVerified,
       followersCount: followersCount ?? this.followersCount,
       createdAt: createdAt ?? this.createdAt,
+      isFollowedByCurrentUser:
+          isFollowedByCurrentUser ?? this.isFollowedByCurrentUser,
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
+
 
 /// Enhanced Capture Dashboard Screen
 ///
@@ -358,16 +358,7 @@ class _EnhancedCaptureDashboardScreenState
                   child: CustomScrollView(
                     controller: _scrollController,
                     slivers: [
-                      // Art & Walks Zone ad placement
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: ZoneAdPlacementWidget(
-                            zone: AdZone.artWalks,
-                            showIfEmpty: true,
-                          ),
-                        ),
-                      ),
+
 
                       // Header Section
                       SliverToBoxAdapter(
@@ -500,13 +491,7 @@ class _EnhancedCaptureDashboardScreenState
                                 const SizedBox(height: 16),
                               ],
 
-                              // Ad placement beneath stats section
-                              if (_currentUser != null)
-                                const ZoneAdPlacementWidget(
-                                  zone: AdZone.artWalks,
-                                  adIndex: 1,
-                                  showIfEmpty: true,
-                                ),
+
                             ],
                           ),
                         ),
@@ -556,17 +541,7 @@ class _EnhancedCaptureDashboardScreenState
                         ),
 
                       // Ad placement beneath recent captures section
-                      if (_recentCaptures.isNotEmpty)
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: ZoneAdPlacementWidget(
-                              zone: AdZone.artWalks,
-                              adIndex: 2,
-                              showIfEmpty: true,
-                            ),
-                          ),
-                        ),
+
 
                       // Community inspiration section
                       if (_communityCaptures.isNotEmpty) ...[
@@ -615,18 +590,6 @@ class _EnhancedCaptureDashboardScreenState
                                   child: _buildCommunityCard(capture),
                                 );
                               },
-                            ),
-                          ),
-                        ),
-
-                        // Ad placement beneath community inspiration section
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: ZoneAdPlacementWidget(
-                              zone: AdZone.artWalks,
-                              adIndex: 3,
-                              showIfEmpty: true,
                             ),
                           ),
                         ),

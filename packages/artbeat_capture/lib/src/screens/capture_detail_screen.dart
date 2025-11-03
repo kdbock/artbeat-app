@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -277,7 +278,25 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                 value: _hasAcceptedTerms,
                 onChanged: (value) =>
                     setState(() => _hasAcceptedTerms = value ?? false),
-                title: const Text('I accept the terms and conditions'),
+                title: RichText(
+                  text: TextSpan(
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    children: [
+                      const TextSpan(text: 'I accept the '),
+                      TextSpan(
+                        text: 'terms and conditions',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.pushNamed(context, '/capture/terms');
+                          },
+                      ),
+                    ],
+                  ),
+                ),
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),

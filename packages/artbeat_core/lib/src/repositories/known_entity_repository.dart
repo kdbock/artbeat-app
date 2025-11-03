@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
 import '../models/known_entity_model.dart';
+import '../models/capture_model.dart';
+import '../services/capture_service_interface.dart';
 
 /// Repository for searching across all entity types in the app
 class KnownEntityRepository {
   final FirebaseFirestore _firestore;
-  final CaptureService _captureService;
+  final CaptureServiceInterface _captureService;
 
   KnownEntityRepository({
     FirebaseFirestore? firestore,
-    CaptureService? captureService,
+    CaptureServiceInterface? captureService,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _captureService = captureService ?? CaptureService();
+       _captureService = captureService ?? DefaultCaptureService();
 
   /// Search across all entity types
   /// Returns a unified list of KnownEntity objects

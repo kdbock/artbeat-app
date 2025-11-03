@@ -24,7 +24,6 @@ export 'moderation/moderation_queue_screen.dart';
 // Gift screens
 export 'gifts/gifts_screen.dart';
 export 'gifts/gift_rules_screen.dart';
-export 'gifts/gift_modal.dart';
 
 // Portfolio screens
 export 'portfolios/portfolios_screen.dart';

@@ -150,8 +150,27 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   // Stats Section
                   SliverToBoxAdapter(child: _buildStatsSection()),
 
+                  // Slot 1: Top sticky banner - Featured carousel
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: AdCarouselWidget(
+                        zone: LocalAdZone.events,
+                        height: 120,
+                      ),
+                    ),
+                  ),
+
                   // Category Filter
                   SliverToBoxAdapter(child: _buildCategoryFilter()),
+
+                  // Slot 2: Between category chips and list - Native ad-card
+                  const SliverToBoxAdapter(
+                    child: AdNativeCardWidget(
+                      zone: LocalAdZone.events,
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  ),
 
                   // Featured Events
                   if (_filteredEvents.isNotEmpty)
@@ -172,13 +191,12 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
 
                   _buildEventsList(),
 
-                  // Ad Space
+                  // Slot 5: List bottom - Banner ad
                   const SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: ZoneAdPlacementWidget(
-                        zone: AdZone.events,
-                        showIfEmpty: true,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: AdSmallBannerWidget(
+                        zone: LocalAdZone.events,
                       ),
                     ),
                   ),

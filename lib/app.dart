@@ -1,4 +1,3 @@
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_auth/artbeat_auth.dart';
@@ -171,11 +170,6 @@ class MyApp extends StatelessWidget {
             ),
             ChangeNotifierProvider<core.SubscriptionService>.value(
               value: core.SubscriptionService(),
-            ),
-            // Simple Ad Service for ad management
-            ChangeNotifierProvider(
-              create: (_) => SimpleAdService(),
-              lazy: true,
             ),
             // Dashboard ViewModel - Create after required services
             ChangeNotifierProxyProvider6<

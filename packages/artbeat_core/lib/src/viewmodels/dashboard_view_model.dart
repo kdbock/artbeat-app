@@ -9,7 +9,6 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart' as artWalkLib;
 import 'package:artbeat_artist/artbeat_artist.dart' as artist_profile;
 import 'package:artbeat_events/artbeat_events.dart' as eventLib;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artworkLib;
-import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_community/artbeat_community.dart' as community;
 
 class DashboardViewModel extends ChangeNotifier {
@@ -19,7 +18,7 @@ class DashboardViewModel extends ChangeNotifier {
   final artWalkLib.SocialService _socialService;
   final SubscriptionService _subscriptionService;
   final UserService _userService;
-  final CaptureService _captureService;
+  final CaptureServiceInterface _captureService;
   final ContentEngagementService _engagementService;
   final community.ArtCommunityService _communityService;
   final artist_profile.CommunityService _artistCommunityService;
@@ -74,7 +73,7 @@ class DashboardViewModel extends ChangeNotifier {
     artWalkLib.SocialService? socialService,
     required SubscriptionService subscriptionService,
     required UserService userService,
-    CaptureService? captureService,
+    CaptureServiceInterface? captureService,
     ContentEngagementService? engagementService,
     community.ArtCommunityService? communityService,
     artist_profile.CommunityService? artistCommunityService,
@@ -84,7 +83,7 @@ class DashboardViewModel extends ChangeNotifier {
        _socialService = socialService ?? artWalkLib.SocialService(),
        _subscriptionService = subscriptionService,
        _userService = userService,
-       _captureService = captureService ?? CaptureService(),
+       _captureService = captureService ?? DefaultCaptureService(),
        _engagementService = engagementService ?? ContentEngagementService(),
        _communityService = communityService ?? community.ArtCommunityService(),
        _artistCommunityService =

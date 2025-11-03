@@ -36,27 +36,18 @@ class InAppPurchaseService {
       'artbeat_enterprise_yearly',
     ],
     'gifts': [
-      'artbeat_gift_supporter', // $4.99 - aligned with sponsorship tiers
-      'artbeat_gift_fan', // $9.99
-      'artbeat_gift_patron', // $24.99
-      'artbeat_gift_benefactor', // $49.99
-      // Removed: custom amounts (Apple IAP compliance)
+      'artbeat_gift_small', // Small Gift (50 Credits)
+      'artbeat_gift_medium', // Medium Gift (100 Credits)
+      'artbeat_gift_large', // Large Gift (250 Credits)
+      'artbeat_gift_premium', // Premium Gift (500 Credits)
     ],
     'ads': [
-      'artbeat_ad_basic', // Basic ad package
-      'artbeat_ad_standard', // Standard ad package
-      'artbeat_ad_premium', // Premium ad package
-      'artbeat_ad_enterprise', // Enterprise ad package
-    ],
-    'sponsorships': [
-      'sponsor_supporter_monthly',
-      'sponsor_fan_monthly',
-      'sponsor_patron_monthly',
-      'sponsor_benefactor_monthly',
-      'sponsor_supporter_yearly',
-      'sponsor_fan_yearly',
-      'sponsor_patron_yearly',
-      'sponsor_benefactor_yearly',
+      'ad_small_1w', // Small ad package - 1 week
+      'ad_small_1m', // Small ad package - 1 month
+      'ad_small_3m', // Small ad package - 3 months
+      'ad_big_1w', // Big ad package - 1 week
+      'ad_big_1m', // Big ad package - 1 month
+      'ad_big_3m', // Big ad package - 3 months
     ],
   };
 
@@ -66,8 +57,12 @@ class InAppPurchaseService {
   void Function(String)? onPurchaseCancelled;
 
   /// Initialize the in-app purchase service
+  /// This method performs all necessary setup to prevent null PendingIntent crashes
   Future<bool> initialize() async {
     try {
+      AppLogger.info('🔄 Initializing in-app purchase service...');
+
+      // Check if in-app purchases are available on this device
       _isAvailable = await _inAppPurchase.isAvailable();
 
       if (!_isAvailable) {
@@ -75,26 +70,49 @@ class InAppPurchaseService {
         return false;
       }
 
-      // Set up purchase listener
-      final Stream<List<PurchaseDetails>> purchaseUpdated =
-          _inAppPurchase.purchaseStream;
-      _subscription = purchaseUpdated.listen(
-        _onPurchaseUpdate,
-        onDone: () => _subscription?.cancel(),
-        onError: (Object error) =>
-            AppLogger.error('Purchase stream error: $error'),
-      );
+      AppLogger.info('✅ In-app purchases are available on this device');
 
-      // Load products
-      await _loadProducts();
+      // Set up purchase listener before any purchase operations
+      try {
+        final Stream<List<PurchaseDetails>> purchaseUpdated =
+            _inAppPurchase.purchaseStream;
+        _subscription = purchaseUpdated.listen(
+          _onPurchaseUpdate,
+          onDone: () => _subscription?.cancel(),
+          onError: (Object error) {
+            AppLogger.error('❌ Purchase stream error: $error');
+            // Don't crash on stream errors - these can be recovered
+          },
+        );
+        AppLogger.info('✅ Purchase stream listener registered');
+      } catch (e) {
+        AppLogger.error('⚠️ Failed to register purchase listener: $e');
+        // Continue even if listener fails - purchases might still work
+      }
 
-      // Restore purchases
-      await _restorePurchases();
+      // Load products from store
+      try {
+        await _loadProducts();
+        AppLogger.info('✅ Products loaded from store');
+      } catch (e) {
+        AppLogger.error('⚠️ Failed to load products: $e');
+        // Continue - user can still attempt purchases if products exist
+      }
+
+      // Restore any previously purchased items
+      try {
+        await _restorePurchases();
+        AppLogger.info('✅ Previous purchases restored');
+      } catch (e) {
+        AppLogger.error('⚠️ Failed to restore purchases: $e');
+        // This is non-critical
+      }
 
       AppLogger.info('✅ In-app purchase service initialized successfully');
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to initialize in-app purchase service: $e');
+      AppLogger.error('❌ Failed to initialize in-app purchase service: $e', error: e);
+      // Return false but don't crash - the app can continue without IAP
       return false;
     }
   }
@@ -438,47 +456,84 @@ class InAppPurchaseService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      AppLogger.info('🛍️ Starting purchase flow for product: $productId');
+
+      // Validate in-app purchase is available
       if (!_isAvailable) {
-        AppLogger.error('In-app purchases not available');
-        return false;
+        AppLogger.error('❌ In-app purchases not available on this device');
+        throw Exception('In-app purchases are not available on this device');
       }
 
+      // Validate product exists and is loaded
       final product = _getProductDetails(productId);
       if (product == null) {
-        AppLogger.error('Product not found: $productId');
-        return false;
+        AppLogger.error('❌ Product not found: $productId');
+        throw Exception('Product "$productId" not found. Please ensure it\'s configured in the store.');
       }
 
+      AppLogger.info('✅ Product found: ${product.title} - ${product.price}');
+
+      // Validate user is authenticated
       final user = _auth.currentUser;
       if (user == null) {
-        AppLogger.error('User not authenticated');
-        return false;
+        AppLogger.error('❌ User not authenticated for purchase');
+        throw Exception('User must be authenticated to make purchases');
       }
 
-      // Create purchase param
+      AppLogger.info('🔐 User authenticated: ${user.uid}');
+
+      // Validate purchase parameters before initiating
+      if (user.uid.isEmpty) {
+        AppLogger.error('❌ Invalid user ID');
+        throw Exception('Invalid user ID for purchase');
+      }
+
+      // Create purchase param with validation
       final purchaseParam = PurchaseParam(
         productDetails: product,
         applicationUserName: user.uid,
       );
 
-      // Initiate purchase
+      AppLogger.info('📱 Purchase parameters validated, initiating purchase...');
+
+      // Initiate purchase with comprehensive error handling
       final purchaseType = _getPurchaseType(productId);
       bool result;
 
-      if (purchaseType == PurchaseType.consumable) {
-        result = await _inAppPurchase.buyConsumable(
-          purchaseParam: purchaseParam,
-        );
-      } else {
-        result = await _inAppPurchase.buyNonConsumable(
-          purchaseParam: purchaseParam,
-        );
+      try {
+        if (purchaseType == PurchaseType.consumable) {
+          AppLogger.info('💳 Initiating consumable purchase: $productId');
+          result = await _inAppPurchase.buyConsumable(
+            purchaseParam: purchaseParam,
+          );
+        } else {
+          AppLogger.info('💳 Initiating non-consumable/subscription purchase: $productId');
+          result = await _inAppPurchase.buyNonConsumable(
+            purchaseParam: purchaseParam,
+          );
+        }
+        
+        AppLogger.info('✅ Purchase initiated successfully: $productId - Result: $result');
+        return result;
+      } catch (e) {
+        // Check if this is a PendingIntent-related crash
+        if (e.toString().contains('PendingIntent') ||
+            e.toString().contains('Null') ||
+            e.toString().contains('null')) {
+          AppLogger.error(
+            'NATIVE CRASH DETECTED: ProxyBillingActivity PendingIntent error: $e',
+          );
+          throw Exception(
+            'Payment service encountered an error. Please ensure Google Play is up to date.',
+          );
+        }
+        
+        AppLogger.error('Error during purchase initiation: $e', error: e);
+        rethrow;
       }
-
-      AppLogger.info('Purchase initiated: $productId - Result: $result');
-      return result;
     } catch (e) {
-      AppLogger.error('Error purchasing product: $e');
+      AppLogger.error('❌ Error purchasing product "$productId": $e', error: e);
+      onPurchaseError?.call(e.toString());
       return false;
     }
   }
@@ -564,14 +619,20 @@ class InAppPurchaseService {
 
   int _getAdCreditsFromProductId(String productId) {
     switch (productId) {
-      case 'artbeat_ad_basic':
-        return 100;
-      case 'artbeat_ad_standard':
-        return 500;
-      case 'artbeat_ad_premium':
-        return 1000;
-      case 'artbeat_ad_enterprise':
-        return 5000;
+      // Small ad packages
+      case 'ad_small_1w':
+        return 50; // Small package, 1 week
+      case 'ad_small_1m':
+        return 200; // Small package, 1 month
+      case 'ad_small_3m':
+        return 600; // Small package, 3 months
+      // Big ad packages
+      case 'ad_big_1w':
+        return 150; // Big package, 1 week
+      case 'ad_big_1m':
+        return 600; // Big package, 1 month
+      case 'ad_big_3m':
+        return 1800; // Big package, 3 months
       default:
         return 0;
     }

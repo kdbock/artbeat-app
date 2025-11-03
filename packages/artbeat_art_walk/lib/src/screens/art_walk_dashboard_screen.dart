@@ -764,12 +764,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 ],
 
                 // Ad Space - Bottom of Capture Detail
-                const AdSpaceWidget(
-                  location: AdLocation.artWalkDashboard,
-                  customLabel: 'Art Inspiration & Tools',
-                  height: 90,
-                  trackAnalytics: true,
-                ),
+                const SizedBox.shrink(),
                 const SizedBox(height: 16),
               ],
             ),
@@ -989,25 +984,47 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 _buildInstantDiscoveryHeroSection(),
                 const SizedBox(height: 16),
 
+                // Slot 1: Badge/banner at top
+                const AdBadgeWidget(
+                  zone: LocalAdZone.featured,
+                  width: double.infinity,
+                  height: 80,
+                ),
+                const SizedBox(height: 16),
+
                 // 2. Activity & Progress (combined social proof + gamification)
                 _buildActivityAndProgressSection(),
+                const SizedBox(height: 16),
+
+                // Slot 2: Native ad card after progress
+                const AdNativeCardWidget(
+                  zone: LocalAdZone.featured,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
                 const SizedBox(height: 16),
 
                 // 3. Quick Actions Dashboard
                 _buildQuickActionsDashboard(),
                 const SizedBox(height: 24),
 
+                // Slot 3: Promotion banner between sections
+                const AdSmallBannerWidget(
+                  zone: LocalAdZone.featured,
+                  height: 100,
+                ),
+                const SizedBox(height: 24),
+
                 // 4. Discover & Explore
                 _buildDiscoverAndExploreSection(),
                 const SizedBox(height: 24),
 
-                // 7. Ad Space
-                const AdSpaceWidget(
-                  location: AdLocation.artWalkDashboard,
-                  customLabel: 'Discover Art Tools',
-                  height: 80,
-                  trackAnalytics: true,
+                // Slot 4: CTA card before bottom
+                const AdCtaCardWidget(
+                  zone: LocalAdZone.featured,
+                  ctaText: 'Explore More',
+                  padding: EdgeInsets.symmetric(vertical: 12),
                 ),
+
                 const SizedBox(height: 120),
               ],
             ),

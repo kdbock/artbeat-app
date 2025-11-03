@@ -682,8 +682,11 @@ class SubscriptionService extends ChangeNotifier {
       // Process payment for the upgrade
       final paymentService = PaymentService();
 
+      // Get or create Stripe customer ID
+      final customerId = await paymentService.getOrCreateCustomerId();
+
       // Create or update subscription
-      await paymentService.createSubscription(customerId: user.uid, tier: tier);
+      await paymentService.createSubscription(customerId: customerId, tier: tier);
 
       // Update the user's tier in Firestore
       await _updateUserSubscriptionTier(tier);

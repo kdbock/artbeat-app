@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,9 @@ Future<void> main() async {
   PerformanceMonitor.startTimer('app_startup');
 
   try {
+    // Initialize easy_localization first
+    await EasyLocalization.ensureInitialized();
+
     // Initialize app lifecycle manager (non-blocking)
     AppLifecycleManager().initialize();
 
@@ -213,7 +217,21 @@ Future<void> main() async {
     }
   }
 
-  runApp(MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('es'),
+        Locale('fr'),
+        Locale('de'),
+        Locale('pt'),
+        Locale('zh'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: MyApp(),
+    ),
+  );
 }
 
 /// Initialize non-critical services in background to avoid blocking app startup

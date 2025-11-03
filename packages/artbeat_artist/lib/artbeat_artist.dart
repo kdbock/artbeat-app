@@ -31,6 +31,7 @@ export 'src/screens/subscription_analytics_screen.dart';
 
 // Earnings screens
 export 'src/screens/earnings/artist_earnings_dashboard.dart';
+export 'src/screens/earnings/artwork_sales_dashboard.dart';
 export 'src/screens/earnings/payout_request_screen.dart';
 export 'src/screens/earnings/payout_accounts_screen.dart';
 

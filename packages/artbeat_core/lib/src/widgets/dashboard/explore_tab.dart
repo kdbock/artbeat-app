@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:flutter/foundation.dart';
+import '../../../artbeat_core.dart' show CaptureModel;
 
 class ExploreTab extends StatelessWidget {
   final LatLng? userLocation;

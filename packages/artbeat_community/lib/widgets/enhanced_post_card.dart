@@ -13,6 +13,7 @@ class EnhancedPostCard extends StatefulWidget {
   final VoidCallback? onComment;
   final VoidCallback? onShare;
   final VoidCallback? onReport;
+  final void Function(String imageUrl, int index)? onImageTap;
 
   const EnhancedPostCard({
     super.key,
@@ -22,6 +23,7 @@ class EnhancedPostCard extends StatefulWidget {
     this.onComment,
     this.onShare,
     this.onReport,
+    this.onImageTap,
   });
 
   @override
@@ -263,19 +265,24 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
     final images = widget.post.imageUrls;
 
     if (images.length == 1) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Image.network(
-            images[0],
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                color: Colors.grey[300],
-                child: const Icon(Icons.error),
-              );
-            },
+      return GestureDetector(
+        onTap: widget.onImageTap != null
+            ? () => widget.onImageTap!(images[0], 0)
+            : null,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Image.network(
+              images[0],
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error),
+                );
+              },
+            ),
           ),
         ),
       );
@@ -294,36 +301,41 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
       itemBuilder: (context, index) {
         final isLastItem = index == 3 && images.length > 4;
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(
-                images[index],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error),
-                  );
-                },
-              ),
-              if (isLastItem)
-                Container(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  child: Center(
-                    child: Text(
-                      '+${images.length - 4}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+        return GestureDetector(
+          onTap: widget.onImageTap != null
+              ? () => widget.onImageTap!(images[index], index)
+              : null,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  images[index],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.error),
+                    );
+                  },
+                ),
+                if (isLastItem)
+                  Container(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    child: Center(
+                      child: Text(
+                        '+${images.length - 4}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },

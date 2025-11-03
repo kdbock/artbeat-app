@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
+import '../widgets/language_selector.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -28,6 +29,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         // User profile summary
         _buildProfileSummary(context),
+        const SizedBox(height: 24),
+
+        // Language selector
+        const LanguageSelector(),
         const SizedBox(height: 24),
 
         // Settings categories

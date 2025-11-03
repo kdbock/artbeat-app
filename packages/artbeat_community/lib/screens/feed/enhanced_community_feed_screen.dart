@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../../widgets/enhanced_artwork_card.dart';
 import '../create_art_post_screen.dart';
 import '../../services/art_community_service.dart';
@@ -102,10 +103,29 @@ class _EnhancedCommunityFeedScreenState
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
+        // Slot 1: Sticky feed header - Dismissible banner
+        const Padding(
+          padding: EdgeInsets.all(8),
+          child: AdSmallBannerWidget(
+            zone: LocalAdZone.community,
+            height: 80,
+            isDismissible: true,
+          ),
+        ),
+
         // Demo Artwork
         EnhancedArtworkCard(
           artwork: _createDemoArtwork(),
           onTap: () => _showArtworkDetails(context),
+        ),
+
+        // Slot 2: Between posts - Native post-style ad
+        const Padding(
+          padding: EdgeInsets.all(8),
+          child: AdNativeCardWidget(
+            zone: LocalAdZone.community,
+            padding: EdgeInsets.all(0),
+          ),
         ),
 
         // Demo Capture
@@ -114,14 +134,36 @@ class _EnhancedCommunityFeedScreenState
         // Demo Artist Profile
         _buildArtistCard(),
 
+        // Slot 3: After compose area - CTA card
+        const Padding(
+          padding: EdgeInsets.all(8),
+          child: AdCtaCardWidget(
+            zone: LocalAdZone.community,
+            ctaText: 'Boost Your Post',
+            padding: EdgeInsets.all(0),
+          ),
+        ),
+
         // Demo Event
         _buildEventCard(),
 
         // Demo Post
         _buildPostCard(),
 
+        // Slot 4: Before bottom - Banner ad
+        const Padding(
+          padding: EdgeInsets.all(8),
+          child: AdSmallBannerWidget(
+            zone: LocalAdZone.community,
+            height: 100,
+            isDismissible: false,
+          ),
+        ),
+
         // Demo Comment Thread
         _buildCommentCard(),
+
+        const SizedBox(height: 80),
       ],
     );
   }

@@ -4,6 +4,7 @@ import '../models/post_model.dart';
 import '../services/art_community_service.dart';
 import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
+import '../widgets/fullscreen_image_viewer.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -195,6 +196,18 @@ class _ArtistFeedScreenState extends State<ArtistFeedScreen> {
     }
   }
 
+  void _showFullscreenImage(
+    String imageUrl,
+    int initialIndex,
+    List<String> allImages,
+  ) {
+    FullscreenImageViewer.show(
+      context,
+      imageUrls: allImages,
+      initialIndex: initialIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -270,6 +283,8 @@ class _ArtistFeedScreenState extends State<ArtistFeedScreen> {
                       onLike: () => _handleLike(post),
                       onComment: () => _handleComment(post),
                       onShare: () => _handleShare(post),
+                      onImageTap: (String imageUrl, int index) =>
+                          _showFullscreenImage(imageUrl, index, post.imageUrls),
                     ),
                   );
                 },

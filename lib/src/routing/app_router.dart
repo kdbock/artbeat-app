@@ -216,6 +216,11 @@ class AppRouter {
       return _handleEventsRoutes(settings);
     }
 
+    // Ads routes
+    if (routeName.startsWith('/ads')) {
+      return _handleAdsRoutes(settings);
+    }
+
     // Admin routes
     if (routeName.startsWith('/admin')) {
       return _handleAdminRoutes(settings);
@@ -236,11 +241,6 @@ class AppRouter {
       return _handleCaptureRoutes(settings);
     }
 
-    // Ad routes
-    if (routeName.startsWith('/ads')) {
-      return _handleAdRoutes(settings);
-    }
-
     // Subscription routes
     if (routeName.startsWith('/subscription')) {
       return _handleSubscriptionRoutes(settings);
@@ -254,7 +254,7 @@ class AppRouter {
   Route<dynamic>? _handleArtistRoutes(RouteSettings settings) {
     switch (settings.name) {
       case '/artist/signup':
-        return RouteUtils.createMainLayoutRoute(
+        return RouteUtils.createSimpleRoute(
           child: const artist.Modern2025OnboardingScreen(),
         );
       case AppRoutes.artistDashboard:
@@ -926,6 +926,50 @@ class AppRouter {
     }
   }
 
+  /// Handles ads-related routes
+  Route<dynamic>? _handleAdsRoutes(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.adsCreate:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Create Ad'),
+          child: const ads.CreateLocalAdScreen(),
+        );
+
+      case AppRoutes.adsManagement:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Manage Ads'),
+          child: const ads.MyAdsScreen(),
+        );
+
+      case AppRoutes.adsStatistics:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Ad Statistics'),
+          child: const ads.LocalAdsListScreen(),
+        );
+
+      case '/ads/my-ads':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('My Ads'),
+          child: const ads.MyAdsScreen(),
+        );
+
+      case '/ads/my-statistics':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('My Ad Statistics'),
+          child: const ads.LocalAdsListScreen(),
+        );
+
+      case AppRoutes.adPayment:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Ad Payment'),
+          child: const ads.CreateLocalAdScreen(),
+        );
+
+      default:
+        return RouteUtils.createComingSoonRoute('Ads feature');
+    }
+  }
+
   /// Handles admin-related routes
   Route<dynamic>? _handleAdminRoutes(RouteSettings settings) {
     // First try to use the admin package's route generator
@@ -995,6 +1039,30 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Payment Settings'),
           child: const artist.PaymentMethodsScreen(),
+        );
+
+      case '/settings/become-artist':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: core.AuthRequiredScreen(),
+              );
+            }
+
+            final user = RouteUtils.createUserModelFromFirebase(currentUser);
+            return core.MainLayout(
+              currentIndex: -1,
+              child: settings_pkg.BecomeArtistScreen(user: user),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
         );
 
       default:
@@ -1316,6 +1384,11 @@ class AppRouter {
           child: const capture.CapturesListScreen(),
         );
 
+      case AppRoutes.captureTerms:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.TermsAndConditionsScreen(),
+        );
+
       case AppRoutes.captureDetail:
         final captureId = RouteUtils.getArgument<String>(settings, 'captureId');
         if (captureId == null || captureId.isEmpty) {
@@ -1339,38 +1412,6 @@ class AppRouter {
 
       default:
         return RouteUtils.createNotFoundRoute('Capture feature');
-    }
-  }
-
-  /// Handles ad-related routes
-  Route<dynamic>? _handleAdRoutes(RouteSettings settings) {
-    switch (settings.name) {
-      case AppRoutes.adsCreate:
-        return RouteUtils.createSimpleRoute(
-          child: const ads.AdEducationDashboard(),
-        );
-
-      case AppRoutes.adsManagement:
-        return RouteUtils.createMainLayoutRoute(
-          currentIndex: 0,
-          appBar: RouteUtils.createAppBar('Ad Management'),
-          child: const ads.SimpleAdManagementScreen(),
-        );
-
-      case AppRoutes.adsStatistics:
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Ad Performance'),
-          child: const ads.SimpleAdStatisticsScreen(),
-        );
-
-      case AppRoutes.adPayment:
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Ad Payment'),
-          child: const Center(child: Text('Ad Payment - Coming Soon')),
-        );
-
-      default:
-        return RouteUtils.createNotFoundRoute('Ad feature');
     }
   }
 

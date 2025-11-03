@@ -359,14 +359,15 @@ class _PostDetailModalState extends State<PostDetailModal> {
   }
 
   void _handleGift(BaseGroupPost post) {
-    // Navigate to enhanced gift purchasing flow for the post author/artist
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: post.userId,
-          recipientName: post.userName,
-        ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => GiftSelectionWidget(
+        recipientId: post.userId,
+        recipientName: post.userName,
       ),
     );
   }

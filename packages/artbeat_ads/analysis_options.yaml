@@ -8,7 +8,7 @@ analyzer:
   errors:
     invalid_annotation_target: ignore
     todo: ignore
-    deprecated_member_use: ignore # Temporarily ignore deprecated Radio widget warnings
+    deprecated_member_use: warning
   exclude:
     - "build/**"
     - "**/*.g.dart"

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/services/in_app_gift_service.dart';
 import '../../widgets/gift_card_widget.dart';
 import '../../theme/community_colors.dart';
 import 'gift_rules_screen.dart';
@@ -14,6 +15,7 @@ class GiftsScreen extends StatefulWidget {
 
 class _GiftsScreenState extends State<GiftsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final InAppGiftService _giftService = InAppGiftService();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<GiftModel> _gifts = [];
   bool _isLoading = true;
@@ -47,18 +49,35 @@ class _GiftsScreenState extends State<GiftsScreen> {
     }
   }
 
-  void _handleSendGift(GiftModel gift) {
-    // Navigate to enhanced gift purchasing flow with pre-selected gift
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => EnhancedGiftPurchaseScreen(
-          recipientId: gift.recipientId,
-          recipientName: 'Artist', // We might need to get the actual name
-          initialTab: 0, // Start with preset gifts
-        ),
+  void _handleSendGift(GiftModel gift) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Processing gift...'),
+        duration: Duration(seconds: 1),
       ),
     );
+
+    final success = await _giftService.purchaseQuickGift(gift.recipientId);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gift purchase initiated! 🎁'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to send gift. Please try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override

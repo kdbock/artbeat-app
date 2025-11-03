@@ -107,6 +107,7 @@ class AppRoutes {
   static const String captureEdit = '/capture/edit';
   static const String captureCreate = '/capture/create';
   static const String capturePublic = '/capture/public';
+  static const String captureTerms = '/capture/terms';
 
   // Art Walk routes
   static const String artWalkMap = '/art-walk/map';
@@ -232,6 +233,8 @@ class AppRoutes {
   static const String adsCreate = '/ads/create';
   static const String adsManagement = '/ads/management';
   static const String adsStatistics = '/ads/statistics';
+  static const String adsMyAds = '/ads/my-ads';
+  static const String adsMyStatistics = '/ads/my-statistics';
 
   // In-app purchase routes
   static const String inAppPurchaseDemo = '/in-app-purchase-demo';
@@ -299,6 +302,7 @@ class AppRoutes {
     captureEdit,
     captureCreate,
     capturePublic,
+    captureTerms,
     artWalkMap,
     artWalkList,
     artWalkDetail,
@@ -403,6 +407,8 @@ class AppRoutes {
     adsCreate,
     adsManagement,
     adsStatistics,
+    adsMyAds,
+    adsMyStatistics,
     inAppPurchaseDemo,
   ];
 

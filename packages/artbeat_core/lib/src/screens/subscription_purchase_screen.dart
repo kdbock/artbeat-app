@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../services/payment_service.dart';
+import '../services/in_app_subscription_service.dart';
 import '../models/subscription_tier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Screen for purchasing artist or gallery subscriptions
+/// Screen for purchasing artist or gallery subscriptions via in-app purchase
 class SubscriptionPurchaseScreen extends StatefulWidget {
   final SubscriptionTier tier;
   final bool isUpgrade;
@@ -21,7 +21,8 @@ class SubscriptionPurchaseScreen extends StatefulWidget {
 
 class _SubscriptionPurchaseScreenState
     extends State<SubscriptionPurchaseScreen> {
-  final PaymentService _paymentService = PaymentService();
+  final InAppSubscriptionService _subscriptionService =
+      InAppSubscriptionService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
@@ -84,7 +85,7 @@ class _SubscriptionPurchaseScreenState
                         foregroundColor: Colors.white,
                       ),
                       child: Text(
-                        '${widget.isUpgrade ? 'Upgrade' : 'Subscribe'} - \$${_getTierPrice(widget.tier)}/month',
+                        '${widget.isUpgrade ? 'Upgrade' : 'Subscribe'} - ${_formatPrice(_getTierPrice(widget.tier))}/month',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -252,7 +253,7 @@ class _SubscriptionPurchaseScreenState
                   style: TextStyle(fontSize: 16),
                 ),
                 Text(
-                  '\$${_getTierPrice(widget.tier)}.00',
+                  _formatPrice(_getTierPrice(widget.tier)),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -283,7 +284,7 @@ class _SubscriptionPurchaseScreenState
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '\$${_getTierPrice(widget.tier)}.00',
+                  _formatPrice(_getTierPrice(widget.tier)),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -329,7 +330,7 @@ class _SubscriptionPurchaseScreenState
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      'Payment will be processed securely through Stripe. You can manage your subscription and payment methods in settings.',
+                      'Payment will be processed securely through the App Store or Google Play. You can manage your subscription in your device settings.',
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
@@ -357,13 +358,13 @@ class _SubscriptionPurchaseScreenState
     });
 
     try {
-      // Use payment service to create subscription
-      final result = await _paymentService.createSubscription(
-        customerId: user.uid,
-        tier: widget.tier,
+      // Purchase the subscription through IAP
+      final success = await _subscriptionService.subscribeToTier(
+        widget.tier,
+        isYearly: false,
       );
 
-      if (result['status'] == 'active' || result['status'] == 'trialing') {
+      if (success) {
         if (mounted) {
           // Show success dialog
           await showDialog<void>(
@@ -392,7 +393,7 @@ class _SubscriptionPurchaseScreenState
           }
         }
       } else {
-        throw Exception('Subscription failed with status: ${result['status']}');
+        throw Exception('Failed to initiate subscription purchase');
       }
     } catch (e) {
       if (mounted) {
@@ -454,19 +455,24 @@ class _SubscriptionPurchaseScreenState
     }
   }
 
-  int _getTierPrice(SubscriptionTier tier) {
+  double _getTierPrice(SubscriptionTier tier) {
     switch (tier) {
       case SubscriptionTier.starter:
-        return 5; // $4.99 rounded up
+        return 4.99;
       case SubscriptionTier.creator:
-        return 13; // $12.99 rounded up
+        return 12.99;
       case SubscriptionTier.business:
-        return 30; // $29.99 rounded up
+        return 29.99;
       case SubscriptionTier.enterprise:
-        return 80; // $79.99 rounded up
+        return 79.99;
       case SubscriptionTier.free:
-        return 0;
+        return 0.0;
     }
+  }
+
+  String _formatPrice(double price) {
+    if (price == 0.0) return '\$0';
+    return '\$${price.toStringAsFixed(2)}';
   }
 
   List<String> _getTierFeatures(SubscriptionTier tier) {

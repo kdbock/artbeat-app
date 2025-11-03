@@ -4,7 +4,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'dart:async';
 
 // Clean Dashboard Colors - Aligned with ArtBeat design system
@@ -158,11 +157,7 @@ class _ArtbeatArtwalkDashboardScreenState
               const SizedBox(height: 16),
 
               // 3.5. Ad0 - Art Walks Zone (Early placement)
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 0, // Show first ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
@@ -185,11 +180,7 @@ class _ArtbeatArtwalkDashboardScreenState
               const SizedBox(height: 16),
 
               // 7.5. Ad1 - Art Walks Zone
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 1, // Show second ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
@@ -199,11 +190,7 @@ class _ArtbeatArtwalkDashboardScreenState
               const SizedBox(height: 16),
 
               // 8.5. Ad2 - Art Walks Zone
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 2, // Show third ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
@@ -213,29 +200,17 @@ class _ArtbeatArtwalkDashboardScreenState
               const SizedBox(height: 16),
 
               // 10. Ad3 - Art Walks Zone
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 3, // Show fourth ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
               // 11. Ad4 - Art Walks Zone
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 4, // Show fifth ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 16),
 
               // 12. Ad5 - Art Walks Zone
-              const ZoneAdPlacementWidget(
-                zone: AdZone.artWalks,
-                adIndex: 5, // Show sixth ad from rotation
-                showIfEmpty: true,
-              ),
+              const SizedBox.shrink(),
 
               const SizedBox(height: 100),
             ],

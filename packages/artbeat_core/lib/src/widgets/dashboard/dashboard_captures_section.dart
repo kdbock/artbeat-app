@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_capture/artbeat_capture.dart'
-    show CapturesListScreen, CaptureModel;
 
 class DashboardCapturesSection extends StatelessWidget {
   final DashboardViewModel viewModel;
@@ -100,12 +98,10 @@ class DashboardCapturesSection extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const CapturesListScreen(),
-                ),
-              ),
+              onTap: () {
+                // Navigate to captures browse screen to show all captures
+                Navigator.pushNamed(context, '/capture/browse');
+              },
               borderRadius: BorderRadius.circular(25),
               child: Container(
                 padding: const EdgeInsets.symmetric(

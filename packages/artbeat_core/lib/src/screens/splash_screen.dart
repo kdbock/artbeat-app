@@ -6,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
 import '../utils/performance_monitor.dart';
 import '../theme/artbeat_colors.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -186,13 +185,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const Spacer(),
-            // Title Sponsor Badge
-            TitleSponsorBadge(
-              location: 'splash_screen',
-              size: 60,
-              showText: true,
-              isClickable: false, // Don't allow clicks on splash screen
-            ),
             const SizedBox(height: 40),
           ],
         ),

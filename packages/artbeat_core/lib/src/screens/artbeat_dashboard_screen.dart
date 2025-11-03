@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../widgets/leaderboard_preview_widget.dart';
 
 import '../widgets/dashboard/dashboard_browse_section.dart';
@@ -287,6 +287,21 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
   List<Widget> _buildEngagementCatalysts(DashboardViewModel viewModel) {
     final catalysts = <Widget>[];
 
+    // Slot 1: Top carousel banner (hero placement)
+    if (viewModel.isAuthenticated) {
+      catalysts.add(
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: AdCarouselWidget(
+              zone: LocalAdZone.home,
+              height: 200,
+            ),
+          ),
+        ),
+      );
+    }
+
     // Live social proof - builds FOMO and community feeling
     catalysts.add(
       SliverToBoxAdapter(
@@ -306,6 +321,16 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       catalysts.add(
         const SliverToBoxAdapter(child: LeaderboardPreviewWidget()),
       );
+
+      // Slot 4: Below leaderboard - Small banner ad
+      catalysts.add(
+        const SliverToBoxAdapter(
+          child: AdSmallBannerWidget(
+            zone: LocalAdZone.home,
+            height: 100,
+          ),
+        ),
+      );
     }
 
     // Personal progress - immediate gratification
@@ -320,6 +345,17 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
         ),
       ),
     );
+
+    // Slot 2: Between progress & browse - Native card ad
+    if (viewModel.isAuthenticated) {
+      catalysts.add(
+        const SliverToBoxAdapter(
+          child: AdNativeCardWidget(
+            zone: LocalAdZone.home,
+          ),
+        ),
+      );
+    }
 
     // Achievement showcase (when available)
     if (viewModel.achievements.isNotEmpty) {
@@ -396,6 +432,21 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       SliverToBoxAdapter(child: DashboardBrowseSection(viewModel: viewModel)),
     );
 
+    // Slot 3: Browse carousel footer - Ad placement after browse section
+    if (viewModel.isAuthenticated) {
+      discoveries.add(
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: AdSmallBannerWidget(
+              zone: LocalAdZone.home,
+              height: 60,
+            ),
+          ),
+        ),
+      );
+    }
+
     // Local art captures - immediate relevance
     discoveries.add(
       SliverToBoxAdapter(child: DashboardCapturesSection(viewModel: viewModel)),
@@ -461,26 +512,13 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     if (!viewModel.isAuthenticated) return [];
 
     return [
-      // Mid-feed ad - after user is engaged
+      // Slot 5: Optional strategic ad between zones
       const SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: ZoneAdPlacementWidget(
-            zone: AdZone.homeDiscovery,
-            adIndex: 0,
-            showIfEmpty: true,
-          ),
-        ),
-      ),
-
-      // Late-feed ad - after substantial content consumption
-      const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: ZoneAdPlacementWidget(
-            zone: AdZone.homeDiscovery,
-            adIndex: 1,
-            showIfEmpty: true,
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: AdCtaCardWidget(
+            zone: LocalAdZone.home,
+            ctaText: 'Discover More',
           ),
         ),
       ),

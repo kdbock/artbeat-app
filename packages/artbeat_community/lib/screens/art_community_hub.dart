@@ -10,7 +10,6 @@ import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
 import '../widgets/commission_artists_browser.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'artist_onboarding_screen.dart';
 import 'artist_feed_screen.dart';
 import 'feed/comments_screen.dart';
@@ -26,6 +25,7 @@ import 'feed/social_engagement_demo_screen.dart';
 import 'posts/user_posts_screen.dart';
 import 'settings/quiet_mode_screen.dart';
 import '../models/group_models.dart';
+import '../widgets/fullscreen_image_viewer.dart';
 
 /// New simplified community hub with gallery-style design
 class ArtCommunityHub extends StatefulWidget {
@@ -1360,6 +1360,18 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     }
   }
 
+  void _showFullscreenImage(
+    String imageUrl,
+    int initialIndex,
+    List<String> allImages,
+  ) {
+    FullscreenImageViewer.show(
+      context,
+      imageUrls: allImages,
+      initialIndex: initialIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -1423,13 +1435,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
           ),
 
           // Ad1 - Community & Social Zone
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 0,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Posts list
           SliverPadding(
@@ -1456,11 +1462,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                   return Column(
                     children: [
                       // Ad placement
-                      ZoneAdPlacementWidget(
-                        zone: AdZone.communitySocial,
-                        adIndex: (index ~/ 3) % 6, // Rotate through 6 ad slots
-                        showIfEmpty: true,
-                      ),
+                      const SizedBox.shrink(),
                       const SizedBox(height: 8),
                       // Post card
                       EnhancedPostCard(
@@ -1470,6 +1472,12 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                         onComment: () => _handleComment(post),
                         onShare: () => _handleShare(post),
                         onReport: () => _handleReport(post),
+                        onImageTap: (String imageUrl, int index) =>
+                            _showFullscreenImage(
+                              imageUrl,
+                              index,
+                              post.imageUrls,
+                            ),
                       ),
                     ],
                   );
@@ -1482,19 +1490,15 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                   onComment: () => _handleComment(post),
                   onShare: () => _handleShare(post),
                   onReport: () => _handleReport(post),
+                  onImageTap: (String imageUrl, int index) =>
+                      _showFullscreenImage(imageUrl, index, post.imageUrls),
                 );
               }, childCount: _filteredPosts.length),
             ),
           ),
 
           // Ad at the bottom
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 5,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Bottom padding
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -1601,24 +1605,41 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
     );
   }
 
-  void _handleFollow(ArtistProfile artist) async {
+  void _handleFollow(ArtistProfile artist, bool isFollowing) async {
     try {
-      final success = await _artistCommunityService.followArtist(artist.userId);
-      if (success) {
+      final success = isFollowing
+          ? await _artistCommunityService.followArtist(artist.userId)
+          : await _artistCommunityService.unfollowArtist(artist.userId);
+
+      if (!success) {
+        // Only show error message and revert on failure
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Following ${artist.displayName}')),
+          SnackBar(
+            content: Text(
+              isFollowing
+                  ? 'Failed to follow artist'
+                  : 'Failed to unfollow artist',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
         );
-        // Refresh artists to update follow status
+        // Revert optimistic update by refreshing - this will restore correct follow state and counts
         _loadArtists();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to follow artist')),
-        );
       }
+      // On success, do nothing - the optimistic update in ArtistCard is sufficient
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error following artist: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error ${isFollowing ? 'following' : 'unfollowing'} artist: $e',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // Revert optimistic update by refreshing - this will restore correct follow state and counts
+      _loadArtists();
     }
   }
 
@@ -1764,13 +1785,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
       child: CustomScrollView(
         slivers: [
           // Ad1 - Community & Social Zone
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 1,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Commission Artists Browser
           SliverToBoxAdapter(
@@ -1819,18 +1834,15 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
                   return Column(
                     children: [
                       // Ad placement
-                      const ZoneAdPlacementWidget(
-                        zone: AdZone.communitySocial,
-                        adIndex: 2,
-                        showIfEmpty: true,
-                      ),
+                      const SizedBox.shrink(),
                       const SizedBox(height: 8),
                       // Artist card
                       Expanded(
                         child: ArtistCard(
                           artist: artist,
                           onTap: () => _handleArtistTap(artist),
-                          onFollow: () => _handleFollow(artist),
+                          onFollow: (isFollowing) =>
+                              _handleFollow(artist, isFollowing),
                         ),
                       ),
                     ],
@@ -1842,7 +1854,8 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
                   child: ArtistCard(
                     artist: artist,
                     onTap: () => _handleArtistTap(artist),
-                    onFollow: () => _handleFollow(artist),
+                    onFollow: (isFollowing) =>
+                        _handleFollow(artist, isFollowing),
                   ),
                 );
               }, childCount: _filteredArtists.length),
@@ -1850,13 +1863,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
           ),
 
           // Ad at the bottom
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 3,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Bottom padding
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -1976,13 +1983,7 @@ class _TopicsTabState extends State<TopicsTab> {
       child: CustomScrollView(
         slivers: [
           // Ad1 - Community & Social Zone
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 2,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Topics grid
           SliverPadding(
@@ -2003,11 +2004,7 @@ class _TopicsTabState extends State<TopicsTab> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Ad placement
-                      const ZoneAdPlacementWidget(
-                        zone: AdZone.communitySocial,
-                        adIndex: 3,
-                        showIfEmpty: true,
-                      ),
+                      const SizedBox.shrink(),
                       const SizedBox(height: 8),
                       // Topic card - use Flexible to allow shrinking if needed
                       Flexible(child: _buildTopicCard(topic)),
@@ -2021,13 +2018,7 @@ class _TopicsTabState extends State<TopicsTab> {
           ),
 
           // Ad at the bottom
-          const SliverToBoxAdapter(
-            child: ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              adIndex: 4,
-              showIfEmpty: true,
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Bottom padding
           const SliverToBoxAdapter(child: SizedBox(height: 100)),

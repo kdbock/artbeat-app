@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 
@@ -733,12 +732,9 @@ class _LegacyCommunityFeedTabState extends State<LegacyCommunityFeedTab> {
           }
 
           if (_isAdPosition(index)) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: FeedAdWidget(
-                location: AdLocation.communityInFeed,
-                index: index,
-              ),
+            return const Padding(
+              padding: EdgeInsets.only(bottom: 24),
+              child: SizedBox.shrink(),
             );
           }
 
@@ -1374,10 +1370,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Community & Social Zone ad placement
-            const ZoneAdPlacementWidget(
-              zone: AdZone.communitySocial,
-              showIfEmpty: true,
-            ),
+            const SizedBox.shrink(),
             const SizedBox(height: 16),
 
             // Online Artists Section

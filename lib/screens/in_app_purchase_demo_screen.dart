@@ -161,14 +161,6 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                           ),
                         ),
                       ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isInitialized ? _showFullGiftWidget : null,
-                      child: const Text('Send a Gift'),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -372,15 +364,6 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
             child: SubscriptionPurchaseWidget(),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showFullGiftWidget() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) =>
-            const GiftPurchaseWidget(recipientName: 'Demo User'),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show CaptureModel, UserService, AppLogger;
+    show CaptureModel, CaptureServiceInterface, UserService, AppLogger;
 
 // Import ArtWalkService for achievement checking
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
@@ -12,7 +12,7 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
 import 'offline_queue_service.dart';
 
 /// Service for managing art captures in the ARTbeat app.
-class CaptureService {
+class CaptureService implements CaptureServiceInterface {
   static final CaptureService _instance = CaptureService._internal();
 
   final Connectivity _connectivity = Connectivity();
@@ -644,6 +644,73 @@ class CaptureService {
   void clearAllCapturesCache() {
     _cachedAllCaptures = null;
     _allCapturesCacheTime = null;
+  }
+
+  /// Search captures by query (implements CaptureServiceInterface)
+  @override
+  Future<List<CaptureModel>> searchCaptures(String query) async {
+    if (query.trim().isEmpty) {
+      return [];
+    }
+
+    try {
+      final lowerQuery = query.toLowerCase().trim();
+      AppLogger.info(
+        '🔍 CaptureService.searchCaptures() searching for: "$query"',
+      );
+
+      // Get all captures first (leverages existing caching)
+      final allCaptures = await getAllCaptures(limit: 200);
+
+      // Filter captures based on query
+      final filteredCaptures = allCaptures.where((capture) {
+        // Search in title
+        if (capture.title?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+
+        // Search in description
+        if (capture.description?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+
+        // Search in location name
+        if (capture.locationName?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+
+        // Search in artist name
+        if (capture.artistName?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+
+        // Search in tags
+        if (capture.tags?.any(
+              (tag) => tag.toLowerCase().contains(lowerQuery),
+            ) ==
+            true) {
+          return true;
+        }
+
+        // Search in art type and medium
+        if (capture.artType?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+        if (capture.artMedium?.toLowerCase().contains(lowerQuery) == true) {
+          return true;
+        }
+
+        return false;
+      }).toList();
+
+      AppLogger.info(
+        '✅ CaptureService.searchCaptures() found ${filteredCaptures.length} matches',
+      );
+      return filteredCaptures;
+    } catch (e) {
+      AppLogger.error('❌ CaptureService.searchCaptures() error: $e');
+      return [];
+    }
   }
 
   /// Get public captures

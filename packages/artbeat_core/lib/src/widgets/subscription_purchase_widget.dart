@@ -352,7 +352,7 @@ class SubscriptionTierCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final monthlyPrice = tier.monthlyPrice;
-    final yearlyPrice = monthlyPrice * 12 * 0.8; // 20% discount
+    final yearlyPrice = tier.yearlyPrice;
     final displayPrice = isYearly ? yearlyPrice / 12 : monthlyPrice;
     final displayPeriod = isYearly ? 'month (billed yearly)' : 'month';
 
