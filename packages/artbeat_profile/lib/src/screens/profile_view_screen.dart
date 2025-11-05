@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import '../widgets/widgets.dart';
+import 'package:artbeat_core/src/services/achievement_service.dart';
+import '../services/profile_connection_service.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String userId;
@@ -23,21 +26,25 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   final User? currentUser = FirebaseAuth.instance.currentUser;
   final UserService _userService = UserService();
   final CaptureService _captureService = CaptureService();
+  final AchievementService _achievementService = AchievementService();
+  final ProfileConnectionService _connectionService = ProfileConnectionService();
   late TabController _tabController;
 
   bool _isLoading = true;
   UserModel? _userModel;
   List<CaptureModel> _userCaptures = [];
   bool _isLoadingCaptures = true;
-  // Art walk tracking is handled by the existing achievement/reward system
+  List<Map<String, dynamic>> _userAchievements = [];
+  bool _isUserBlocked = false;
   final int _artwalksCompleted = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Changed to 3 tabs
+    _tabController = TabController(length: 3, vsync: this);
     _loadUserProfile();
     _loadUserCaptures();
+    _loadUserAchievements();
   }
 
   @override
@@ -166,6 +173,45 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     }
   }
 
+  Future<void> _loadUserAchievements() async {
+    try {
+      final achievements = await _achievementService.getUserAchievements();
+      if (mounted) {
+        setState(() {
+          _userAchievements = achievements;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('Error loading user achievements: $e');
+    }
+  }
+
+  Future<void> _blockUser() async {
+    if (currentUser == null) return;
+
+    try {
+      await _connectionService.blockConnection(currentUser!.uid, widget.userId);
+      if (mounted) {
+        setState(() {
+          _isUserBlocked = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User blocked successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to block user: $e')),
+        );
+      }
+      AppLogger.error('Error blocking user: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -288,11 +334,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
               const SizedBox(height: 12),
 
               // Streak Display
-              const StreakDisplay(
-                loginStreak: 5, // TODO: Get from user data
-                challengeStreak: 3, // TODO: Get from user data
-                categoryStreak: 7, // TODO: Get from user data
-                categoryName: 'Street Art',
+              StreakDisplay(
+                loginStreak: _userModel?.preferences?['loginStreak'] as int? ?? 0,
+                challengeStreak: _userModel?.preferences?['challengeStreak'] as int? ?? 0,
+                categoryStreak: _userModel?.preferences?['categoryStreak'] as int? ?? 0,
+                categoryName: _userModel?.preferences?['categoryName'] as String? ?? 'Street Art',
               ),
 
               const SizedBox(height: 12),
@@ -316,40 +362,71 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 shares: _userModel?.engagementStats.shareCount ?? 0,
                 comments: _userModel?.engagementStats.commentCount ?? 0,
                 followers: _userModel?.engagementStats.followCount ?? 0,
-                following: 0, // TODO: Get from engagement service
+                following: _userModel?.followingCount ?? 0,
               ),
             ],
           ),
         ),
         const SizedBox(height: 20),
         // Actions Row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushNamed(context, '/profile/edit');
-              },
-              icon: const Icon(Icons.edit, size: 18),
-              label: const Text('Edit Profile'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryPurple,
-                foregroundColor: Colors.white,
+        if (widget.isCurrentUser)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/profile/edit');
+                },
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text('Edit Profile'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryPurple,
+                  foregroundColor: Colors.white,
+                ),
               ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushNamed(context, '/captures');
-              },
-              icon: const Icon(Icons.camera_alt, size: 18),
-              label: const Text('View Captures'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryGreen,
-                foregroundColor: Colors.white,
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/captures');
+                },
+                icon: const Icon(Icons.camera_alt, size: 18),
+                label: const Text('View Captures'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (!_isUserBlocked)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/captures');
+                  },
+                  icon: const Icon(Icons.camera_alt, size: 18),
+                  label: const Text('View Captures'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ArtbeatColors.primaryGreen,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ElevatedButton.icon(
+                onPressed: _isUserBlocked ? null : _blockUser,
+                icon: Icon(
+                  _isUserBlocked ? Icons.block : Icons.block_outlined,
+                  size: 18,
+                ),
+                label: Text(_isUserBlocked ? 'User Blocked' : 'Block User'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isUserBlocked ? Colors.grey : Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
         const SizedBox(height: 20),
         // Tabs
         TabBar(
@@ -379,34 +456,53 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   }
 
   List<BadgeData> _getRecentBadges() {
-    // TODO: Get actual recent badges from user data
-    // For now, return sample badges
-    return [
-      BadgeData(
-        id: 'first_walk_completed',
-        name: 'First Walk',
-        description: 'Complete your first art walk',
-        icon: '🚶',
-        earnedAt: DateTime.now().subtract(const Duration(days: 1)),
-        category: 'Quest',
-      ),
-      BadgeData(
-        id: 'first_capture_approved',
-        name: 'First Capture',
-        description: 'Get your first art capture approved',
-        icon: '📸',
-        earnedAt: DateTime.now().subtract(const Duration(days: 2)),
-        category: 'Creator',
-      ),
-      BadgeData(
-        id: 'ten_walks_completed',
-        name: 'Ten Walks',
-        description: 'Complete 10 art walks',
-        icon: '🏃',
-        earnedAt: DateTime.now().subtract(const Duration(days: 5)),
-        category: 'Quest',
-      ),
-    ];
+    if (_userAchievements.isEmpty) {
+      return [];
+    }
+
+    return _userAchievements.take(3).map((achievement) {
+      return BadgeData(
+        id: achievement['id'] as String? ?? '',
+        name: achievement['title'] as String? ?? 'Achievement',
+        description: achievement['description'] as String? ?? '',
+        icon: _getAchievementIcon(achievement['type'] as String? ?? ''),
+        earnedAt: (achievement['earnedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        category: _getAchievementCategory(achievement['type'] as String? ?? ''),
+      );
+    }).toList();
+  }
+
+  String _getAchievementIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'first_walk':
+        return '🚶';
+      case 'first_capture':
+        return '📸';
+      case 'first_post':
+        return '📝';
+      case 'first_follow':
+        return '👥';
+      case 'level_up':
+        return '⭐';
+      default:
+        return '🏆';
+    }
+  }
+
+  String _getAchievementCategory(String type) {
+    switch (type.toLowerCase()) {
+      case 'first_walk':
+      case 'ten_walks':
+        return 'Quest';
+      case 'first_capture':
+      case 'first_post':
+        return 'Creator';
+      case 'first_follow':
+      case 'ten_followers':
+        return 'Social';
+      default:
+        return 'Quest';
+    }
   }
 
   Widget _buildCapturesTab() {

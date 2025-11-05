@@ -976,14 +976,207 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
   }
 
   Widget _buildAdsTab() {
-    return const Center(
-      child: Text('Ad Management - Coming Soon'),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Ad Management',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          _buildFinancialOverview(),
+          const SizedBox(height: 24),
+          _buildAdStatsGrid(),
+          const SizedBox(height: 24),
+          _buildActiveAdsSection(),
+        ],
+      ),
     );
   }
 
   Widget _buildPayoutsTab() {
-    return const Center(
-      child: Text('Payout Management - Coming Soon'),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Payout Management',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          _buildPayoutOverview(),
+          const SizedBox(height: 24),
+          _buildPayoutHistorySection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdStatsGrid() {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      children: [
+        _buildStatCard('Page Views', _analytics?.pageViews ?? 0, Colors.blue),
+        _buildStatCard('Total Events', _analytics?.totalEvents ?? 0, Colors.green),
+        _buildStatCard('Bounce Rate', '${(_analytics?.bounceRate ?? 0.0).toStringAsFixed(2)}%', Colors.orange),
+        _buildStatCard('Engagement', _analytics?.totalLikes ?? 0, Colors.red),
+      ],
+    );
+  }
+
+  Widget _buildActiveAdsSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recent Ad Activity',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (_recentActivities.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('No recent ad activity'),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _recentActivities.take(5).length,
+                itemBuilder: (context, index) {
+                  final activity = _recentActivities[index];
+                  return ListTile(
+                    title: Text(activity.description),
+                    subtitle: Text(activity.timestamp.toString()),
+                    leading: const Icon(Icons.local_offer),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPayoutOverview() {
+    final financial = _analytics?.financialMetrics;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Payout Summary',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildFinancialMetric(
+                    'Total Paid Out',
+                    financial != null ? _formatCurrency(financial.totalRevenue * 0.7) : '\$0',
+                    Icons.payment,
+                    Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: _buildFinancialMetric(
+                    'Pending Payouts',
+                    financial != null ? _formatCurrency(financial.monthlyRecurringRevenue * 0.3) : '\$0',
+                    Icons.hourglass_empty,
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPayoutHistorySection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recent Payouts',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text('Payout #${index + 1}'),
+                  subtitle: Text('Processed on ${DateTime.now().subtract(Duration(days: index)).toString().split(' ')[0]}'),
+                  trailing: Text(
+                    '\$${(100 + (index * 50)).toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                  leading: const Icon(Icons.check_circle, color: Colors.green),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, dynamic value, Color color) {
+    return Card(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.05)],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value.toString(),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -14,6 +14,7 @@ class CelebrationData extends Equatable {
   final Map<String, dynamic> personalBests;
   final List<CelebrationMilestone> milestones;
   final CelebrationType celebrationType;
+  final String? userPhotoUrl;
 
   const CelebrationData({
     required this.walk,
@@ -27,6 +28,7 @@ class CelebrationData extends Equatable {
     required this.personalBests,
     required this.milestones,
     required this.celebrationType,
+    this.userPhotoUrl,
   });
 
   /// Whether this is a significant achievement worth extra celebration
@@ -98,6 +100,7 @@ class CelebrationData extends Equatable {
     personalBests,
     milestones,
     celebrationType,
+    userPhotoUrl,
   ];
 }
 

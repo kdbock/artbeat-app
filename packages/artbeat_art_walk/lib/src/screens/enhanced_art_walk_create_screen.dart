@@ -114,8 +114,8 @@ class _EnhancedArtWalkCreateScreenState
     }
 
     _initializeLocation();
-    _loadAvailableArtPieces();
     _loadUserSettings();
+    _loadAvailableArtPiecesAfterLocation();
   }
 
   @override
@@ -209,6 +209,19 @@ class _EnhancedArtWalkCreateScreenState
     }
   }
 
+  Future<void> _loadAvailableArtPiecesAfterLocation() async {
+    const int maxWaitAttempts = 30;
+    int waitAttempt = 0;
+
+    while ((_currentPosition == null && _mapCenter == null) &&
+        waitAttempt < maxWaitAttempts) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      waitAttempt++;
+    }
+
+    await _loadAvailableArtPieces();
+  }
+
   Future<void> _loadAvailableArtPieces() async {
     setState(() {
       _isLoading = true;
@@ -219,39 +232,29 @@ class _EnhancedArtWalkCreateScreenState
       final latitude = _currentPosition?.latitude ?? 35.7796;
       final longitude = _currentPosition?.longitude ?? -78.6382;
 
-      // Fetch all captures (captures are public art)
+      // Fetch all captures (captures are public art) - fresh from Firestore, no cache
       final captureService = CaptureService();
-      final captures = await captureService.getAllCaptures(limit: 500);
+      final captures = await captureService.getAllCapturesFresh(limit: 500);
 
       // Filter captures within 30 mile radius for American audience
       const double radiusInMiles = 30.0;
       const double radiusInMeters = radiusInMiles * 1609.34;
 
-      final List<PublicArtModel> finalCaptureArt = captures
-          .where((capture) {
-            // Skip captures without location
-            if (capture.location == null) {
-              return false;
-            }
+      final List<(PublicArtModel, double)> artWithDistance = [];
 
-            try {
-              final distance = Geolocator.distanceBetween(
-                latitude,
-                longitude,
-                capture.location!.latitude,
-                capture.location!.longitude,
-              );
+      for (final capture in captures) {
+        if (capture.location == null) continue;
 
-              return distance <= radiusInMeters;
-            } catch (e) {
-              debugPrint(
-                'Error calculating distance for capture ${capture.title}: $e',
-              );
-              return false;
-            }
-          })
-          .map(
-            (CaptureModel capture) => PublicArtModel(
+        try {
+          final distance = Geolocator.distanceBetween(
+            latitude,
+            longitude,
+            capture.location!.latitude,
+            capture.location!.longitude,
+          );
+
+          if (distance <= radiusInMeters) {
+            final publicArt = PublicArtModel(
               id: capture.id,
               title: capture.title ?? 'Captured Art',
               artistName: capture.artistName ?? 'Unknown Artist',
@@ -262,9 +265,21 @@ class _EnhancedArtWalkCreateScreenState
               userId: capture.userId,
               usersFavorited: const [],
               createdAt: Timestamp.fromDate(capture.createdAt),
-            ),
-          )
-          .toList();
+            );
+            artWithDistance.add((publicArt, distance));
+          }
+        } catch (e) {
+          debugPrint(
+            'Error calculating distance for capture ${capture.title}: $e',
+          );
+        }
+      }
+
+      // Sort by distance (closest first)
+      artWithDistance.sort((a, b) => a.$2.compareTo(b.$2));
+
+      final List<PublicArtModel> finalCaptureArt =
+          artWithDistance.map((item) => item.$1).toList();
 
       debugPrint('Total captures fetched: ${captures.length}');
       debugPrint('Filtered captures within 30 miles: ${finalCaptureArt.length}');

@@ -296,10 +296,19 @@ class AuthService {
         nonce: nonce,
       );
 
+      // Validate that we have the required identity token
+      if (appleCredential.identityToken == null || appleCredential.identityToken!.isEmpty) {
+        AppLogger.error('❌ Apple Sign-In failed: No identity token received');
+        throw Exception('Apple Sign-In failed: Identity token is missing. Please try again.');
+      }
+
       // Create an OAuth credential from the credential returned by Apple
       final oauthCredential = OAuthProvider(
         "apple.com",
-      ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
+      ).credential(
+        idToken: appleCredential.identityToken!,
+        rawNonce: rawNonce,
+      );
 
       // Sign in to Firebase with the Apple credential
       final userCredential = await _auth.signInWithCredential(oauthCredential);

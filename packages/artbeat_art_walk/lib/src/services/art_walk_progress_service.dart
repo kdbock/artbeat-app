@@ -50,8 +50,11 @@ class ArtWalkProgressService {
         // Resume existing progress
         _currentProgress = existingProgress;
         _startAutoSave();
+        _logger.i('📊 startWalk() - Resuming existing progress: $artWalkId with ${existingProgress.visitedArt.length} visited pieces');
         return existingProgress;
       }
+
+      _logger.i('📊 startWalk() - Creating new progress for walk: $artWalkId (no existing progress found)');
 
       // Create new progress
       final progressId = '${uid}_$artWalkId';
@@ -98,6 +101,8 @@ class ArtWalkProgressService {
     }
 
     try {
+      _logger.i('📊 recordArtVisit() - Starting for artId=$artId, current visitedArt.length=${_currentProgress!.visitedArt.length}');
+      
       // Calculate distance from art
       final distance = Geolocator.distanceBetween(
         userLocation.latitude,
@@ -144,6 +149,8 @@ class ArtWalkProgressService {
         totalPointsEarned: _currentProgress!.totalPointsEarned + points,
       );
 
+      _logger.i('📊 recordArtVisit() - Updated progress: visitedArt.length=${updatedProgress.visitedArt.length}');
+
       // Save to Firestore
       await _saveProgress(updatedProgress);
 
@@ -156,7 +163,7 @@ class ArtWalkProgressService {
       _currentProgress = updatedProgress;
 
       _logger.i(
-        'Recorded art visit: $artId, points: $points, distance: ${distance.toStringAsFixed(1)}m',
+        'Recorded art visit: $artId, points: $points, distance: ${distance.toStringAsFixed(1)}m, now have ${_currentProgress!.visitedArt.length} visited pieces',
       );
       return updatedProgress;
     } catch (e) {
@@ -172,17 +179,25 @@ class ArtWalkProgressService {
     }
 
     try {
+      _logger.i('📊 completeWalk() - Starting completion. Current progress: visitedArt.length=${_currentProgress!.visitedArt.length}, artWalkId=${_currentProgress!.artWalkId}');
+      
+      // Calculate completion bonus
+      final completionBonus = _calculateCompletionBonus(_currentProgress!);
+      
+      // Create completed progress with updated total points earned
       final completedProgress = _currentProgress!.copyWith(
         status: WalkStatus.completed,
         completedAt: DateTime.now(),
         lastActiveAt: DateTime.now(),
+        totalPointsEarned: _currentProgress!.totalPointsEarned + completionBonus,
       );
+
+      _logger.i('📊 completeWalk() - Completed progress: visitedArt.length=${completedProgress.visitedArt.length}, bonus=$completionBonus');
 
       // Save to Firestore
       await _saveProgress(completedProgress);
 
       // Award completion bonus points
-      final completionBonus = _calculateCompletionBonus(completedProgress);
       if (completionBonus > 0) {
         await _rewardsService.awardXP(
           'art_walk_completion',
@@ -195,7 +210,7 @@ class ArtWalkProgressService {
 
       _currentProgress = null;
 
-      _logger.i('Completed art walk: ${completedProgress.artWalkId}');
+      _logger.i('Completed art walk: ${completedProgress.artWalkId} with bonus: $completionBonus and ${completedProgress.visitedArt.length} visited pieces');
       return completedProgress;
     } catch (e) {
       _logger.e('Error completing art walk: $e');
@@ -293,11 +308,19 @@ class ArtWalkProgressService {
 
       if (!doc.exists) return null;
 
-      return ArtWalkProgress.fromFirestore(doc);
+      final progress = ArtWalkProgress.fromFirestore(doc);
+      return progress;
     } catch (e) {
       _logger.e('Error getting walk progress: $e');
       return null;
     }
+  }
+
+  /// Set the current progress (used when loading existing progress from outside the service)
+  void setCurrentProgress(ArtWalkProgress progress) {
+    _currentProgress = progress;
+    _startAutoSave();
+    _logger.i('📊 setCurrentProgress() - Set current progress for walk: ${progress.artWalkId}, visitedArt.length=${progress.visitedArt.length}');
   }
 
   /// Get walk progress by ID

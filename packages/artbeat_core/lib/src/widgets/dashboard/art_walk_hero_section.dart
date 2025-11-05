@@ -274,7 +274,7 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
                 onTap: () async {
                   // Debug: Check if button is being tapped
                   if (kDebugMode) {
-                    print('� Messaging button tapped! Route: /messaging');
+                    print('[DEBUG] Messaging button tapped! Route: /messaging');
                   }
 
                   // Show immediate feedback

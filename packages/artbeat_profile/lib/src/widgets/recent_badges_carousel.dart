@@ -123,19 +123,22 @@ class RecentBadgesCarousel extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(badge.icon, style: const TextStyle(fontSize: 32)),
-          const SizedBox(height: 4),
-          Text(
-            badge.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
+          Text(badge.icon, style: const TextStyle(fontSize: 28)),
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              badge.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

@@ -280,16 +280,32 @@ class _EnhancedArtWalkExperienceScreenState
       if (userId == null) return;
 
       // Try to load existing progress
+      debugPrint('📊 _loadOrCreateProgress() - Attempting to load progress for userId=$userId, artWalkId=${widget.artWalkId}');
+      
       final existingProgress = await _progressService.getWalkProgress(
         userId,
         widget.artWalkId,
       );
 
       if (existingProgress != null) {
+        debugPrint('📊 _loadOrCreateProgress() - Found existing progress with ${existingProgress.visitedArt.length} visited pieces');
+        
+        // Ensure totalArtCount matches current art walk
+        final correctedProgress = existingProgress.totalArtCount != _artPieces.length
+            ? existingProgress.copyWith(totalArtCount: _artPieces.length)
+            : existingProgress;
+        
+        debugPrint('📊 _loadOrCreateProgress() - Calling setCurrentProgress with ${correctedProgress.visitedArt.length} visited pieces');
+        
+        // Set the progress service's internal current progress so that recordArtVisit and completeWalk work correctly
+        _progressService.setCurrentProgress(correctedProgress);
+        
         setState(() {
-          _currentProgress = existingProgress;
+          _currentProgress = correctedProgress;
         });
       } else {
+        debugPrint('📊 _loadOrCreateProgress() - No existing progress found, creating new walk');
+        
         // Create new progress if none exists
         final newProgress = await _progressService.startWalk(
           artWalkId: widget.artWalkId,
@@ -301,7 +317,7 @@ class _EnhancedArtWalkExperienceScreenState
         });
       }
     } catch (e) {
-      // debugPrint('Error loading progress: $e');
+      debugPrint('Error loading progress: $e');
     }
   }
 
@@ -666,6 +682,30 @@ class _EnhancedArtWalkExperienceScreenState
     }
   }
 
+  /// Record a visit to an art piece when completing a navigation segment
+  Future<void> _recordSegmentCompletionVisit(RouteSegment segment) async {
+    try {
+      // Find the art piece with the matching ID
+      PublicArtModel? artPiece;
+      for (final art in _artPieces) {
+        if (art.id == segment.toArtPieceId) {
+          artPiece = art;
+          break;
+        }
+      }
+      
+      if (artPiece != null && !_isArtVisited(artPiece.id)) {
+        debugPrint('📊 Auto-recording visit for art piece: ${artPiece.id} during navigation');
+        
+        // Mark it as visited using the existing visit recording
+        await _markAsVisited(artPiece);
+      }
+    } catch (e) {
+      debugPrint('📊 Error auto-recording segment completion visit: $e');
+      // Don't throw - just silently handle errors so navigation isn't blocked
+    }
+  }
+
   void _showWalkCompletionDialog() {
     // Haptic feedback for walk completion
     _hapticService?.walkCompleted();
@@ -733,7 +773,19 @@ class _EnhancedArtWalkExperienceScreenState
 
   Future<void> _completeWalk() async {
     try {
+      debugPrint('📊 _completeWalk() - Starting walk completion');
+      
+      // Ensure the final art piece is marked as visited if we're in navigation mode
+      if (_isNavigationMode && _currentRoute != null && _artPieces.isNotEmpty) {
+        debugPrint('📊 _completeWalk() - Recording final art piece visit for safety');
+        final lastSegment = _currentRoute?.segments.last;
+        if (lastSegment != null) {
+          await _recordSegmentCompletionVisit(lastSegment);
+        }
+      }
+      
       final completedProgress = await _progressService.completeWalk();
+      debugPrint('📊 _completeWalk() - Walk completed with ${completedProgress.visitedArt.length} visited pieces');
 
       // Calculate actual distance traveled
       double totalDistance = 0.0;
@@ -820,6 +872,7 @@ class _EnhancedArtWalkExperienceScreenState
             )
             .toList(),
         celebrationType: CelebrationType.regularCompletion,
+        userPhotoUrl: widget.artWalk.coverImageUrl,
       );
 
       // Post walk completed activity to social feed
@@ -1283,7 +1336,7 @@ class _EnhancedArtWalkExperienceScreenState
                   right: 16,
                   child: EnhancedProgressVisualization(
                     visitedCount: _currentProgress?.visitedArt.length ?? 0,
-                    totalCount: _artPieces.length,
+                    totalCount: _currentProgress?.totalArtCount ?? _artPieces.length,
                     progressPercentage:
                         _currentProgress?.progressPercentage ?? 0.0,
                     isNavigationMode: _isNavigationMode,
@@ -1313,6 +1366,12 @@ class _EnhancedArtWalkExperienceScreenState
                             '🧭 Experience Screen: Next step requested',
                           );
                           try {
+                            // Before advancing, record a visit to the current segment's destination
+                            final currentSegment = _navigationService.currentSegment;
+                            if (currentSegment != null && _currentPosition != null) {
+                              _recordSegmentCompletionVisit(currentSegment);
+                            }
+                            
                             _navigationService.nextStep();
                             debugPrint(
                               '🧭 Experience Screen: Next step called successfully',
@@ -1363,6 +1422,27 @@ class _EnhancedArtWalkExperienceScreenState
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Error stopping navigation: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        onCompleteWalk: () {
+                          debugPrint(
+                            '🧭 Experience Screen: Complete walk requested',
+                          );
+                          try {
+                            _completeWalk();
+                            debugPrint(
+                              '🧭 Experience Screen: Complete walk called successfully',
+                            );
+                          } catch (e) {
+                            debugPrint(
+                              '🧭 Experience Screen: Error completing walk: $e',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error completing walk: $e'),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -1531,11 +1611,6 @@ class _EnhancedArtWalkExperienceScreenState
       _onboardingService!.completeTutorialStep(_currentTutorialStep!.id);
     }
     _dismissTutorial();
-
-    // Show next tutorial if available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showTutorial();
-    });
   }
 
   Widget _buildWebMapFallback() {

@@ -12,21 +12,21 @@ Create **18 IAP products** in your App Store Connect account:
 
 ## SMALL Ads (Banner Format)
 
-| SKU           | Display                 | Price     | Duration |
-| ------------- | ----------------------- | --------- | -------- |
-| `ad_small_1w` | Small Banner - 1 Week   | **$0.99** | 1 Week   |
-| `ad_small_1m` | Small Banner - 1 Month  | **$1.99** | 1 Month  |
-| `ad_small_3m` | Small Banner - 3 Months | **$4.99** | 3 Months |
+| SKU           | Display                    | Description                | Price     | Duration |
+| ------------- | -------------------------- | -------------------------- | --------- | -------- |
+| `ad_small_1w` | Small Banners - 7 Days     | 7-day small banner ads     | **$0.99** | 1 Week   |
+| `ad_small_1m` | Small Banners - 1 Month    | 30-day small banner ads    | **$1.99** | 1 Month  |
+| `ad_small_3m` | Small Banner Bundle - 3M   | 90-day small banner ads    | **$4.99** | 3 Months |
 
 ---
 
 ## BIG Ads (Square Format)
 
-| SKU         | Display               | Price     | Duration |
-| ----------- | --------------------- | --------- | -------- |
-| `ad_big_1w` | Big Square - 1 Week   | **$1.99** | 1 Week   |
-| `ad_big_1m` | Big Square - 1 Month  | **$3.99** | 1 Month  |
-| `ad_big_3m` | Big Square - 3 Months | **$9.99** | 3 Months |
+| SKU         | Display                    | Description                 | Price     | Duration |
+| ----------- | -------------------------- | --------------------------- | --------- | -------- |
+| `ad_big_1w` | Premium Squares - 7 Days   | 7-day premium square ads    | **$1.99** | 1 Week   |
+| `ad_big_1m` | Premium Squares - 1 Month  | 30-day premium square ads   | **$3.99** | 1 Month  |
+| `ad_big_3m` | Big Square Bundle - 3M     | 90-day premium square ads   | **$9.99** | 3 Months |
 
 ---
 

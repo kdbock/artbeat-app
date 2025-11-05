@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
+import '../services/social_service.dart';
 
 /// Celebratory screen shown when an art walk is completed
 class ArtWalkCelebrationScreen extends StatefulWidget {
@@ -291,7 +292,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
                     _buildStatItem(
                       icon: Icons.directions_walk,
                       value:
-                          '${widget.celebrationData.distanceWalked.toStringAsFixed(1)}km',
+                          '${(widget.celebrationData.distanceWalked * 0.621371).toStringAsFixed(1)} mi',
                       label: 'Distance',
                     ),
                   ],
@@ -557,7 +558,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.pushNamedAndRemoveUntil(
                       context,
-                      '/art-walks',
+                      '/art-walk/map',
                       (route) => false,
                     ),
                     icon: const Icon(Icons.explore),
@@ -582,17 +583,38 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
 
   void _shareAchievement() async {
     try {
-      await SharePlus.instance.share(
-        ShareParams(
-          text: widget.celebrationData.sharingText,
-          subject: 'ARTbeat Art Walk Completed!',
-        ),
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final socialService = SocialService();
+      final distanceMiles = (widget.celebrationData.distanceWalked * 0.621371).toStringAsFixed(1);
+      
+      final message = 'Congratulations to ${user.displayName ?? 'this walker'} for completing "${widget.celebrationData.walk.title}"! '
+          'They walked $distanceMiles miles and visited ${widget.celebrationData.artPiecesVisited} amazing art pieces. '
+          'Great job exploring our community\'s public art! 🎨';
+
+      await socialService.postActivity(
+        userId: user.uid,
+        userName: user.displayName ?? 'Anonymous Walker',
+        userAvatar: user.photoURL,
+        type: SocialActivityType.achievement,
+        message: message,
+        metadata: {
+          'walkTitle': widget.celebrationData.walk.title,
+          'artPiecesVisited': widget.celebrationData.artPiecesVisited,
+          'distanceWalked': widget.celebrationData.distanceWalked,
+          'pointsEarned': widget.celebrationData.pointsEarned,
+          'walkDuration': widget.celebrationData.walkDuration.inMinutes,
+          'photoUrl': widget.celebrationData.userPhotoUrl,
+        },
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Achievement shared successfully!'),
+            content: Text('Achievement posted to community feed!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -602,7 +624,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to share achievement: $e'),
+            content: Text('Failed to post achievement: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

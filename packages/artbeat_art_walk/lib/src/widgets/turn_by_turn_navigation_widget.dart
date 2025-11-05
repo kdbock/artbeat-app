@@ -7,6 +7,7 @@ class TurnByTurnNavigationWidget extends StatefulWidget {
   final VoidCallback? onNextStep;
   final VoidCallback? onPreviousStep;
   final VoidCallback? onStopNavigation;
+  final VoidCallback? onCompleteWalk;
   final bool isCompact; // Whether to show compact version
 
   const TurnByTurnNavigationWidget({
@@ -15,6 +16,7 @@ class TurnByTurnNavigationWidget extends StatefulWidget {
     this.onNextStep,
     this.onPreviousStep,
     this.onStopNavigation,
+    this.onCompleteWalk,
     this.isCompact = false,
   });
 
@@ -217,10 +219,13 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
                   ),
                   IconButton(
                     key: const ValueKey('stop_navigation_button'),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(_isRouteCompleted(update) ? Icons.check_circle : Icons.close),
+                    color: _isRouteCompleted(update) ? Colors.green : null,
                     onPressed: widget.onStopNavigation != null
                         ? () {
-                            debugPrint('🧭 Stop Navigation (X) button pressed');
+                            debugPrint(_isRouteCompleted(update)
+                                ? '🧭 Complete Walk button pressed'
+                                : '🧭 Stop Navigation (X) button pressed');
                             widget.onStopNavigation!();
                           }
                         : null,
@@ -426,53 +431,80 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Previous button with GestureDetector as fallback
-                  GestureDetector(
-                    key: const ValueKey('previous_step_gesture'),
-                    onTap: widget.onPreviousStep != null
-                        ? () {
-                            debugPrint('🧭 Previous Step gesture tapped');
-                            widget.onPreviousStep!();
-                          }
-                        : null,
-                    child: ElevatedButton.icon(
-                      key: const ValueKey('previous_step_button'),
-                      onPressed: widget.onPreviousStep != null
+                  // Previous button - disabled when route is completed
+                  Expanded(
+                    child: GestureDetector(
+                      key: const ValueKey('previous_step_gesture'),
+                      onTap: (widget.onPreviousStep != null && !_isRouteCompleted(update))
                           ? () {
-                              debugPrint('🧭 Previous Step button pressed');
+                              debugPrint('🧭 Previous Step gesture tapped');
                               widget.onPreviousStep!();
                             }
                           : null,
-                      icon: const Icon(Icons.skip_previous),
-                      label: const Text('Previous'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        foregroundColor: Colors.grey[700],
+                      child: ElevatedButton.icon(
+                        key: const ValueKey('previous_step_button'),
+                        onPressed: (widget.onPreviousStep != null && !_isRouteCompleted(update))
+                            ? () {
+                                debugPrint('🧭 Previous Step button pressed');
+                                widget.onPreviousStep!();
+                              }
+                            : null,
+                        icon: const Icon(Icons.skip_previous),
+                        label: const Text('Previous'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isRouteCompleted(update)
+                              ? Colors.grey[100]
+                              : Colors.grey[200],
+                          foregroundColor: _isRouteCompleted(update)
+                              ? Colors.grey[400]
+                              : Colors.grey[700],
+                        ),
                       ),
                     ),
                   ),
-                  // Next button with GestureDetector as fallback
-                  GestureDetector(
-                    key: const ValueKey('next_step_gesture'),
-                    onTap: widget.onNextStep != null
-                        ? () {
-                            debugPrint('🧭 Next Step gesture tapped');
-                            widget.onNextStep!();
-                          }
-                        : null,
-                    child: ElevatedButton.icon(
-                      key: const ValueKey('next_step_button'),
-                      onPressed: widget.onNextStep != null
-                          ? () {
-                              debugPrint('🧭 Next Step button pressed');
-                              widget.onNextStep!();
-                            }
-                          : null,
-                      icon: const Icon(Icons.skip_next),
-                      label: const Text('Next'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
+                  const SizedBox(width: 8),
+                  // Next button - disabled when route is completed
+                  Expanded(
+                    child: GestureDetector(
+                      key: const ValueKey('next_step_gesture'),
+                      onTap: _isRouteCompleted(update)
+                          ? (widget.onCompleteWalk != null
+                              ? () {
+                                  debugPrint('🧭 Route Complete gesture tapped');
+                                  widget.onCompleteWalk!();
+                                }
+                              : null)
+                          : (widget.onNextStep != null
+                              ? () {
+                                  debugPrint('🧭 Next Step gesture tapped');
+                                  widget.onNextStep!();
+                                }
+                              : null),
+                      child: ElevatedButton.icon(
+                        key: const ValueKey('next_step_button'),
+                        onPressed: _isRouteCompleted(update)
+                            ? (widget.onCompleteWalk != null
+                                ? () {
+                                    debugPrint('🧭 Route Complete button pressed');
+                                    widget.onCompleteWalk!();
+                                  }
+                                : null)
+                            : (widget.onNextStep != null
+                                ? () {
+                                    debugPrint('🧭 Next Step button pressed');
+                                    widget.onNextStep!();
+                                  }
+                                : null),
+                        icon: _isRouteCompleted(update)
+                            ? const Icon(Icons.check_circle)
+                            : const Icon(Icons.skip_next),
+                        label: Text(_isRouteCompleted(update) ? 'Route Complete' : 'Next'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isRouteCompleted(update)
+                              ? Colors.green
+                              : Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -522,5 +554,9 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
     final currentStepIndex = segment.steps.indexOf(update.currentStep!);
 
     return segment.steps[currentStepIndex + 1];
+  }
+
+  bool _isRouteCompleted(NavigationUpdate update) {
+    return update.type == NavigationUpdateType.routeCompleted;
   }
 }

@@ -47,6 +47,13 @@ class CaptureService implements CaptureServiceInterface {
   /// Collection reference for public art
   CollectionReference get _publicArtRef => _firestore.collection('publicArt');
 
+  /// Clear the cached captures
+  void clearCapturesCache() {
+    _cachedAllCaptures = null;
+    _allCapturesCacheTime = null;
+    AppLogger.info('🧹 Captures cache cleared');
+  }
+
   /// Get all captures for a specific user
   Future<List<CaptureModel>> getCapturesForUser(String? userId) async {
     if (userId == null) return [];
@@ -67,6 +74,68 @@ class CaptureService implements CaptureServiceInterface {
           .toList();
     } catch (e) {
       AppLogger.error('Error fetching captures: $e');
+      return [];
+    }
+  }
+
+  /// Force fetch all captures, bypassing cache entirely
+  Future<List<CaptureModel>> getAllCapturesFresh({int limit = 500}) async {
+    try {
+      debugPrint(
+        '🚀 CaptureService.getAllCapturesFresh() fetching fresh from Firestore with limit: $limit',
+      );
+
+      // Try with orderBy first
+      try {
+        final querySnapshot = await _capturesRef
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+
+        final captures = <CaptureModel>[];
+        for (final doc in querySnapshot.docs) {
+          try {
+            final data = doc.data() as Map<String, dynamic>?;
+            if (data != null && data.isNotEmpty) {
+              final capture = CaptureModel.fromJson({...data, 'id': doc.id});
+              captures.add(capture);
+            }
+          } catch (e) {
+            AppLogger.error('❌ Error parsing capture ${doc.id}: $e');
+          }
+        }
+
+        debugPrint(
+          '✅ CaptureService.getAllCapturesFresh() found ${captures.length} captures',
+        );
+        return captures;
+      } catch (orderByError) {
+        AppLogger.info('🔄 OrderBy query failed, trying without orderBy...');
+        
+        final fallbackQuery = await _capturesRef.limit(limit).get();
+
+        final captures = <CaptureModel>[];
+        for (final doc in fallbackQuery.docs) {
+          try {
+            final data = doc.data() as Map<String, dynamic>?;
+            if (data != null && data.isNotEmpty) {
+              final capture = CaptureModel.fromJson({...data, 'id': doc.id});
+              captures.add(capture);
+            }
+          } catch (e) {
+            AppLogger.error('❌ Error parsing capture ${doc.id}: $e');
+          }
+        }
+
+        captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        debugPrint(
+          '✅ CaptureService.getAllCapturesFresh() fallback found ${captures.length} captures',
+        );
+        return captures;
+      }
+    } catch (e) {
+      AppLogger.error('❌ Error in getAllCapturesFresh: $e');
       return [];
     }
   }
