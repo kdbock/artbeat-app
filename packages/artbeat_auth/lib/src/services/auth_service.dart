@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +8,13 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
+import './fresh_apple_signin.dart';
 
 /// Authentication service for handling user authentication
 class AuthService {
   late FirebaseAuth _auth;
   late FirebaseFirestore _firestore;
-  
+
   /// Initialize Google Sign-In with proper error handling
   /// Late-init to prevent null reference crashes during app startup
   late final GoogleSignIn _googleSignIn;
@@ -65,7 +67,7 @@ class AuthService {
     String email,
     String password,
     String fullName, {
-    required String zipCode, // Required parameter
+    String? zipCode, // Optional - captured from location on-demand
   }) async {
     try {
       AppLogger.info('📝 Starting registration for email: $email');
@@ -84,12 +86,12 @@ class AuthService {
       AppLogger.info('✅ Display name set to: $fullName');
 
       try {
-        // Create user document in Firestore with zipCode
+        // Create user document in Firestore
         await _firestore.collection('users').doc(uid).set({
           'id': uid,
           'fullName': fullName,
           'email': email,
-          'zipCode': zipCode,
+          'zipCode': zipCode ?? '',
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
           'userType': 'regular',
@@ -177,13 +179,10 @@ class AuthService {
   void _initializeGoogleSignIn() {
     try {
       // Initialize with email scope to prevent SignInHubActivity crashes
-      _googleSignIn = GoogleSignIn(
-        scopes: [
-          'email',
-          'profile',
-        ],
+      _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+      AppLogger.info(
+        '✅ Google Sign-In initialized with email and profile scopes',
       );
-      AppLogger.info('✅ Google Sign-In initialized with email and profile scopes');
     } catch (e) {
       AppLogger.error('⚠️ Error initializing Google Sign-In: $e');
       // Fall back to default initialization
@@ -216,8 +215,10 @@ class AuthService {
       try {
         googleUser = await _googleSignIn.signIn();
       } catch (e) {
-        AppLogger.error('Google Sign-In flow failed (SignInHubActivity crash possible): $e');
-        
+        AppLogger.error(
+          'Google Sign-In flow failed (SignInHubActivity crash possible): $e',
+        );
+
         // Check if this looks like a null object reference crash
         if (e.toString().contains('null') || e.toString().contains('Null')) {
           throw Exception(
@@ -278,49 +279,240 @@ class AuthService {
     }
   }
 
+  /// Fresh Apple Sign-In that bypasses all Firebase configuration issues
+  Future<User> signInWithAppleFresh() async {
+    return FreshAppleSignIn.signInFresh();
+  }
+
+  /// Sign in with Apple using simplified app-only flow
+  /// This method bypasses web authentication to avoid domain verification issues
+  Future<User> signInWithAppleSimple() async {
+    return FreshAppleSignIn.signInFresh();
+  }
+
   /// Sign in with Apple
+  /// Improved with better error handling and timeout protection
   Future<UserCredential> signInWithApple() async {
     try {
       AppLogger.info('🔄 Starting Apple Sign-In process');
 
+      // Validate that Apple Sign-In is available on this platform
+      if (!await SignInWithApple.isAvailable()) {
+        AppLogger.error('❌ Apple Sign-In is not available on this device');
+        throw Exception(
+          'Apple Sign-In is not available on this device. Please use email sign-in instead.',
+        );
+      }
+
       // Generate a random nonce
       final rawNonce = _generateNonce();
       final nonce = sha256.convert(utf8.encode(rawNonce)).toString();
-
-      // Request credential for the currently signed in Apple account
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        nonce: nonce,
+      AppLogger.debug(
+        '🔐 Generated nonce for Apple Sign-In: ${nonce.substring(0, 8)}...',
       );
 
-      // Validate that we have the required identity token
-      if (appleCredential.identityToken == null || appleCredential.identityToken!.isEmpty) {
-        AppLogger.error('❌ Apple Sign-In failed: No identity token received');
-        throw Exception('Apple Sign-In failed: Identity token is missing. Please try again.');
+      // Request credential for the currently signed in Apple account with timeout
+      AuthorizationCredentialAppleID? appleCredential;
+      try {
+        AppLogger.debug('🔄 Requesting Apple ID credential...');
+        appleCredential =
+            await SignInWithApple.getAppleIDCredential(
+              scopes: [
+                AppleIDAuthorizationScopes.email,
+                AppleIDAuthorizationScopes.fullName,
+              ],
+              nonce: nonce,
+              // Ensure we're using the correct service identifier
+              webAuthenticationOptions: WebAuthenticationOptions(
+                clientId: 'com.wordnerd.artbeat', // Your Services ID
+                redirectUri: Uri.parse(
+                  'https://wordnerd-artbeat.firebaseapp.com/__/auth/handler',
+                ),
+              ),
+            ).timeout(
+              const Duration(
+                seconds: 45,
+              ), // Increased timeout for Apple servers
+              onTimeout: () {
+                AppLogger.error('❌ Apple Sign-In timeout after 45 seconds');
+                throw TimeoutException(
+                  'Apple Sign-In request timed out. Please check your network connection and try again.',
+                );
+              },
+            );
+      } on TimeoutException {
+        rethrow;
+      } catch (e) {
+        AppLogger.error('❌ Apple ID credential request failed: $e');
+
+        final errorString = e.toString();
+
+        // Handle user cancellation
+        if (errorString.contains('canceled') ||
+            errorString.contains('cancelled')) {
+          throw Exception('Apple Sign-In was cancelled by user.');
+        }
+
+        // Handle specific Apple error codes
+        if (errorString.contains('-7091')) {
+          AppLogger.error(
+            '🔴 Apple Error -7091: Configuration mismatch detected',
+          );
+          AppLogger.error(
+            '💡 This error typically means domain verification is incomplete',
+          );
+          AppLogger.info('🔄 Attempting fallback with app-only flow...');
+
+          // Since our fresh Apple Sign-In works, just throw a more helpful error
+          throw Exception(
+            'Apple Sign-In configuration error (-7091). Please use the "Sign in with Apple" button which uses a more reliable method.',
+          );
+        }
+
+        if (errorString.contains('-7090')) {
+          throw Exception(
+            'Apple Sign-In capability error (-7090). Apple Sign-In capability may not be enabled for this App ID.',
+          );
+        }
+
+        if (errorString.contains('-7092')) {
+          throw Exception(
+            'Apple Sign-In network error (-7092). Please check your network connection and try again.',
+          );
+        }
+
+        throw Exception('Failed to get Apple ID credential: $e');
       }
+
+      // Validate that we have the required identity token
+      if (appleCredential.identityToken == null ||
+          appleCredential.identityToken!.isEmpty) {
+        AppLogger.error('❌ Apple Sign-In failed: No identity token received');
+        throw Exception(
+          'Apple Sign-In failed: Identity token is missing. Please try again.',
+        );
+      }
+
+      // Validate user identifier exists
+      if (appleCredential.userIdentifier == null ||
+          appleCredential.userIdentifier!.isEmpty) {
+        AppLogger.error('❌ Apple Sign-In failed: No user identifier');
+        throw Exception(
+          'Apple Sign-In failed: Could not identify user. Please try again.',
+        );
+      }
+
+      AppLogger.debug('✅ Apple credentials received successfully');
+      AppLogger.debug(
+        '   - User ID: ${appleCredential.userIdentifier?.substring(0, 8)}...',
+      );
+      AppLogger.debug('   - Email: ${appleCredential.email ?? "Private"}');
+      AppLogger.debug(
+        '   - Identity token length: ${appleCredential.identityToken?.length}',
+      );
 
       // Create an OAuth credential from the credential returned by Apple
       final oauthCredential = OAuthProvider(
         "apple.com",
-      ).credential(
-        idToken: appleCredential.identityToken!,
-        rawNonce: rawNonce,
-      );
+      ).credential(idToken: appleCredential.identityToken!, rawNonce: rawNonce);
 
-      // Sign in to Firebase with the Apple credential
-      final userCredential = await _auth.signInWithCredential(oauthCredential);
+      AppLogger.debug('✅ OAuth credential created successfully');
+
+      // Sign in to Firebase with the Apple credential with timeout
+      UserCredential? userCredential;
+      try {
+        AppLogger.info('🔄 Sending OAuth credential to Firebase...');
+        userCredential = await _auth
+            .signInWithCredential(oauthCredential)
+            .timeout(
+              const Duration(seconds: 45), // Increased timeout for Firebase
+              onTimeout: () {
+                AppLogger.error('❌ Firebase sign-in timeout after 30 seconds');
+                throw TimeoutException(
+                  'Firebase authentication timed out. Please check your network connection and try again.',
+                );
+              },
+            );
+        AppLogger.info('✅ Firebase sign-in succeeded');
+      } on TimeoutException {
+        AppLogger.error('❌ Firebase sign-in timeout');
+        rethrow;
+      } catch (e) {
+        AppLogger.error(
+          '❌ Firebase sign-in failed - will be handled below: $e',
+        );
+        rethrow;
+      }
+
+      // Validate sign-in returned a user
+      if (userCredential.user == null) {
+        AppLogger.error('❌ Firebase sign-in returned null user');
+        throw Exception('Sign in failed: No user returned. Please try again.');
+      }
+
       AppLogger.auth('✅ Apple Sign-In successful: ${userCredential.user?.uid}');
 
       // Create user document if this is first sign-in
-      await _createSocialUserDocument(
-        userCredential.user!,
-        appleCredential: appleCredential,
-      );
+      try {
+        await _createSocialUserDocument(
+          userCredential.user!,
+          appleCredential: appleCredential,
+        );
+      } catch (e) {
+        AppLogger.warning(
+          '⚠️ Failed to create user document (non-critical): $e',
+        );
+        // Don't throw - user is already signed in, document creation is secondary
+      }
 
       return userCredential;
+    } on TimeoutException catch (e) {
+      AppLogger.error('❌ Apple Sign-In timeout: $e');
+      rethrow;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error('❌ Firebase Auth Exception - Code: ${e.code}');
+      AppLogger.error('❌ Firebase Auth Message: ${e.message}');
+      AppLogger.error('❌ Firebase Auth Plugin: ${e.plugin}');
+
+      if (e.code == 'invalid-credential') {
+        if (e.message?.contains('invalid OAuth') == true ||
+            e.message?.contains('OAuth') == true ||
+            e.message?.contains('apple.com') == true) {
+          AppLogger.error(
+            '🔴 CRITICAL: Apple OAuth validation failed at Firebase',
+          );
+          AppLogger.error('💡 Configuration checklist - verify the following:');
+          AppLogger.error(
+            '  1) Firebase Console > Authentication > Sign-in method > Apple provider enabled',
+          );
+          AppLogger.error(
+            '  2) Apple Service ID (com.wordnerd.artbeat) added to Firebase Apple config',
+          );
+          AppLogger.error(
+            '  3) Apple Team ID (H49R32NPY6) matches Firebase config',
+          );
+          AppLogger.error(
+            '  4) Apple Key ID (5G5237Z826) matches Firebase config',
+          );
+          AppLogger.error(
+            '  5) Apple private key uploaded to Firebase correctly',
+          );
+          AppLogger.error(
+            '  6) Bundle ID (com.wordnerd.artbeat) matches Apple Services ID config',
+          );
+          AppLogger.error(
+            '  7) OAuth callback URL (https://wordnerd-artbeat.firebaseapp.com/__/auth/handler) added to Apple config',
+          );
+          AppLogger.error(
+            '  8) Domain verification completed in Apple Developer Console',
+          );
+
+          throw Exception(
+            'Apple Sign-In configuration error. Please check Firebase and Apple Developer Console settings.',
+          );
+        }
+      }
+      rethrow;
     } catch (e) {
       AppLogger.error('❌ Apple Sign-In failed: $e');
       rethrow;

@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../models/art_models.dart';
 import '../models/post_model.dart';
 import '../services/art_community_service.dart';
+import '../src/services/moderation_service.dart';
 import '../widgets/art_gallery_widgets.dart';
 import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
@@ -18,7 +19,6 @@ import 'feed/enhanced_community_feed_screen.dart';
 import 'package:artbeat_artist/src/services/community_service.dart'
     as artist_community;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
-import '../widgets/report_dialog.dart';
 import 'feed/trending_content_screen.dart';
 import 'feed/create_group_post_screen.dart';
 import 'feed/social_engagement_demo_screen.dart';
@@ -766,6 +766,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
   List<PostModel> _filteredPosts = [];
   List<art_walk.SocialActivity> _activities = [];
   bool _isLoading = true;
+  final ModerationService _moderationService = ModerationService();
 
   @override
   void initState() {
@@ -797,10 +798,34 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         );
       }
 
+      // Filter out posts from blocked users
+      List<PostModel> filteredPosts = posts;
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        try {
+          final blockedUserIds = await _moderationService.getBlockedUsers(
+            currentUser.uid,
+          );
+
+          if (blockedUserIds.isNotEmpty) {
+            filteredPosts = posts
+                .where((post) => !blockedUserIds.contains(post.userId))
+                .toList();
+            AppLogger.info(
+              '📱 Filtered out ${posts.length - filteredPosts.length} posts from blocked users',
+            );
+          }
+        } catch (e) {
+          AppLogger.error('📱 Error filtering blocked users: $e');
+          // Continue with unfiltered posts if blocking filter fails
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _posts = posts;
-          _filteredPosts = posts;
+          _posts = filteredPosts;
+          _filteredPosts = filteredPosts;
           _isLoading = false;
         });
       }
@@ -1242,64 +1267,6 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     );
   }
 
-  void _handleReport(PostModel post) async {
-    AppLogger.info('🚩 User attempting to report post: ${post.id}');
-
-    // Check authentication first
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      AppLogger.error('🚩 User not authenticated, cannot report posts');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to report posts')),
-      );
-      return;
-    }
-    AppLogger.info('🚩 User authenticated: ${user.uid}');
-
-    showDialog<void>(
-      context: context,
-      builder: (context) => ReportDialog(
-        postId: post.id,
-        postContent: post.content,
-        onReport: (reason, details) async {
-          AppLogger.info(
-            '🚩 Submitting report for post ${post.id} with reason: $reason',
-          );
-
-          final success = await widget.communityService.reportPost(
-            post.id,
-            reason,
-            additionalDetails: details,
-          );
-
-          if (success) {
-            AppLogger.info('🚩 Report submitted successfully');
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Report submitted successfully. Thank you for helping keep our community safe.',
-                  ),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          } else {
-            AppLogger.error('🚩 Failed to submit report');
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Failed to submit report. Please try again.'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          }
-        },
-      ),
-    );
-  }
-
   void _handleShare(PostModel post) async {
     try {
       // Build share content
@@ -1471,13 +1438,13 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                         onLike: () => _handleLike(post),
                         onComment: () => _handleComment(post),
                         onShare: () => _handleShare(post),
-                        onReport: () => _handleReport(post),
                         onImageTap: (String imageUrl, int index) =>
                             _showFullscreenImage(
                               imageUrl,
                               index,
                               post.imageUrls,
                             ),
+                        onBlockStatusChanged: () => _loadPosts(),
                       ),
                     ],
                   );
@@ -1489,9 +1456,9 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                   onLike: () => _handleLike(post),
                   onComment: () => _handleComment(post),
                   onShare: () => _handleShare(post),
-                  onReport: () => _handleReport(post),
                   onImageTap: (String imageUrl, int index) =>
                       _showFullscreenImage(imageUrl, index, post.imageUrls),
+                  onBlockStatusChanged: () => _loadPosts(),
                 );
               }, childCount: _filteredPosts.length),
             ),

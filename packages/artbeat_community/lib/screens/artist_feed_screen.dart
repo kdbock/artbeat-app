@@ -285,6 +285,7 @@ class _ArtistFeedScreenState extends State<ArtistFeedScreen> {
                       onShare: () => _handleShare(post),
                       onImageTap: (String imageUrl, int index) =>
                           _showFullscreenImage(imageUrl, index, post.imageUrls),
+                      onBlockStatusChanged: () => _loadArtistAndPosts(),
                     ),
                   );
                 },

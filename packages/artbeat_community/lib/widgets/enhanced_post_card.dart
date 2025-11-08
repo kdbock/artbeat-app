@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../models/post_model.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../src/widgets/user_action_menu.dart';
 
 /// Enhanced post card that supports images, video, and audio
 class EnhancedPostCard extends StatefulWidget {
@@ -12,8 +13,8 @@ class EnhancedPostCard extends StatefulWidget {
   final VoidCallback? onLike;
   final VoidCallback? onComment;
   final VoidCallback? onShare;
-  final VoidCallback? onReport;
   final void Function(String imageUrl, int index)? onImageTap;
+  final VoidCallback? onBlockStatusChanged;
 
   const EnhancedPostCard({
     super.key,
@@ -22,8 +23,8 @@ class EnhancedPostCard extends StatefulWidget {
     this.onLike,
     this.onComment,
     this.onShare,
-    this.onReport,
     this.onImageTap,
+    this.onBlockStatusChanged,
   });
 
   @override
@@ -205,6 +206,14 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
                 ),
               ),
             ),
+          // Three-dot menu with Report/Block options
+          UserActionMenu(
+            userId: widget.post.userId,
+            contentId: widget.post.id,
+            contentType: 'post',
+            userName: widget.post.userName,
+            onBlockStatusChanged: widget.onBlockStatusChanged,
+          ),
         ],
       ),
     );
@@ -517,13 +526,6 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
             label: widget.post.engagementStats.shareCount.toString(),
             onTap: widget.onShare,
             color: ArtbeatColors.primaryGreen,
-          ),
-          const SizedBox(width: 24),
-          _buildActionButton(
-            icon: Icons.flag_outlined,
-            label: 'Report',
-            onTap: widget.onReport,
-            color: Colors.orange,
           ),
           const Spacer(),
           // Post type indicator

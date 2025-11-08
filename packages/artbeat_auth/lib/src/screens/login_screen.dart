@@ -1,10 +1,12 @@
 import 'dart:io' show Platform;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, UserService, UserModel;
+    show ArtbeatColors, ArtbeatInput;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 import '../constants/routes.dart';
 
@@ -51,74 +53,12 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      FirebaseAuth.instance.setLanguageCode('en');
-
       final userCredential = await _authService.signInWithEmailAndPassword(
         _emailController.text.trim(),
-        _passwordController.text,
+        _passwordController.text.trim(),
       );
 
-      // Ensure user profile exists in Firestore using UserService
-      final user = userCredential.user ?? FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userService = UserService();
-
-        try {
-          // Clear any cached data first
-          userService.clearUserCache();
-
-          final userDoc = await userService.getUserById(user.uid);
-
-          if (userDoc == null) {
-            // Try to get additional user data from Firebase Auth
-            final freshUser = FirebaseAuth.instance.currentUser;
-            await freshUser?.reload(); // Refresh user data
-
-            final createdUser = await userService.createNewUser(
-              uid: user.uid,
-              email: user.email ?? _emailController.text.trim(),
-              displayName:
-                  freshUser?.displayName ?? user.displayName ?? 'ARTbeat User',
-            );
-
-            if (createdUser == null) {
-              throw Exception('Failed to create user profile in database');
-            }
-
-            // Verify creation with multiple attempts
-            UserModel? verifiedDoc;
-            for (int attempt = 1; attempt <= 3; attempt++) {
-              await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
-              userService.clearUserCache(); // Clear cache before each check
-              verifiedDoc = await userService.getUserById(user.uid);
-              if (verifiedDoc != null) {
-                break;
-              }
-            }
-
-            if (verifiedDoc == null) {
-              throw Exception(
-                'User profile creation could not be verified after multiple attempts',
-              );
-            }
-          }
-        } catch (e) {
-          // Sign out the user since we couldn't create their profile
-          await FirebaseAuth.instance.signOut();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to create user profile: ${e.toString()}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 5),
-              ),
-            );
-          }
-          return; // Exit early, don't navigate
-        }
-      }
-
-      if (mounted) {
+      if (mounted && userCredential.user != null) {
         // Check if we were pushed from another route that expects a return value
         final navigator = Navigator.of(context);
         if (navigator.canPop()) {
@@ -171,22 +111,39 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// Handle Apple Sign-In button press
+  /// Handle Apple Sign-In button press - FRESH START
   Future<void> _handleAppleSignIn() async {
     try {
       setState(() => _isLoading = true);
 
-      final userCredential = await _authService.signInWithApple();
+      // Use the fresh implementation that bypasses all Firebase Apple provider config
+      await _authService.signInWithAppleFresh();
 
-      if (mounted && userCredential.user != null) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+      if (mounted) {
+        // Check if we were pushed from another route that expects a return value
+        final navigator = Navigator.of(context);
+        if (navigator.canPop()) {
+          // Return true to signal successful login
+          navigator.pop(true);
+        } else {
+          // Normal navigation flow
+          navigator.pushReplacementNamed(AuthRoutes.dashboard);
+        }
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = e.toString();
+        if (errorMessage.contains('User cancelled')) {
+          errorMessage = 'Apple Sign-In was cancelled.';
+        } else if (errorMessage.contains('not available')) {
+          errorMessage = 'Apple Sign-In is not available on this device.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Apple Sign-In failed: ${e.toString()}'),
+            content: Text('Apple Sign-In failed: $errorMessage'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -273,6 +230,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
+            ),
+          ),
+        if (Platform.isIOS)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'Apple Sign-In configuration in progress',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+              textAlign: TextAlign.center,
             ),
           ),
       ],
@@ -391,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
-                          height: 40,
+                          height: 50,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -407,7 +373,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : Text('auth_sign_in'.tr()),
+                                : Text(
+                                    'auth_sign_in'.tr(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -416,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Expanded(
                               child: Container(
-                                height: 40,
+                                height: 50,
                                 margin: const EdgeInsets.only(right: 8),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
@@ -437,15 +407,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                       context,
                                     ).pushReplacementNamed(AuthRoutes.register),
                                     child: Center(
-                                      child: Text(
-                                        'auth_create_account'.tr(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge
-                                            ?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Text(
+                                          'auth_create_account'.tr(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -454,7 +431,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             Expanded(
                               child: Container(
-                                height: 40,
+                                height: 50,
                                 margin: const EdgeInsets.only(left: 8),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
@@ -475,15 +452,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                       context,
                                     ).pushNamed(AuthRoutes.forgotPassword),
                                     child: Center(
-                                      child: Text(
-                                        'auth_forgot_password'.tr(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge
-                                            ?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Text(
+                                          'auth_forgot_password'.tr(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
                                       ),
                                     ),
                                   ),

@@ -84,15 +84,17 @@ class PaymentStrategyService {
     return PaymentMethod.stripe; // Default to Stripe for safety
   }
 
-  /// Messaging module payment strategy - hybrid for gifts vs digital perks
+  /// Messaging module payment strategy - IAP only for gifts and digital perks
   PaymentMethod _getMessagingPaymentMethod(PurchaseType purchaseType) {
     switch (purchaseType) {
       case PurchaseType.consumable:
-        // Digital-only perks (emoji packs, themes) can use IAP
+        // Digital-only perks (emoji packs, themes) use IAP
         return PaymentMethod.iap;
       case PurchaseType.nonConsumable:
-        // Gifts that may result in payouts should use Stripe
-        return PaymentMethod.stripe;
+        // ✅ APPLE COMPLIANT: Gifts use IAP only (no payouts to recipients)
+        // Gift credits are in-app only and cannot be withdrawn/cashed out
+        // Per App Store Review Guidelines: "gifts may only be refunded to the original purchaser and may not be exchanged"
+        return PaymentMethod.iap;
       case PurchaseType.subscription:
         return PaymentMethod.iap;
     }

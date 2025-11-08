@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -81,7 +82,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Invalid user profile')));
+          ).showSnackBar(SnackBar(content: Text('profile_invalid_user'.tr())));
           setState(() {
             _isLoading = false;
           });
@@ -123,7 +124,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         // debugPrint('❌ ProfileViewScreen: Could not load user profile');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User profile not found')),
+            SnackBar(content: Text('profile_not_found'.tr())),
           );
         }
         return;
@@ -134,7 +135,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       // debugPrint('❌ ProfileViewScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: ${e.toString()}')),
+          SnackBar(
+            content: Text('profile_error_loading'
+                .tr(namedArgs: {'error': e.toString()})),
+          ),
         );
 
         setState(() {
@@ -196,16 +200,19 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           _isUserBlocked = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User blocked successfully'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text('profile_blocked_success'.tr()),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to block user: $e')),
+          SnackBar(
+            content: Text('profile_block_failed'
+                .tr(namedArgs: {'error': e.toString()})),
+          ),
         );
       }
       AppLogger.error('Error blocking user: $e');
@@ -378,7 +385,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                   Navigator.pushNamed(context, '/profile/edit');
                 },
                 icon: const Icon(Icons.edit, size: 18),
-                label: const Text('Edit Profile'),
+                label: Text('profile_edit_button'.tr()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ArtbeatColors.primaryPurple,
                   foregroundColor: Colors.white,
@@ -389,7 +396,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                   Navigator.pushNamed(context, '/captures');
                 },
                 icon: const Icon(Icons.camera_alt, size: 18),
-                label: const Text('View Captures'),
+                label: Text('profile_view_captures'.tr()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ArtbeatColors.primaryGreen,
                   foregroundColor: Colors.white,
@@ -407,7 +414,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                     Navigator.pushNamed(context, '/captures');
                   },
                   icon: const Icon(Icons.camera_alt, size: 18),
-                  label: const Text('View Captures'),
+                  label: Text('profile_view_captures'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ArtbeatColors.primaryGreen,
                     foregroundColor: Colors.white,

@@ -200,8 +200,8 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/support',
       '/profile/following',
       '/profile/followers',
-      '/quests/daily',
-      '/goals/weekly',
+      '/quest-history',
+      '/weekly-goals',
     };
 
     if (implementedRoutes.contains(route)) {
@@ -546,8 +546,6 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               );
             },
           ),
-
-
         ],
       ),
     );

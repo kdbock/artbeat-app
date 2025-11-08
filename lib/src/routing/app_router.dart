@@ -1014,7 +1014,9 @@ class AppRouter {
       case AppRoutes.settingsAccount:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Account Settings'),
-          child: const settings_pkg.AccountSettingsScreen(),
+          child: const settings_pkg.AccountSettingsScreen(
+            useOwnScaffold: false,
+          ),
         );
 
       case AppRoutes.settingsNotifications:
@@ -1032,7 +1034,9 @@ class AppRouter {
       case AppRoutes.securitySettings:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Security Settings'),
-          child: const settings_pkg.SecuritySettingsScreen(),
+          child: const settings_pkg.SecuritySettingsScreen(
+            useOwnScaffold: false,
+          ),
         );
 
       case AppRoutes.paymentSettings:
@@ -1070,7 +1074,7 @@ class AppRouter {
         if (settings.name == '/settings/blocked-users') {
           return RouteUtils.createMainLayoutRoute(
             appBar: RouteUtils.createAppBar('Blocked Users'),
-            child: const settings_pkg.BlockedUsersScreen(),
+            child: const settings_pkg.BlockedUsersScreen(useOwnScaffold: false),
           );
         }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/artwork_model.dart';
 import '../services/artwork_discovery_service.dart';
 
@@ -74,25 +75,25 @@ class _ArtworkDiscoveryScreenState extends State<ArtworkDiscoveryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discover Art'),
+        title: Text('artwork_discovery_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'For You', icon: Icon(Icons.person)),
-            Tab(text: 'Trending', icon: Icon(Icons.trending_up)),
-            Tab(text: 'Similar', icon: Icon(Icons.shuffle)),
+          tabs: [
+            Tab(text: 'artwork_personalized_tab'.tr(), icon: const Icon(Icons.person)),
+            Tab(text: 'artwork_trending_tab'.tr(), icon: const Icon(Icons.trending_up)),
+            Tab(text: 'artwork_similar_tab'.tr(), icon: const Icon(Icons.shuffle)),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadDiscoveryContent,
-            tooltip: 'Refresh',
+            tooltip: 'artwork_discover_loading'.tr(),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const CircularProgressIndicator(), const SizedBox(height: 16), Text('artwork_discover_loading'.tr())]))
           : _error != null
               ? _buildErrorView()
               : TabBarView(
@@ -114,19 +115,19 @@ class _ArtworkDiscoveryScreenState extends State<ArtworkDiscoveryScreen>
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
-            'Failed to load discovery content',
+            'artwork_discover_error'.tr(),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            _error ?? 'Unknown error',
+            _error ?? 'common_error'.tr(),
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadDiscoveryContent,
-            child: const Text('Retry'),
+            child: Text('common_retry'.tr()),
           ),
         ],
       ),

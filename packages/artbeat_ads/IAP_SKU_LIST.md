@@ -12,36 +12,97 @@ Create **18 IAP products** in your App Store Connect account:
 
 ## SMALL Ads (Banner Format)
 
-| SKU           | Display                    | Description                | Price     | Duration |
-| ------------- | -------------------------- | -------------------------- | --------- | -------- |
-| `ad_small_1w` | Small Banners - 7 Days     | 7-day small banner ads     | **$0.99** | 1 Week   |
-| `ad_small_1m` | Small Banners - 1 Month    | 30-day small banner ads    | **$1.99** | 1 Month  |
-| `ad_small_3m` | Small Banner Bundle - 3M   | 90-day small banner ads    | **$4.99** | 3 Months |
+| SKU           | Display                  | Description             | Price     | Duration |
+| ------------- | ------------------------ | ----------------------- | --------- | -------- |
+| `ad_small_1w` | Small Banners - 7 Days   | 7-day small banner ads  | **$0.99** | 1 Week   |
+| `ad_small_1m` | Small Banners - 1 Month  | 30-day small banner ads | **$1.99** | 1 Month  |
+| `ad_small_3m` | Small Banner Bundle - 3M | 90-day small banner ads | **$4.99** | 3 Months |
 
 ---
 
 ## BIG Ads (Square Format)
 
-| SKU         | Display                    | Description                 | Price     | Duration |
-| ----------- | -------------------------- | --------------------------- | --------- | -------- |
-| `ad_big_1w` | Premium Squares - 7 Days   | 7-day premium square ads    | **$1.99** | 1 Week   |
-| `ad_big_1m` | Premium Squares - 1 Month  | 30-day premium square ads   | **$3.99** | 1 Month  |
-| `ad_big_3m` | Big Square Bundle - 3M     | 90-day premium square ads   | **$9.99** | 3 Months |
+| SKU         | Display                   | Description               | Price     | Duration |
+| ----------- | ------------------------- | ------------------------- | --------- | -------- |
+| `ad_big_1w` | Premium Squares - 7 Days  | 7-day premium square ads  | **$1.99** | 1 Week   |
+| `ad_big_1m` | Premium Squares - 1 Month | 30-day premium square ads | **$3.99** | 1 Month  |
+| `ad_big_3m` | Big Square Bundle - 3M    | 90-day premium square ads | **$9.99** | 3 Months |
 
 ---
 
-## GIFT Products (Consumable)
+## GIFT Products (Consumable - In-App Credits)
 
-| SKU                     | Display               | Price     | Credits |
-| ----------------------- | --------------------- | --------- | ------- |
-| `artbeat_gift_small`    | Supporter Gift        | **$4.99** | 50      |
-| `artbeat_gift_medium`   | Fan Gift              | **$9.99** | 100     |
-| `artbeat_gift_large`    | Patron Gift           | **$24.99**| 250     |
-| `artbeat_gift_premium`  | Benefactor Gift       | **$49.99**| 500     |
+**⚠️ APPLE COMPLIANCE NOTE:**
+Gifts are **consumable IAP products that provide in-app credits** to recipients.
+Recipients **cannot withdraw or cash out** gift credits.
+Credits can only be used within the ArtBeat platform for subscriptions, ads, and premium features.
+Recipients **cannot receive payment/revenue** from gifts (see Artist Subscriptions for legitimate artist monetization).
+
+| SKU                    | Display         | Price      | Credits | Usage                                         |
+| ---------------------- | --------------- | ---------- | ------- | --------------------------------------------- |
+| `artbeat_gift_small`   | Supporter Gift  | **$4.99**  | 50      | Purchase subscriptions, ads, premium features |
+| `artbeat_gift_medium`  | Fan Gift        | **$9.99**  | 100     | Purchase subscriptions, ads, premium features |
+| `artbeat_gift_large`   | Patron Gift     | **$24.99** | 250     | Purchase subscriptions, ads, premium features |
+| `artbeat_gift_premium` | Benefactor Gift | **$49.99** | 500     | Purchase subscriptions, ads, premium features |
 
 ---
 
-## ARTIST Subscriptions (Auto-Renewable)
+## ARTIST Revenue Streams (Direct Artist Income)
+
+**⚠️ IMPORTANT:** Artist Subscriptions (below) are **app fees artists pay** to unlock tools. This is **ArtBeat platform revenue**, not artist earnings.
+
+Artists earn direct income through **3 separate channels** (all via Stripe payouts to bank account):
+
+### 1. Commissions & Sales (Stripe-Based) - **Variable Artist Income**
+
+Artists can sell artwork and commissions directly through ArtBeat. Buyers pay via **Stripe** (not IAP).
+
+- Artists set their own commission rates
+- ArtBeat platform fee: 8–15% (configurable per tier)
+- Artist receives payout to bank account via Stripe
+- Fully compliant (seller/buyer transaction, not gifting)
+
+### 2. Tips & Donations (Stripe-Based) - **Variable Artist Income**
+
+Supporters can tip artists on their artwork and profiles via **Stripe** (not IAP).
+
+- Tipsters choose any amount ($1–$100+)
+- Artists receive 90–95% (platform keeps 5–10%)
+- Fully compliant (direct support, not gifting)
+
+### 3. Ad Revenue (Contextual Ads) - **Variable Artist Income**
+
+Artists earn when ads appear on their content (artist profiles, artworks, galleries).
+
+- Revenue share: 50–70% to artists, 30–50% to platform
+- Buyers purchase ad slots via consumable IAP (see Ad Products section)
+- Artists with higher visibility/engagement earn more
+
+---
+
+## Revenue Model Clarity
+
+**ARTBEAT Revenue** (Platform):
+
+- Artists pay $4.99–$79.99/month for subscriptions (tools, storage, analytics)
+- App sells ads (consumable IAP)
+- App sells gifts (consumable IAP)
+- App takes 8–15% cut of commissions, 5–10% cut of tips, 30–50% of ad revenue
+
+**ARTIST Revenue** (Direct Income via Stripe):
+
+- Commissions from art sales
+- Tips/donations from supporters
+- Ad revenue share
+- **NOT from gifts** (gifts are in-app appreciation tokens only)
+
+**Example Flow:**
+
+- Supporter buys $9.99 gift → Recipient gets 100 in-app credits → **ArtBeat gets $9.99**
+- Artist pays $4.99 for Artist Starter subscription → **ArtBeat gets $4.99**
+- Artist sells a $50 commission → **Artist gets $42.50–$46 (after ArtBeat fee)**
+- Supporter tips artist $5 → **Artist gets $4.50–$4.75**
+- 100 ads run on artist's gallery → **Artist gets ad revenue share via Stripe payout**
 
 ### Monthly Subscriptions
 
@@ -60,6 +121,19 @@ Create **18 IAP products** in your App Store Connect account:
 | `artbeat_creator_yearly`    | Artist Creator - Yearly    | **$124.99** | Save $31 per year  |
 | `artbeat_business_yearly`   | Artist Business - Yearly   | **$289.99** | Save $72 per year  |
 | `artbeat_enterprise_yearly` | Artist Enterprise - Yearly | **$769.99** | Save $192 per year |
+
+---
+
+## Platform Configuration Summary
+
+| Revenue Stream           | Who Pays      | Platform    | Product Type        | Setup Location                  | Goes To             |
+| ------------------------ | ------------- | ----------- | ------------------- | ------------------------------- | ------------------- |
+| **Ads**                  | Users/Artists | iOS/Android | Consumable IAP      | App Store Connect / Google Play | **ArtBeat**         |
+| **Gifts**                | Gift Senders  | iOS/Android | Consumable IAP      | App Store Connect / Google Play | **ArtBeat**         |
+| **Artist Subscriptions** | Artists       | iOS/Android | Auto-Renewable IAP  | App Store Connect / Google Play | **ArtBeat**         |
+| **Commissions & Sales**  | Buyers        | Stripe      | Direct Seller/Buyer | Stripe Dashboard                | **Artist** (90%+)   |
+| **Tips & Donations**     | Supporters    | Stripe      | Direct Support      | Stripe Dashboard                | **Artist** (90–95%) |
+| **Ad Revenue Share**     | (from Ads)    | Stripe      | Artist Payout       | Stripe Dashboard                | **Artist** (50–70%) |
 
 ---
 
@@ -256,22 +330,36 @@ artbeat_enterprise_yearly,Auto-Renewable Subscription,769.99,Artist Enterprise -
 - All ad products are **consumable** (one-time purchase per ad)
 - Simple enough for local advertisers to understand in seconds
 
-### Gift Products (4 Consumables)
+### Gift Products (4 Consumables) - IN-APP CREDITS ONLY
 
-- **Users can gift appreciation to other artists** — consumable products (one-time purchase)
-- Recipients receive platform credits for support and engagement
-- Transparent pricing with clear credit amounts
-- **Four tiers** allow varying levels of support (supporter → benefactor)
-- Each gift is a distinct, itemized purchase with clear value
+**Apple Compliance Details:**
 
-### Subscription Products (8 Auto-Renewable)
+- **Gifts are consumable items** that provide in-app credits to recipients
+- **NO revenue sharing/payouts to recipients** — gifts do NOT result in cash or platform payouts
+- Recipients can **only use credits within the app** (subscriptions, ads, premium features)
+- Credits **cannot be withdrawn, refunded (except to sender), or exchanged for money**
+- Senders cannot receive money from gifts — they're purely for in-app appreciation
+- Per App Store Review Guidelines: "Apps may enable gifting of items...gifts may only be refunded to the original purchaser and may not be exchanged"
 
-- **Clear tier differentiation** with distinct features and limits
-- **Transparent pricing** with monthly/yearly options
-- **Standard subscription model** for SaaS artist tools
-- **Progressive feature unlocking** based on subscription tier
-- **Industry-standard pricing** for creative professional tools
-- Apple approves this model because subscriptions provide ongoing value to artists
+### Subscription Products (8 Auto-Renewable) - APP PLATFORM REVENUE
+
+**Apple Compliance Details:**
+
+- **Subscriptions are app fees artists pay** to unlock professional tools and features
+  - Professional tooling (analytics, storage, advanced features)
+  - Higher storage/upload limits
+  - Premium profile visibility and team collaboration
+  - Unlock commission/tip withdrawal capabilities (Stripe payouts)
+- **Clear, distinct tiers** with progressive feature unlocking
+- **Transparent pricing** with standard industry rates
+- **This is ArtBeat platform revenue**, NOT artist earnings
+
+**Artist Earnings** (separate, via Stripe only):
+
+1. **Commission/Sales via Stripe** (variable) — Seller/buyer transactions → Artist gets 85–92%
+2. **Tips/Donations via Stripe** (variable) — Direct fan support → Artist gets 90–95%
+3. **Ad Revenue via Stripe** (variable) — Earn when ads display on their content → Artist gets 50–70%
+4. **NOT from gifts** — Gifts provide in-app credits only (Apple compliant, no payouts)
 
 ---
 
@@ -319,3 +407,39 @@ artbeat_enterprise_yearly,Auto-Renewable Subscription,769.99,Artist Enterprise -
 - **Business ($29.99/month)**: Team and business features, standard SaaS business tier pricing
 - **Enterprise ($79.99/month)**: Premium enterprise features, justified by white-label and dedicated support
 - **Yearly plans**: 20% discount encourages long-term commitment, standard in subscription pricing
+
+### Full Artist Monetization Model
+
+**Artist Journey & Revenue Streams:**
+
+1. **Entry level (Free tier)**:
+
+   - Artists can post work, gain followers
+   - Can receive tips (Stripe) — keep 90–95%
+   - Can receive commissions (Stripe) — keep 85–92%
+   - Can earn ad revenue (Stripe) — keep 50–70%
+
+2. **Growth (Artist Starter $4.99/mo)**:
+
+   - **Pays ArtBeat** $4.99 for tools/storage/analytics
+   - Same earning channels as above, but with better tools
+
+3. **Scale (Creator+ $12.99–$79.99/mo)**:
+   - **Pays ArtBeat** $12.99–$79.99 for professional tooling
+   - Full commission management, team features, API access
+   - Same earning channels with premium features
+
+**Artist Income Sources (ALL via Stripe):**
+
+- Commissions from artwork sales → Keep 85–92%
+- Tips/donations from supporters → Keep 90–95%
+- Ad revenue when ads display on galleries → Keep 50–70%
+- **NOT from gifts** (gifts are in-app credits, no payouts)
+
+**Why this model works:**
+
+- Similar to Patreon (creators pay for tools/visibility) + Etsy (commissions) + YouTube (ad revenue)
+- Artists can earn even on free tier (commissions + tips + ads)
+- Artists who want advanced tools pay subscription fee
+- Fully compliant with Apple/Google App Store policies
+- No "pay to win" mechanics (artists don't need to buy anything to succeed)

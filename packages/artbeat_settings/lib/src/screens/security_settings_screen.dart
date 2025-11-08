@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/models.dart';
 import '../services/settings_service.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
-  const SecuritySettingsScreen({super.key});
+  final bool useOwnScaffold;
+
+  const SecuritySettingsScreen({super.key, this.useOwnScaffold = true});
 
   @override
   State<SecuritySettingsScreen> createState() => _SecuritySettingsScreenState();
@@ -64,7 +67,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load security settings: $e')),
+          SnackBar(content: Text('settings_load_failed'.tr())),
         );
       }
     }
@@ -85,14 +88,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           _isSaving = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Security settings updated')),
+          SnackBar(content: Text('settings_updated'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update settings: $e')),
+          SnackBar(content: Text('settings_update_failed'.tr())),
         );
       }
     }
@@ -100,30 +103,36 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Security Settings'), elevation: 0),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _securitySettings == null
-          ? const Center(child: Text('Failed to load security settings'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTwoFactorCard(),
-                  const SizedBox(height: 16),
-                  _buildLoginSecurityCard(),
-                  const SizedBox(height: 16),
-                  _buildPasswordCard(),
-                  const SizedBox(height: 16),
-                  _buildDeviceSecurityCard(),
-                  const SizedBox(height: 24),
-                  _buildSecurityActionsSection(),
-                ],
-              ),
+    final body = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _securitySettings == null
+        ? Center(child: Text('settings_load_failed'.tr()))
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTwoFactorCard(),
+                const SizedBox(height: 16),
+                _buildLoginSecurityCard(),
+                const SizedBox(height: 16),
+                _buildPasswordCard(),
+                const SizedBox(height: 16),
+                _buildDeviceSecurityCard(),
+                const SizedBox(height: 24),
+                _buildSecurityActionsSection(),
+              ],
             ),
-    );
+          );
+
+    if (widget.useOwnScaffold) {
+      return Scaffold(
+        appBar: AppBar(title: Text('settings_security_title'.tr()), elevation: 0),
+        body: body,
+      );
+    } else {
+      return body;
+    }
   }
 
   Widget _buildTwoFactorCard() {
@@ -134,19 +143,19 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Two-Factor Authentication',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_two_factor_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Add an extra layer of security to your account',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_two_factor_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildSwitchTile(
-              title: 'Enable 2FA',
-              subtitle: 'Require a second factor for login',
+              title: 'settings_enable_2fa'.tr(),
+              subtitle: 'settings_enable_2fa_desc'.tr(),
               value: twoFactor.enabled,
               onChanged: (value) {
                 final updatedTwoFactor = twoFactor.copyWith(enabled: value);
@@ -161,8 +170,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               _buildTwoFactorMethodDropdown(twoFactor),
               const SizedBox(height: 12),
               _buildSwitchTile(
-                title: 'Backup Codes',
-                subtitle: 'Generate backup codes for emergency access',
+                title: 'settings_backup_codes'.tr(),
+                subtitle: 'settings_backup_codes_desc'.tr(),
                 value: twoFactor.backupCodesGenerated,
                 onChanged: (value) {
                   if (value) {
@@ -187,17 +196,17 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
   Widget _buildTwoFactorMethodDropdown(TwoFactorSettings twoFactor) {
     return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
-        labelText: '2FA Method',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: 'settings_two_factor_method'.tr(),
+        border: const OutlineInputBorder(),
       ),
       initialValue: twoFactor.method,
-      items: const [
-        DropdownMenuItem(value: 'sms', child: Text('SMS')),
-        DropdownMenuItem(value: 'email', child: Text('Email')),
+      items: [
+        DropdownMenuItem(value: 'sms', child: Text('settings_2fa_sms'.tr())),
+        DropdownMenuItem(value: 'email', child: Text('settings_2fa_email'.tr())),
         DropdownMenuItem(
           value: 'authenticator',
-          child: Text('Authenticator App'),
+          child: Text('settings_2fa_authenticator'.tr()),
         ),
       ],
       onChanged: _isSaving
@@ -222,19 +231,19 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Login Security',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_login_security_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Control how and when you can log in',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_login_security_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildSwitchTile(
-              title: 'Email Verification Required',
-              subtitle: 'Require email verification for login',
+              title: 'settings_email_verification_required'.tr(),
+              subtitle: 'settings_email_verification_required_desc'.tr(),
               value: login.requireEmailVerification,
               onChanged: (value) {
                 final updatedLogin = login.copyWith(
@@ -247,8 +256,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Login Alerts',
-              subtitle: 'Get alerts for suspicious login activity',
+              title: 'settings_login_alerts'.tr(),
+              subtitle: 'settings_login_alerts_desc'.tr(),
               value: login.allowLoginAlerts,
               onChanged: (value) {
                 final updatedLogin = login.copyWith(allowLoginAlerts: value);
@@ -259,8 +268,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Remember This Device',
-              subtitle: 'Skip 2FA on trusted devices',
+              title: 'settings_remember_device'.tr(),
+              subtitle: 'settings_remember_device_desc'.tr(),
               value: login.rememberDevice,
               onChanged: (value) {
                 final updatedLogin = login.copyWith(rememberDevice: value);
@@ -284,28 +293,28 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Password Security',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_password_security_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Last changed: ${password.lastChanged != null ? _formatDate(password.lastChanged!) : 'Never'}',
+              'settings_password_last_changed'.tr(namedArgs: {'date': password.lastChanged != null ? _formatDate(password.lastChanged!) : 'settings_never'.tr()}),
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.lock_reset),
-              title: const Text('Change Password'),
-              subtitle: const Text('Update your account password'),
+              title: Text('settings_change_password'.tr()),
+              subtitle: Text('settings_change_password_desc'.tr()),
               trailing: const Icon(Icons.chevron_right),
               contentPadding: EdgeInsets.zero,
               onTap: () => _showChangePasswordDialog(),
             ),
             const Divider(),
             _buildSwitchTile(
-              title: 'Require Password Change',
-              subtitle: 'Periodically require password updates',
+              title: 'settings_require_password_change'.tr(),
+              subtitle: 'settings_require_password_change_desc'.tr(),
               value: password.requirePasswordChange,
               onChanged: (value) {
                 final updatedPassword = password.copyWith(
@@ -331,21 +340,21 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Device Security',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_device_security_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Manage trusted devices and security features',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_device_security_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.devices),
-              title: const Text('Manage Devices'),
+              title: Text('settings_manage_devices'.tr()),
               subtitle: Text(
-                '${devices.approvedDevices.length} approved devices',
+                'settings_approved_devices'.tr(namedArgs: {'count': '${devices.approvedDevices.length}'}),
               ),
               trailing: const Icon(Icons.chevron_right),
               contentPadding: EdgeInsets.zero,
@@ -353,8 +362,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             ),
             const Divider(),
             _buildSwitchTile(
-              title: 'Allow Multiple Sessions',
-              subtitle: 'Allow login from multiple devices',
+              title: 'settings_allow_multiple_sessions'.tr(),
+              subtitle: 'settings_allow_multiple_sessions_desc'.tr(),
               value: devices.allowMultipleSessions,
               onChanged: (value) {
                 final updatedDevices = devices.copyWith(
@@ -367,8 +376,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Track Device Location',
-              subtitle: 'Monitor device locations for security',
+              title: 'settings_track_device_location'.tr(),
+              subtitle: 'settings_track_device_location_desc'.tr(),
               value: devices.trackDeviceLocation,
               onChanged: (value) {
                 final updatedDevices = devices.copyWith(
@@ -390,9 +399,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Security Actions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          'settings_security_actions_title'.tr(),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Card(
@@ -400,24 +409,24 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.history, color: Colors.blue),
-                title: const Text('Login History'),
-                subtitle: const Text('View your recent login activity'),
+                title: Text('settings_login_history'.tr()),
+                subtitle: Text('settings_login_history_desc'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showLoginHistoryDialog(),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.security, color: Colors.orange),
-                title: const Text('Security Checkup'),
-                subtitle: const Text('Review your security settings'),
+                title: Text('settings_security_checkup'.tr()),
+                subtitle: Text('settings_security_checkup_desc'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showSecurityCheckupDialog(),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Sign Out Everywhere'),
-                subtitle: const Text('Sign out of all devices'),
+                title: Text('settings_sign_out_everywhere'.tr()),
+                subtitle: Text('settings_sign_out_everywhere_desc'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showSignOutEverywhereDialog(),
               ),
@@ -451,19 +460,19 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Backup Codes'),
-        content: const Column(
+        title: Text('settings_backup_codes'.tr()),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Save these backup codes in a secure location:'),
-            SizedBox(height: 16),
-            SelectableText('A1B2-C3D4-E5F6\nG7H8-I9J0-K1L2\nM3N4-O5P6-Q7R8'),
+            Text('settings_backup_codes_save'.tr()),
+            const SizedBox(height: 16),
+            const SelectableText('A1B2-C3D4-E5F6\nG7H8-I9J0-K1L2\nM3N4-O5P6-Q7R8'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('common_close'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -475,7 +484,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               final updated = _securitySettings!.copyWith(twoFactor: twoFactor);
               _updateSecuritySettings(updated);
             },
-            child: const Text('I\'ve Saved Them'),
+            child: Text('settings_backup_codes_saved'.tr()),
           ),
         ],
       ),
@@ -494,7 +503,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Change Password'),
+          title: Text('settings_change_password'.tr()),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -503,7 +512,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   controller: currentPasswordController,
                   obscureText: obscureCurrentPassword,
                   decoration: InputDecoration(
-                    labelText: 'Current Password',
+                    labelText: 'settings_current_password'.tr(),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -524,7 +533,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   controller: newPasswordController,
                   obscureText: obscureNewPassword,
                   decoration: InputDecoration(
-                    labelText: 'New Password',
+                    labelText: 'settings_new_password'.tr(),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -545,7 +554,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   controller: confirmPasswordController,
                   obscureText: obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Confirm New Password',
+                    labelText: 'settings_confirm_new_password'.tr(),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -562,9 +571,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  'settings_password_requirements'.tr(),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -577,7 +586,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                 confirmPasswordController.dispose();
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text('common_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -590,14 +599,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     newPassword.isEmpty ||
                     confirmPassword.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all fields')),
+                    SnackBar(content: Text('settings_fill_all_fields'.tr())),
                   );
                   return;
                 }
 
                 if (newPassword != confirmPassword) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('New passwords do not match')),
+                    SnackBar(content: Text('settings_passwords_do_not_match'.tr())),
                   );
                   return;
                 }
@@ -608,9 +617,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       newPassword,
                     )) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                        'Password does not meet security requirements',
+                        'settings_password_not_meet_requirements'.tr(),
                       ),
                     ),
                   );
@@ -626,7 +635,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                 // Change password using Firebase Auth
                 await _changePassword(currentPassword, newPassword);
               },
-              child: const Text('Change Password'),
+              child: Text('settings_change_password'.tr()),
             ),
           ],
         ),
@@ -666,33 +675,32 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password changed successfully'),
+          SnackBar(
+            content: Text('settings_password_changed_success'.tr()),
             backgroundColor: Colors.green,
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Failed to change password';
+      String errorKey = 'settings_password_change_failed';
       if (e.code == 'wrong-password') {
-        errorMessage = 'Current password is incorrect';
+        errorKey = 'settings_current_password_incorrect';
       } else if (e.code == 'weak-password') {
-        errorMessage = 'New password is too weak';
+        errorKey = 'settings_new_password_weak';
       } else if (e.code == 'requires-recent-login') {
-        errorMessage =
-            'Please log out and log in again before changing password';
+        errorKey = 'settings_requires_recent_login';
       }
 
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        ).showSnackBar(SnackBar(content: Text(errorKey.tr())));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text('common_error'.tr())));
       }
     }
   }
@@ -701,7 +709,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Trusted Devices'),
+        title: Text('settings_trusted_devices'.tr()),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -722,7 +730,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('common_close'.tr()),
           ),
         ],
       ),
@@ -733,7 +741,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Login History'),
+        title: Text('settings_login_history'.tr()),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -752,7 +760,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('common_close'.tr()),
           ),
         ],
       ),
@@ -763,30 +771,30 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Security Checkup'),
-        content: const Column(
+        title: Text('settings_security_checkup'.tr()),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Your security status:'),
-            SizedBox(height: 12),
-            Row(
+            Text('settings_security_status'.tr()),
+            const SizedBox(height: 12),
+            const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.green),
                 SizedBox(width: 8),
                 Text('2FA Enabled'),
               ],
             ),
-            SizedBox(height: 8),
-            Row(
+            const SizedBox(height: 8),
+            const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.green),
                 SizedBox(width: 8),
                 Text('Strong Password'),
               ],
             ),
-            SizedBox(height: 8),
-            Row(
+            const SizedBox(height: 8),
+            const Row(
               children: [
                 Icon(Icons.warning, color: Colors.orange),
                 SizedBox(width: 8),
@@ -798,7 +806,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('common_close'.tr()),
           ),
         ],
       ),
@@ -809,26 +817,26 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out Everywhere'),
-        content: const Text(
-          'This will sign you out of all devices except this one. You\'ll need to sign in again on other devices.',
+        title: Text('settings_sign_out_everywhere'.tr()),
+        content: Text(
+          'settings_sign_out_everywhere_msg'.tr(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Signed out of all other devices'),
+                SnackBar(
+                  content: Text('settings_signed_out_everywhere'.tr()),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Sign Out'),
+            child: Text('settings_sign_out'.tr()),
           ),
         ],
       ),

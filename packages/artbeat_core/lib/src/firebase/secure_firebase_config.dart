@@ -140,18 +140,28 @@ class SecureFirebaseConfig {
 
     try {
       if (kDebugMode) {
-        AppLogger.auth('🔐 Initializing App Check...');
+        AppLogger.auth('🔐 Initializing App Check in debug mode...');
         AppLogger.debug('🔐 Debug mode: $_debug');
         AppLogger.auth('🔐 Team ID: $_teamId');
+        AppLogger.warning('⚠️ App Check set to DEBUG mode - authentication will use placeholder tokens');
 
-        // Always use debug provider in debug mode
-        await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.debug,
-          appleProvider: AppleProvider.debug,
-          // Skip web provider in debug mode if no reCAPTCHA key is configured
-        );
-
-        AppLogger.debug('🔐 App Check activated in debug mode');
+        // In debug mode, skip App Check to avoid blocking auth during development
+        // The debug token approach often fails due to Firebase Console configuration
+        // This is the recommended approach for development
+        try {
+          await FirebaseAppCheck.instance.activate(
+            androidProvider: AndroidProvider.debug,
+            appleProvider: AppleProvider.debug,
+          );
+          AppLogger.debug('🔐 App Check activated in debug mode');
+        } catch (e) {
+          if (kDebugMode) {
+            AppLogger.warning(
+              '⚠️ App Check debug initialization had issues - auth may still work with placeholder tokens: $e',
+            );
+          }
+          // Continue anyway - placeholder tokens will be used
+        }
       } else {
         // Production mode - use secure providers
         await FirebaseAppCheck.instance.activate(

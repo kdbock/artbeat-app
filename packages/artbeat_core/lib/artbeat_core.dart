@@ -80,6 +80,7 @@ export 'src/services/engagement_config_service.dart'
     show EngagementConfigService;
 export 'src/services/accessibility_service.dart'
     show AccessibilityService, AccessibleNavItem, AccessibilityMixin;
+export 'src/mixins/user_moderation_mixin.dart' show UserModerationMixin;
 export 'src/services/performance_optimization_service.dart'
     show
         PerformanceOptimizationService,

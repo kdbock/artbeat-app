@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/models.dart';
 import '../services/settings_service.dart';
 
@@ -34,7 +35,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load privacy settings: $e')),
+          SnackBar(content: Text('settings_load_failed'.tr())),
         );
       }
     }
@@ -50,14 +51,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           _isSaving = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Privacy settings updated')),
+          SnackBar(content: Text('settings_updated'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update settings: $e')),
+          SnackBar(content: Text('settings_update_failed'.tr())),
         );
       }
     }
@@ -68,7 +69,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     return _isLoading
         ? const Center(child: CircularProgressIndicator())
         : _privacySettings == null
-        ? const Center(child: Text('Failed to load privacy settings'))
+        ? Center(child: Text('settings_load_failed'.tr()))
         : SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -81,6 +82,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 _buildDataPrivacyCard(),
                 const SizedBox(height: 16),
                 _buildLocationPrivacyCard(),
+                const SizedBox(height: 16),
+                _buildBlockedUsersCard(),
                 const SizedBox(height: 24),
                 _buildDataControlsSection(),
               ],
@@ -96,21 +99,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Profile Privacy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_privacy_title'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Control who can see your profile and information',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_privacy_profile_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildVisibilityDropdown(profile),
             const SizedBox(height: 12),
             _buildSwitchTile(
-              title: 'Show Last Seen',
-              subtitle: 'Let others see when you were last active',
+              title: 'settings_show_last_seen'.tr(),
+              subtitle: 'settings_show_last_seen_desc'.tr(),
               value: profile.showLastSeen,
               onChanged: (value) {
                 final updatedProfile = profile.copyWith(showLastSeen: value);
@@ -121,8 +124,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Show Online Status',
-              subtitle: 'Display when you are currently online',
+              title: 'settings_show_online_status'.tr(),
+              subtitle: 'settings_show_online_status_desc'.tr(),
               value: profile.showOnlineStatus,
               onChanged: (value) {
                 final updatedProfile = profile.copyWith(
@@ -135,8 +138,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Allow Messages',
-              subtitle: 'Let others send you direct messages',
+              title: 'settings_allow_messages'.tr(),
+              subtitle: 'settings_allow_messages_desc'.tr(),
               value: profile.allowMessages,
               onChanged: (value) {
                 final updatedProfile = profile.copyWith(allowMessages: value);
@@ -147,8 +150,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Show Followers Count',
-              subtitle: 'Display your follower count on your profile',
+              title: 'settings_show_followers'.tr(),
+              subtitle: 'settings_show_followers_desc'.tr(),
               value: profile.showFollowersCount,
               onChanged: (value) {
                 final updatedProfile = profile.copyWith(
@@ -161,8 +164,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Show Following Count',
-              subtitle: 'Display your following count on your profile',
+              title: 'settings_show_following'.tr(),
+              subtitle: 'settings_show_following_desc'.tr(),
               value: profile.showFollowingCount,
               onChanged: (value) {
                 final updatedProfile = profile.copyWith(
@@ -182,15 +185,15 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Widget _buildVisibilityDropdown(ProfilePrivacySettings profile) {
     return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
-        labelText: 'Profile Visibility',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: 'settings_visibility'.tr(),
+        border: const OutlineInputBorder(),
       ),
       initialValue: profile.visibility,
-      items: const [
-        DropdownMenuItem(value: 'public', child: Text('Public')),
-        DropdownMenuItem(value: 'friends', child: Text('Friends Only')),
-        DropdownMenuItem(value: 'private', child: Text('Private')),
+      items: [
+        DropdownMenuItem(value: 'public', child: Text('settings_visibility_public'.tr())),
+        DropdownMenuItem(value: 'friends', child: Text('settings_visibility_friends'.tr())),
+        DropdownMenuItem(value: 'private', child: Text('settings_visibility_private'.tr())),
       ],
       onChanged: _isSaving
           ? null
@@ -214,19 +217,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Content Privacy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_content_privacy'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Control who can see and interact with your content',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_content_privacy_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildSwitchTile(
-              title: 'Show in Search',
-              subtitle: 'Display your content in search results',
+              title: 'settings_show_in_search'.tr(),
+              subtitle: 'settings_show_in_search_desc'.tr(),
               value: content.showInSearch,
               onChanged: (value) {
                 final updatedContent = content.copyWith(showInSearch: value);
@@ -237,8 +240,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Allow Comments',
-              subtitle: 'Let others comment on your posts',
+              title: 'settings_allow_comments'.tr(),
+              subtitle: 'settings_allow_comments_desc'.tr(),
               value: content.allowComments,
               onChanged: (value) {
                 final updatedContent = content.copyWith(allowComments: value);
@@ -249,8 +252,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Allow Sharing',
-              subtitle: 'Let others share your content',
+              title: 'settings_allow_sharing'.tr(),
+              subtitle: 'settings_allow_sharing_desc'.tr(),
               value: content.allowSharing,
               onChanged: (value) {
                 final updatedContent = content.copyWith(allowSharing: value);
@@ -261,8 +264,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Allow Likes',
-              subtitle: 'Let others like your content',
+              title: 'settings_allow_likes'.tr(),
+              subtitle: 'settings_allow_likes_desc'.tr(),
               value: content.allowLikes,
               onChanged: (value) {
                 final updatedContent = content.copyWith(allowLikes: value);
@@ -286,19 +289,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Data Privacy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_data_privacy'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Control how your data is collected and used',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_data_privacy_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildSwitchTile(
-              title: 'Analytics Collection',
-              subtitle: 'Help improve the app by sharing usage data',
+              title: 'settings_analytics'.tr(),
+              subtitle: 'settings_analytics_desc'.tr(),
               value: data.allowAnalytics,
               onChanged: (value) {
                 final updatedData = data.copyWith(allowAnalytics: value);
@@ -307,8 +310,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Marketing Communications',
-              subtitle: 'Receive marketing emails and notifications',
+              title: 'settings_marketing'.tr(),
+              subtitle: 'settings_marketing_desc'.tr(),
               value: data.allowMarketing,
               onChanged: (value) {
                 final updatedData = data.copyWith(allowMarketing: value);
@@ -317,8 +320,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Personalization',
-              subtitle: 'Use your data to personalize content',
+              title: 'settings_personalization'.tr(),
+              subtitle: 'settings_personalization_desc'.tr(),
               value: data.allowPersonalization,
               onChanged: (value) {
                 final updatedData = data.copyWith(allowPersonalization: value);
@@ -327,8 +330,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Third-party Sharing',
-              subtitle: 'Share data with trusted partners',
+              title: 'settings_third_party'.tr(),
+              subtitle: 'settings_third_party_desc'.tr(),
               value: data.allowThirdPartySharing,
               onChanged: (value) {
                 final updatedData = data.copyWith(
@@ -352,19 +355,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Location Privacy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              'settings_location_privacy'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Control location tracking and sharing',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              'settings_location_privacy_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             _buildSwitchTile(
-              title: 'Location Sharing',
-              subtitle: 'Allow location-based features',
+              title: 'settings_location_sharing'.tr(),
+              subtitle: 'settings_location_sharing_desc'.tr(),
               value: location.shareLocation,
               onChanged: (value) {
                 final updatedLocation = location.copyWith(shareLocation: value);
@@ -375,8 +378,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Show Location in Profile',
-              subtitle: 'Display your location in your profile',
+              title: 'settings_location_profile'.tr(),
+              subtitle: 'settings_location_profile_desc'.tr(),
               value: location.showLocationInProfile,
               onChanged: (value) {
                 final updatedLocation = location.copyWith(
@@ -389,8 +392,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              title: 'Location-based Recommendations',
-              subtitle: 'Get recommendations based on your location',
+              title: 'settings_location_recommendations'.tr(),
+              subtitle: 'settings_location_recommendations_desc'.tr(),
               value: location.allowLocationBasedRecommendations,
               onChanged: (value) {
                 final updatedLocation = location.copyWith(
@@ -408,13 +411,45 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     );
   }
 
+  Widget _buildBlockedUsersCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'settings_blocked_users'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'settings_blocked_users_desc'.tr(),
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.block, color: Colors.red),
+              title: Text('settings_manage_blocked_users'.tr()),
+              subtitle: Text('settings_manage_blocked_users_desc'.tr()),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.of(context).pushNamed('/settings/blocked-users');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDataControlsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Data Controls',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          'settings_data_controls'.tr(),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Card(
@@ -422,17 +457,17 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.download, color: Colors.blue),
-                title: const Text('Download My Data'),
-                subtitle: const Text('Get a copy of your data'),
+                title: Text('settings_download_data'.tr()),
+                subtitle: Text('settings_download_data_desc'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showDataDownloadDialog(),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text('Delete My Data'),
-                subtitle: const Text(
-                  'Permanently delete your account and data',
+                title: Text('settings_delete_data'.tr()),
+                subtitle: Text(
+                  'settings_delete_data_desc'.tr(),
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _showDataDeletionDialog(),
@@ -463,21 +498,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Download Your Data'),
-        content: const Text(
-          'We\'ll prepare a file containing all your data and send you a download link via email. This may take a few minutes to process.',
+        title: Text('settings_download_data'.tr()),
+        content: Text(
+          'settings_download_data_dialog'.tr(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _requestDataDownload();
             },
-            child: const Text('Request Download'),
+            child: Text('settings_request_download'.tr()),
           ),
         ],
       ),
@@ -488,14 +523,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Your Data'),
-        content: const Text(
-          'This will permanently delete your account and all associated data. This action cannot be undone.\n\nAre you sure you want to continue?',
+        title: Text('settings_delete_data'.tr()),
+        content: Text(
+          'settings_delete_data_dialog'.tr(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -503,7 +538,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               _requestDataDeletion();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete My Data'),
+            child: Text('settings_delete_data_confirm'.tr()),
           ),
         ],
       ),
@@ -515,9 +550,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       await _settingsService.requestDataDownload();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Data download requested. You\'ll receive an email when ready.',
+              'settings_data_download_success'.tr(),
             ),
             backgroundColor: Colors.green,
           ),
@@ -527,7 +562,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to request data download: $e'),
+            content: Text('settings_data_download_failed'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -540,9 +575,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       await _settingsService.requestDataDeletion();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Data deletion requested. This will take effect within 30 days.',
+              'settings_data_deletion_success'.tr(),
             ),
             backgroundColor: Colors.green,
           ),
@@ -552,7 +587,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to request data deletion: $e'),
+            content: Text('settings_data_deletion_failed'.tr()),
             backgroundColor: Colors.red,
           ),
         );

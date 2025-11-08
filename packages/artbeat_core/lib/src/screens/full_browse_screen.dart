@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 class FullBrowseScreen extends StatefulWidget {
@@ -32,7 +33,7 @@ class _FullBrowseScreenState extends State<FullBrowseScreen>
       currentIndex: 1, // Browse tab is selected
       drawer: const ArtbeatDrawer(),
       appBar: EnhancedUniversalHeader(
-        title: 'Browse',
+        title: 'browse_title'.tr(),
         showBackButton:
             false, // Browse is a main destination, no back button needed
         showSearch: true,
@@ -86,10 +87,10 @@ class _FullBrowseScreenState extends State<FullBrowseScreen>
                     fontSize: 12,
                   ),
                   tabs: [
-                    _buildModernTab('Captures', Icons.camera_alt_rounded),
-                    _buildModernTab('Art Walks', Icons.map_rounded),
-                    _buildModernTab('Artists', Icons.people_rounded),
-                    _buildModernTab('Artwork', Icons.image_rounded),
+                    _buildModernTab('browse_captures'.tr(), Icons.camera_alt_rounded),
+                    _buildModernTab('browse_art_walks'.tr(), Icons.map_rounded),
+                    _buildModernTab('browse_artists'.tr(), Icons.people_rounded),
+                    _buildModernTab('browse_artwork'.tr(), Icons.image_rounded),
                   ],
                 ),
               ),

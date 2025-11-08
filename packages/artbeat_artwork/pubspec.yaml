@@ -44,6 +44,9 @@ dependencies:
 
   # Logging
   logger: ^2.4.0
+  
+  # Localization
+  easy_localization: ^3.0.7
 
   artbeat_profile:
     path: ../artbeat_profile

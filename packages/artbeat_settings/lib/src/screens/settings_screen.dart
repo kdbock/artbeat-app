@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/models.dart';
 import '../widgets/language_selector.dart';
 
@@ -65,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your Account',
+                    'settings_your_account'.tr(),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Colors.black87,
                       fontWeight: FontWeight.w600,
@@ -73,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Manage your profile and preferences',
+                    'settings_manage_profile'.tr(),
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: Colors.black54),
@@ -120,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Quick Actions',
+          'settings_quick_actions'.tr(),
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
@@ -132,18 +133,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text(
-                  'Sign Out',
-                  style: TextStyle(color: Colors.red),
+                title: Text(
+                  'settings_sign_out'.tr(),
+                  style: const TextStyle(color: Colors.red),
                 ),
                 onTap: () => _showLogoutDialog(context),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
-                title: const Text(
-                  'Delete Account',
-                  style: TextStyle(color: Colors.red),
+                title: Text(
+                  'settings_delete_account'.tr(),
+                  style: const TextStyle(color: Colors.red),
                 ),
                 onTap: () => _showDeleteAccountDialog(context),
               ),
@@ -182,19 +183,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text('settings_sign_out'.tr()),
+        content: Text('settings_confirm_signout'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
               await _signOut();
             },
-            child: const Text('Sign Out'),
+            child: Text('settings_sign_out'.tr()),
           ),
         ],
       ),
@@ -205,14 +206,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-          'This action cannot be undone. All your data will be permanently deleted.',
-        ),
+        title: Text('settings_delete_account'.tr()),
+        content: Text('settings_confirm_delete'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           TextButton(
             onPressed: _isDeleting
@@ -228,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Delete'),
+                : Text('common_delete'.tr()),
           ),
         ],
       ),
@@ -240,14 +239,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _auth.signOut();
 
       if (mounted) {
-        // Navigate to login screen and clear navigation stack
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to sign out: $e');
+        _showErrorMessage('${'settings_signout_failed'.tr()}: $e');
       }
     }
   }
@@ -255,48 +253,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _deleteAccount() async {
     final user = _auth.currentUser;
     if (user == null) {
-      _showErrorMessage('No user is currently signed in');
+      _showErrorMessage('settings_no_user_signed_in'.tr());
       return;
     }
 
     setState(() => _isDeleting = true);
 
     try {
-      // Delete account using UserService
       await _userService.deleteAccount(user.uid);
 
-      // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account deleted successfully'),
+          SnackBar(
+            content: Text('settings_account_deleted'.tr()),
             backgroundColor: Colors.green,
           ),
         );
 
-        // Navigate to login screen and clear navigation stack
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        String errorMessage = 'Failed to delete account';
+        String errorMessage = 'settings_signout_failed'.tr();
 
         if (e.code == 'requires-recent-login') {
-          errorMessage =
-              'This operation requires recent authentication. Please log out, log in again, and try deleting your account.';
-
-          // Show re-authentication dialog
+          errorMessage = 'settings_reauth_message'.tr();
           _showReauthenticationDialog();
         } else {
-          errorMessage = 'Failed to delete account: ${e.message}';
+          errorMessage = '${'settings_signout_failed'.tr()}: ${e.message}';
           _showErrorMessage(errorMessage);
         }
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to delete account: $e');
+        _showErrorMessage('${'settings_signout_failed'.tr()}: $e');
       }
     } finally {
       if (mounted) {
@@ -309,15 +301,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Re-authentication Required'),
-        content: const Text(
-          'For security reasons, you need to log in again before deleting your account. '
-          'Please log out and log back in, then try again.',
-        ),
+        title: Text('settings_reauth_required'.tr()),
+        content: Text('settings_reauth_message'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('common_ok'.tr()),
           ),
         ],
       ),

@@ -46,10 +46,12 @@ class GiftRulesScreen extends StatelessWidget {
               'Minimum account age of 7 days to send gifts',
               'Recipients must have completed profile verification',
             ]),
-            _buildSection('Revenue Sharing', [
-              '70% of gift value goes to the artist',
-              '25% supports the ARTbeat platform',
-              '5% goes to the community fund',
+            _buildSection('How Gift Credits Work', [
+              'Gift recipients receive in-app credits',
+              'Credits can be used to purchase subscriptions',
+              'Credits can be used to purchase ad products',
+              'Credits support artists indirectly through platform engagement',
+              'For direct artist support, subscribe to an artist subscription',
             ]),
             _buildSection('Community Guidelines', [
               'No soliciting for gifts',
@@ -58,10 +60,10 @@ class GiftRulesScreen extends StatelessWidget {
               'Report any suspicious gift activity',
             ]),
             _buildSection('Processing & Security', [
-              'All transactions are processed securely through Stripe',
+              'All transactions are processed securely through Apple Pay / Google Play',
               'Gift history is permanently recorded',
               'Suspicious activity is automatically flagged',
-              'Multi-factor authentication required for large gifts',
+              'Gifts are non-refundable per App Store guidelines',
             ]),
           ],
         ),

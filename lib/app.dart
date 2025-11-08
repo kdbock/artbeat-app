@@ -7,6 +7,7 @@ import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_events/artbeat_events.dart' as events;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -217,7 +218,10 @@ class MyApp extends StatelessWidget {
             theme: core.ArtbeatTheme.lightTheme,
             initialRoute: '/splash',
             onGenerateRoute: _appRouter.onGenerateRoute,
-            debugShowCheckedModeBanner: false, // Added for cleaner UI
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
           ),
         ),
       );

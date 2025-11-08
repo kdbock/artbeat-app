@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/models.dart';
 import '../services/settings_service.dart';
 
@@ -32,7 +33,7 @@ class _NotificationSettingsScreenState
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to load notification settings: $e');
+        _showErrorMessage('settings_load_failed'.tr());
       }
     } finally {
       if (mounted) {
@@ -58,11 +59,11 @@ class _NotificationSettingsScreenState
       await _settingsService.saveNotificationSettings(settings);
       if (mounted) {
         setState(() => _notificationSettings = settings);
-        _showSuccessMessage('Notification settings updated');
+        _showSuccessMessage('settings_updated'.tr());
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to update settings: $e');
+        _showErrorMessage('settings_update_failed'.tr());
       }
     }
   }
@@ -76,7 +77,7 @@ class _NotificationSettingsScreenState
 
   Widget _buildNotificationSettings() {
     if (_notificationSettings == null)
-      return const Center(child: Text('No settings available'));
+      return Center(child: Text('settings_no_settings'.tr()));
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -106,15 +107,15 @@ class _NotificationSettingsScreenState
                 const Icon(Icons.email),
                 const SizedBox(width: 8),
                 Text(
-                  'Email Notifications',
+                  'settings_email_notifications'.tr(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             SwitchListTile(
-              title: const Text('Enable Email Notifications'),
-              subtitle: const Text('Receive notifications via email'),
+              title: Text('settings_enable_email_notifications'.tr()),
+              subtitle: Text('settings_receive_notifications_email'.tr()),
               value: email.enabled,
               onChanged: (value) {
                 final updated = _notificationSettings!.copyWith(
@@ -126,24 +127,24 @@ class _NotificationSettingsScreenState
             if (email.enabled) ...[
               const Divider(),
               ListTile(
-                title: const Text('Frequency'),
-                subtitle: Text('Currently: ${email.frequency}'),
+                title: Text('settings_frequency'.tr()),
+                subtitle: Text('settings_currently'.tr(namedArgs: {'value': email.frequency})),
                 trailing: DropdownButton<String>(
                   value: email.frequency,
-                  items: const [
+                  items: [
                     DropdownMenuItem(
                       value: 'immediate',
-                      child: Text('Immediate'),
+                      child: Text('settings_frequency_immediate'.tr()),
                     ),
                     DropdownMenuItem(
                       value: 'daily',
-                      child: Text('Daily digest'),
+                      child: Text('settings_frequency_daily'.tr()),
                     ),
                     DropdownMenuItem(
                       value: 'weekly',
-                      child: Text('Weekly digest'),
+                      child: Text('settings_frequency_weekly'.tr()),
                     ),
-                    DropdownMenuItem(value: 'never', child: Text('Never')),
+                    DropdownMenuItem(value: 'never', child: Text('settings_never'.tr())),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -176,15 +177,15 @@ class _NotificationSettingsScreenState
                 const Icon(Icons.notifications),
                 const SizedBox(width: 8),
                 Text(
-                  'Push Notifications',
+                  'settings_push_notifications'.tr(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             SwitchListTile(
-              title: const Text('Enable Push Notifications'),
-              subtitle: const Text('Receive notifications on your device'),
+              title: Text('settings_enable_push_notifications'.tr()),
+              subtitle: Text('settings_receive_notifications_device'.tr()),
               value: push.enabled,
               onChanged: (value) {
                 final updated = _notificationSettings!.copyWith(
@@ -196,8 +197,8 @@ class _NotificationSettingsScreenState
             if (push.enabled) ...[
               const Divider(),
               SwitchListTile(
-                title: const Text('Sound'),
-                subtitle: const Text('Play sound for notifications'),
+                title: Text('settings_sound'.tr()),
+                subtitle: Text('settings_play_sound_notifications'.tr()),
                 value: push.allowSounds,
                 onChanged: (value) {
                   final updated = _notificationSettings!.copyWith(
@@ -207,8 +208,8 @@ class _NotificationSettingsScreenState
                 },
               ),
               SwitchListTile(
-                title: const Text('Vibration'),
-                subtitle: const Text('Vibrate for notifications'),
+                title: Text('settings_vibration'.tr()),
+                subtitle: Text('settings_vibrate_notifications'.tr()),
                 value: push.allowVibration,
                 onChanged: (value) {
                   final updated = _notificationSettings!.copyWith(
@@ -218,8 +219,8 @@ class _NotificationSettingsScreenState
                 },
               ),
               SwitchListTile(
-                title: const Text('Badges'),
-                subtitle: const Text('Show notification count on app icon'),
+                title: Text('settings_badges'.tr()),
+                subtitle: Text('settings_show_notification_count'.tr()),
                 value: push.allowBadges,
                 onChanged: (value) {
                   final updated = _notificationSettings!.copyWith(
@@ -249,15 +250,15 @@ class _NotificationSettingsScreenState
                 const Icon(Icons.notifications_active),
                 const SizedBox(width: 8),
                 Text(
-                  'In-App Notifications',
+                  'settings_in_app_notifications'.tr(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             SwitchListTile(
-              title: const Text('Enable In-App Notifications'),
-              subtitle: const Text('Show notifications while using the app'),
+              title: Text('settings_enable_in_app_notifications'.tr()),
+              subtitle: Text('settings_show_notifications_using_app'.tr()),
               value: inApp.enabled,
               onChanged: (value) {
                 final updated = _notificationSettings!.copyWith(
@@ -286,16 +287,16 @@ class _NotificationSettingsScreenState
                 const Icon(Icons.nightlight_round),
                 const SizedBox(width: 8),
                 Text(
-                  'Quiet Hours',
+                  'settings_quiet_hours'.tr(),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             SwitchListTile(
-              title: const Text('Enable Quiet Hours'),
-              subtitle: const Text(
-                'Reduce notifications during specified hours',
+              title: Text('settings_enable_quiet_hours'.tr()),
+              subtitle: Text(
+                'settings_reduce_notifications_hours'.tr(),
               ),
               value: quietHours.enabled,
               onChanged: (value) {
@@ -308,13 +309,13 @@ class _NotificationSettingsScreenState
             if (quietHours.enabled) ...[
               const Divider(),
               ListTile(
-                title: const Text('Start Time'),
+                title: Text('settings_start_time'.tr()),
                 subtitle: Text(quietHours.startTime),
                 trailing: const Icon(Icons.access_time),
                 onTap: () => _selectTime(context, quietHours.startTime, true),
               ),
               ListTile(
-                title: const Text('End Time'),
+                title: Text('settings_end_time'.tr()),
                 subtitle: Text(quietHours.endTime),
                 trailing: const Icon(Icons.access_time),
                 onTap: () => _selectTime(context, quietHours.endTime, false),

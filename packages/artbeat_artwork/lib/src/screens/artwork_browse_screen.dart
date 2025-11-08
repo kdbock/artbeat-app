@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' show MainLayout;
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artwork_model.dart';
@@ -58,7 +59,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
       currentIndex:
           0, // Dashboard tab - artwork browsing is accessed from dashboard
       appBar: ArtworkHeader(
-        title: 'Browse Artwork',
+        title: 'artwork_browse_title'.tr(),
         showBackButton: true,
         showSearch: true,
         showDeveloper: false,
@@ -73,7 +74,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search artwork...',
+                hintText: 'artwork_search_hint'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -95,8 +96,8 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               children: [
-                const Text('Filters:',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('artwork_filters'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(width: 8),
                 if (_selectedLocation != 'All')
                   Chip(
@@ -144,14 +145,14 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('artwork_error_prefix'.tr() + (snapshot.error?.toString() ?? '')),
           );
         }
 
         final docs = snapshot.data?.docs ?? [];
         if (docs.isEmpty) {
-          return const Center(
-            child: Text('No artwork found matching your criteria.'),
+          return Center(
+            child: Text('artwork_no_results'.tr()),
           );
         }
 

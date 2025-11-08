@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
@@ -43,9 +44,12 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading followers: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('profile_error_followers'
+                .tr(namedArgs: {'error': e.toString()})),
+          ),
+        );
         setState(() {
           _isLoading = false;
         });
@@ -79,8 +83,10 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
           SnackBar(
             content: Text(
               isFollowing
-                  ? 'Unfollowed ${follower.fullName}'
-                  : 'Now following ${follower.fullName}',
+                  ? 'profile_unfollowed'
+                      .tr(namedArgs: {'fullName': follower.fullName})
+                  : 'profile_now_following'
+                      .tr(namedArgs: {'fullName': follower.fullName}),
             ),
             duration: const Duration(seconds: 2),
           ),
@@ -90,7 +96,8 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating follow status: $e'),
+            content: Text('profile_error_unfollow'
+                .tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -115,8 +122,9 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _followers.isEmpty
-            ? const Center(
-                child: Text('No followers yet', style: TextStyle(fontSize: 16)),
+            ? Center(
+                child: Text('profile_no_followers'.tr(),
+                    style: const TextStyle(fontSize: 16)),
               )
             : ListView.builder(
                 itemCount: _followers.length,

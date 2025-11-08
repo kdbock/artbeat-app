@@ -30,6 +30,7 @@ export 'services/community_service.dart';
 export 'services/storage_service.dart';
 export 'services/direct_commission_service.dart';
 export 'services/stripe_service.dart';
+export 'services/moderation_service.dart';
 
 // Widgets
 export 'widgets/widgets.dart';
@@ -46,6 +47,8 @@ export 'widgets/artist_list_widget.dart';
 export 'widgets/community_drawer.dart';
 export 'widgets/commission_artists_browser.dart';
 export 'widgets/commission_filter_dialog.dart';
+export 'src/widgets/report_dialog.dart';
+export 'src/widgets/user_action_menu.dart';
 
 // Controllers
 export 'controllers/controllers.dart';

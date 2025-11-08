@@ -21,11 +21,20 @@ class _LanguageSelectorState extends State<LanguageSelector> {
   ];
 
   late String _selectedLanguage;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedLanguage = EasyLocalization.of(context)!.locale.languageCode;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _selectedLanguage = EasyLocalization.of(context)!.locale.languageCode;
+      _initialized = true;
+    }
   }
 
   @override
@@ -38,9 +47,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
           children: [
             Text(
               'common_language'.tr(),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -70,7 +79,10 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(lang['flag']!, style: const TextStyle(fontSize: 18)),
+                        Text(
+                          lang['flag']!,
+                          style: const TextStyle(fontSize: 18),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           lang['name']!,
@@ -78,8 +90,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                             color: isSelected
                                 ? const Color(0xFF8B5CF6)
                                 : Colors.black87,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                           ),
                         ),
                       ],

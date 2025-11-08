@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
@@ -120,23 +121,23 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   String _getErrorMessage(String errorCode) {
     switch (errorCode) {
       case 'too-many-requests':
-        return 'Too many requests. Please wait before trying again.';
+        return 'auth_email_verification_error_too_many_requests'.tr();
       case 'user-disabled':
-        return 'This account has been disabled.';
+        return 'auth_email_verification_error_user_disabled'.tr();
       case 'user-not-found':
-        return 'User account not found.';
+        return 'auth_email_verification_error_user_not_found'.tr();
       default:
-        return 'An error occurred. Please try again.';
+        return 'auth_email_verification_error_unexpected'.tr();
     }
   }
 
   /// Show success message
   void _showSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Email verified successfully!'),
+      SnackBar(
+        content: Text('auth_email_verification_success'.tr()),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -168,22 +169,19 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Skip Email Verification?'),
-        content: const Text(
-          'You can verify your email later in account settings. '
-          'Some features may be limited until your email is verified.',
-        ),
+        title: Text('auth_email_verification_skip_title'.tr()),
+        content: Text('auth_email_verification_skip_desc'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('auth_email_verification_cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, AuthRoutes.dashboard);
             },
-            child: const Text('Skip'),
+            child: Text('auth_email_verification_skip'.tr()),
           ),
         ],
       ),
@@ -193,7 +191,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AuthHeader(title: 'Verify Email', showBackButton: false),
+      appBar: AuthHeader(title: 'auth_email_verification_title'.tr(), showBackButton: false),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -240,9 +238,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         const SizedBox(height: 24),
 
                         // Title
-                        const Text(
-                          'Verify Your Email',
-                          style: TextStyle(
+                        Text(
+                          'auth_email_verification_verify_title'.tr(),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2E8B9E),
@@ -252,7 +250,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
                         // Description
                         Text(
-                          'We\'ve sent a verification email to:',
+                          'auth_email_verification_sent_to'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[600],
@@ -275,8 +273,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
                         // Instructions
                         Text(
-                          'Please check your email and click the verification link. '
-                          'This page will automatically update once verified.',
+                          'auth_email_verification_instructions'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -314,8 +311,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                                   )
                                 : Text(
                                     _canResendEmail
-                                        ? 'Resend Verification Email'
-                                        : 'Resend in ${_resendCooldown}s',
+                                        ? 'auth_email_verification_resend_button'.tr()
+                                        : 'auth_email_verification_resend_cooldown'.tr(namedArgs: {'seconds': _resendCooldown.toString()}),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -328,9 +325,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         // Skip button
                         TextButton(
                           onPressed: _skipVerification,
-                          child: const Text(
-                            'Skip for now',
-                            style: TextStyle(
+                          child: Text(
+                            'auth_email_verification_skip_now'.tr(),
+                            style: const TextStyle(
                               color: Color(0xFF2E8B9E),
                               fontSize: 16,
                             ),
@@ -340,7 +337,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
                         // Help text
                         Text(
-                          'Didn\'t receive the email? Check your spam folder or try resending.',
+                          'auth_email_verification_help_text'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[500],

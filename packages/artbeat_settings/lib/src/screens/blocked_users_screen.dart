@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/blocked_user_model.dart';
 import '../services/integrated_settings_service.dart';
 
 class BlockedUsersScreen extends StatefulWidget {
-  const BlockedUsersScreen({super.key});
+  final bool useOwnScaffold;
+
+  const BlockedUsersScreen({super.key, this.useOwnScaffold = true});
 
   @override
   State<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
@@ -38,7 +41,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading blocked users: $e'),
+            content: Text('settings_blocked_users_error_load'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
           ),
         );
@@ -48,16 +51,27 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final body = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _blockedUsers.isEmpty
+        ? _buildEmptyState()
+        : _buildBlockedUsersList();
+
+    if (!widget.useOwnScaffold) {
+      // Return just the body if wrapped in MainLayout
+      return body;
+    }
+
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Blocked Users',
-        showLogo: false,
+      appBar: AppBar(
+        title: Text('settings_blocked_users_title'.tr()),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _blockedUsers.isEmpty
-          ? _buildEmptyState()
-          : _buildBlockedUsersList(),
+      body: body,
     );
   }
 
@@ -79,26 +93,21 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'No blocked users',
-            style: TextStyle(
+          Text(
+            'settings_blocked_users_empty_title'.tr(),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Users you block will appear here.\nYou can unblock them at any time.',
+          Text(
+            'settings_blocked_users_empty_desc'.tr(),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, height: 1.5),
+            style: const TextStyle(color: Colors.grey, height: 1.5),
           ),
           const SizedBox(height: 24),
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('Back to Settings'),
-          ),
         ],
       ),
     );
@@ -145,7 +154,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                '${_blockedUsers.length} blocked user${_blockedUsers.length == 1 ? '' : 's'}',
+                _blockedUsers.length == 1 
+                  ? 'settings_blocked_users_count_one'.tr()
+                  : 'settings_blocked_users_count_multiple'.tr(namedArgs: {'count': _blockedUsers.length.toString()}),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: ArtbeatColors.primaryPurple,
@@ -154,9 +165,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Blocked users cannot message you or see your content. You can unblock them at any time.',
-            style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.4),
+          Text(
+            'settings_blocked_users_cannot_message'.tr(),
+            style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.4),
           ),
         ],
       ),
@@ -187,7 +198,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         title: Text(
           user.blockedUserName.isNotEmpty
               ? user.blockedUserName
-              : 'Unknown User',
+              : 'settings_blocked_users_unknown_user'.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
@@ -195,20 +206,20 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           children: [
             if (user.reason.isNotEmpty)
               Text(
-                'Reason: ${user.reason}',
+                'settings_blocked_users_reason'.tr(namedArgs: {'reason': user.reason}),
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             Text(
-              'Blocked ${_formatDate(user.blockedAt)}',
+              'settings_blocked_users_blocked_date'.tr(namedArgs: {'date': _formatDate(user.blockedAt)}),
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
         trailing: TextButton(
           onPressed: () => _showUnblockDialog(user),
-          child: const Text(
-            'Unblock',
-            style: TextStyle(color: ArtbeatColors.primaryPurple),
+          child: Text(
+            'settings_blocked_users_unblock_button'.tr(),
+            style: const TextStyle(color: ArtbeatColors.primaryPurple),
           ),
         ),
       ),
@@ -235,23 +246,23 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unblock User'),
+        title: Text('settings_blocked_users_unblock_title'.tr()),
         content: Text(
-          'Are you sure you want to unblock ${user.blockedUserName}? They will be able to message you and see your content again.',
+          'settings_blocked_users_unblock_confirm'.tr(namedArgs: {'name': user.blockedUserName}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('settings_blocked_users_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
               await _unblockUser(user);
             },
-            child: const Text(
-              'Unblock',
-              style: TextStyle(color: ArtbeatColors.primaryPurple),
+            child: Text(
+              'settings_blocked_users_unblock_button'.tr(),
+              style: const TextStyle(color: ArtbeatColors.primaryPurple),
             ),
           ),
         ],
@@ -272,7 +283,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${user.blockedUserName} has been unblocked'),
+            content: Text('settings_blocked_users_unblocked_success'.tr(namedArgs: {'name': user.blockedUserName})),
             backgroundColor: Colors.green,
           ),
         );
@@ -281,7 +292,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to unblock user: $e'),
+            content: Text('settings_blocked_users_error_unblock'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
           ),
         );

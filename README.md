@@ -170,6 +170,8 @@ artbeat/
 **Screens**: 5 authentication screens
 **Quality Grade**: ⭐⭐⭐⭐⭐ Outstanding
 
+> 📋 **Apple Sign-In Implementation**: See [APPLE_SIGNIN_IMPLEMENTATION.md](APPLE_SIGNIN_IMPLEMENTATION.md) for detailed documentation on our "Fresh Apple Sign-In" approach that bypasses Firebase Apple provider configuration.
+
 ### **👤 artbeat_profile** - User Profile Management
 
 **Purpose**: User profile creation, editing, and personalization

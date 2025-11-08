@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
@@ -72,11 +73,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   String _getErrorMessage(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
-        return 'No user found with this email.';
+        return 'auth_forgot_password_error_user_not_found'.tr();
       case 'invalid-email':
-        return 'Invalid email address.';
+        return 'auth_forgot_password_error_invalid_email'.tr();
       default:
-        return 'Password reset failed. Please try again. (${e.code})';
+        return 'auth_forgot_password_error_failed'.tr(namedArgs: {'code': e.code});
     }
   }
 
@@ -121,7 +122,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      'Reset Password',
+                      'auth_forgot_password_title'.tr(),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         color: ArtbeatColors.primaryPurple,
@@ -130,7 +131,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Enter your email to receive a password reset link',
+                      'auth_forgot_password_subtitle'.tr(),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: ArtbeatColors.textSecondary,
@@ -179,7 +180,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Password reset link sent. Please check your email.',
+                                'auth_forgot_password_reset_sent'.tr(),
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       color: ArtbeatColors.primaryGreen,
@@ -192,15 +193,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const SizedBox(height: 24),
                     ArtbeatInput(
                       controller: _emailController,
-                      label: 'Email',
+                      label: 'auth_forgot_password_email'.tr(),
                       keyboardType: TextInputType.emailAddress,
                       prefixIcon: const Icon(Icons.email_outlined),
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email.';
+                          return 'auth_forgot_password_email_required'.tr();
                         }
                         if (!value.contains('@')) {
-                          return 'Please enter a valid email address.';
+                          return 'auth_forgot_password_email_invalid'.tr();
                         }
                         return null;
                       },
@@ -227,16 +228,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ),
                                 ),
                               )
-                            : const Row(
+                            : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.restore_outlined,
                                     color: Colors.white,
                                     size: 20,
                                   ),
-                                  SizedBox(width: 8),
-                                  Text('Reset Password'),
+                                  const SizedBox(width: 8),
+                                  Text('auth_forgot_password_button'.tr()),
                                 ],
                               ),
                       ),
@@ -262,7 +263,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           onTap: () => Navigator.pop(context),
                           child: Center(
                             child: Text(
-                              'Back to Login',
+                              'auth_forgot_password_back_to_login'.tr(),
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
                                     color: Colors.white,

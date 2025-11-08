@@ -25,8 +25,9 @@ The comprehensive artist and gallery management system for the ARTbeat platform.
 - ✅ **Gallery Partnerships**: Invitation system and collaboration tools
 - ✅ **Event Management**: Create and manage art events and exhibitions
 - ✅ **Commission Tracking**: Track commissions from sales and partnerships
-- ✅ **Payment Processing**: Integrated Stripe payment system for subscriptions
-- ✅ **Payout Management**: Bank account management and payout requests
+- ✅ **Payment Processing**: Integrated Stripe payment system for subscriptions and commissions
+- ✅ **Payout Management**: Bank account management and payout requests for legitimate earnings
+- ℹ️ **Gift Credits**: Separate system for appreciation tokens (in-app only, no artist payouts)
 
 ### Modern Features (2025 Update)
 
@@ -277,6 +278,32 @@ await integrationService.updateCommunityProfile(artistProfile);
 await integrationService.syncArtistEvents(artistId);
 ```
 
+## ⚠️ Monetization Model Clarification
+
+### Artist Earnings vs. Gift Credits
+
+**This is a critical distinction for App Store compliance:**
+
+#### **Artist Legitimate Earnings** ✅ (Payable to artist bank account)
+
+Artists earn revenue from:
+
+- **Subscriptions**: Creator/Business/Enterprise tier payments via Stripe
+- **Commissions**: Custom artwork orders processed through Stripe
+- **Artwork Sales**: Direct platform sales with 15% commission retained
+- **Sponsorships**: Brand partnerships and sponsored content
+
+These earnings are processed through Stripe and can be withdrawn via payout requests.
+
+#### **Gift Credits** ℹ️ (In-app only, NO payouts)
+
+- **What**: In-app appreciation tokens sent by fans to artists or other users
+- **How used**: Can purchase subscriptions, ads, or premium features
+- **Payout**: ❌ **Cannot be withdrawn or exchanged for cash**
+- **Compliance**: Non-refundable consumable IAP per Apple guidelines
+
+**Key Requirement**: Never mention artist payouts from gifts. Gifts are appreciation tokens only.
+
 ## 🏗️ Data Models
 
 ### ArtistProfileModel
@@ -311,11 +338,9 @@ class EarningsModel {
   final double totalEarnings;
   final double availableBalance;        // Available for payout
   final double pendingBalance;          // Processing payouts
-  final double giftEarnings;            // From fan gifts
   final double sponsorshipEarnings;     // From brand partnerships
-  final double commissionEarnings;      // From artwork sales
-  final double subscriptionEarnings;    // From subscription revenue
-  final double artworkSalesEarnings;    // Direct sales
+  final double commissionEarnings;      // From artwork commissions (Stripe)
+  final double artworkSalesEarnings;    // Direct sales through platform
   final Map<String, double> monthlyBreakdown;
   final List<EarningsTransaction> recentTransactions;
 

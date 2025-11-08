@@ -106,14 +106,14 @@ class ArtbeatDrawerItems {
   static const dailyQuests = ArtbeatDrawerItem(
     title: 'Daily Quests',
     icon: Icons.assignment_outlined,
-    route: '/quests/daily',
+    route: '/quest-history',
     color: ArtbeatColors.primaryGreen,
   );
 
   static const weeklyGoals = ArtbeatDrawerItem(
     title: 'Weekly Goals',
     icon: Icons.flag_outlined,
-    route: '/goals/weekly',
+    route: '/weekly-goals',
     color: ArtbeatColors.primaryBlue,
   );
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -277,7 +278,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                         // Form fields
                         ArtbeatInput(
                           controller: _nameController,
-                          label: 'Display Name',
+                          label: 'profile_display_name'.tr(),
                           prefixIcon: const Icon(Icons.person_outline),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -293,7 +294,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
                         ArtbeatInput(
                           controller: _usernameController,
-                          label: 'Username',
+                          label: 'profile_username'.tr(),
                           prefixIcon: const Icon(Icons.alternate_email),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -314,9 +315,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
                         ArtbeatInput(
                           controller: _bioController,
-                          label: 'Bio (optional)',
+                          label: 'profile_bio'.tr(),
                           prefixIcon: const Icon(Icons.info_outline),
-                          hint: 'Tell us about yourself',
+                          hint: 'profile_bio_hint'.tr(),
                           maxLines: 4,
                           validator: (value) {
                             if (value != null && value.length > 500) {
@@ -329,7 +330,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
                         ArtbeatInput(
                           controller: _locationController,
-                          label: 'Location (optional)',
+                          label: 'profile_location'.tr(),
                           prefixIcon: const Icon(Icons.location_on_outlined),
                           validator: (value) {
                             if (value != null && value.length > 100) {

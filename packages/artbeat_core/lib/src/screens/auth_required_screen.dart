@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../widgets/enhanced_universal_header.dart';
 
 /// Widget to show when authentication is required
@@ -8,8 +9,8 @@ class AuthRequiredScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Authentication Required',
+      appBar: EnhancedUniversalHeader(
+        title: 'auth_required_title'.tr(),
         showLogo: false,
       ),
       body: Center(
@@ -18,21 +19,21 @@ class AuthRequiredScreen extends StatelessWidget {
           children: [
             const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text(
-              'Authentication Required',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              'auth_required_title'.tr(),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Please sign in to access this feature',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+            Text(
+              'auth_required_message'.tr(),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/auth');
               },
-              child: const Text('Sign In'),
+              child: Text('auth_required_button'.tr()),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
@@ -33,15 +34,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
   String? _error;
   String _selectedCategory = 'All';
 
-  final List<String> _categories = [
-    'All',
-    'Exhibition',
-    'Workshop',
-    'Tour',
-    'Concert',
-    'Gallery',
-    'Other',
-  ];
+  late List<String> _categories;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -50,6 +43,15 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
   @override
   void initState() {
     super.initState();
+    _categories = [
+      'events_all_categories'.tr(),
+      'events_exhibition'.tr(),
+      'events_workshop'.tr(),
+      'events_tour'.tr(),
+      'events_concert'.tr(),
+      'events_gallery'.tr(),
+      'events_other'.tr(),
+    ];
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -96,7 +98,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
       _applyFilters();
     } on FirebaseException catch (e) {
       setState(() {
-        _error = 'Failed to load events: ${e.toString()}';
+        _error = '${'events_error_loading'.tr()}${e.toString()}';
         _isLoading = false;
       });
     }

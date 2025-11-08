@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
@@ -377,9 +378,9 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '🏆 Recent Achievements',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  'dashboard_recent_achievements'.tr(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -655,26 +656,21 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       print('🔔 Notification button tapped! Route: /notifications');
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notification button tapped! Route: /notifications'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-
     // Try to navigate to notifications
     try {
       Navigator.pushNamed(context, '/notifications');
     } catch (error) {
       // If route navigation fails, show error
       AppLogger.error('Notification navigation error: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Navigation error: $error'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_navigation'.tr(namedArgs: {'error': error.toString()})),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
@@ -695,7 +691,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
           Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'Something went wrong',
+            'error_something_wrong'.tr(),
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(color: Colors.grey[700]),
@@ -712,7 +708,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            label: Text('error_try_again'.tr()),
             style: ElevatedButton.styleFrom(
               backgroundColor: ArtbeatColors.primaryPurple,
               foregroundColor: Colors.white,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserModerationMixin;
 import '../models/artwork_rating_model.dart';
 import '../services/artwork_rating_service.dart';
 import '../services/artwork_comment_service.dart';
@@ -28,7 +29,8 @@ class ArtworkSocialWidget extends StatefulWidget {
   State<ArtworkSocialWidget> createState() => _ArtworkSocialWidgetState();
 }
 
-class _ArtworkSocialWidgetState extends State<ArtworkSocialWidget> {
+class _ArtworkSocialWidgetState extends State<ArtworkSocialWidget>
+    with UserModerationMixin {
   final ArtworkRatingService _ratingService = ArtworkRatingService();
   final ArtworkCommentService _commentService = ArtworkCommentService();
   final TextEditingController _commentController = TextEditingController();
@@ -334,6 +336,9 @@ class _ArtworkSocialWidgetState extends State<ArtworkSocialWidget> {
 
                 return Column(
                   children: snapshot.data!.map((comment) {
+                    final currentUser = FirebaseAuth.instance.currentUser;
+                    final isOwnComment = currentUser?.uid == comment.userId;
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
@@ -357,6 +362,52 @@ class _ArtworkSocialWidgetState extends State<ArtworkSocialWidget> {
                             ),
                           ],
                         ),
+                        // Add block/report button for other users' comments
+                        trailing: !isOwnComment && currentUser != null
+                            ? PopupMenuButton<String>(
+                                onSelected: (value) async {
+                                  if (value == 'block') {
+                                    await blockUser(
+                                      context,
+                                      comment.userId,
+                                      comment.userName,
+                                    );
+                                  } else if (value == 'report') {
+                                    _reportComment(comment.id);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem<String>(
+                                    value: 'block',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.block,
+                                          color: Colors.red,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Block user'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'report',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.flag,
+                                          color: Colors.orange,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Report comment'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : null,
                       ),
                     );
                   }).toList(),
@@ -367,6 +418,45 @@ class _ArtworkSocialWidgetState extends State<ArtworkSocialWidget> {
         ),
       ),
     );
+  }
+
+  /// Report a comment for inappropriate content
+  Future<void> _reportComment(String commentId) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to report')),
+        );
+        return;
+      }
+
+      // Call the report method from comment service
+      await _commentService.reportComment(
+        widget.artworkId,
+        commentId,
+        'Inappropriate content',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thank you for reporting. Our team will review it.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error reporting comment: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   String _formatTimestamp(dynamic timestamp) {

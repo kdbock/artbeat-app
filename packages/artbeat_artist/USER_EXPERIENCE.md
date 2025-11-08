@@ -246,11 +246,12 @@ ARTbeat Artist is the professional artist management platform within the ARTbeat
 
 **Revenue Streams:**
 
-- **🎁 Gifts**: Direct tips and support from fans and collectors
 - **🤝 Sponsorships**: Brand partnerships and sponsored content
-- **🎨 Commissions**: Custom artwork orders and commissioned pieces
+- **🎨 Commissions**: Custom artwork orders and commissioned pieces (Stripe integration)
 - **📱 Subscriptions**: Recurring supporter subscriptions
-- **🖼️ Artwork Sales**: Direct sales through platform or integrated shops
+- **🖼️ Artwork Sales**: Direct sales through platform or integrated shops (15% platform commission)
+
+**Note on Gifts**: Fans and supporters can send gift credits to artists, but these are in-app appreciation tokens only. Gift credits cannot be withdrawn or exchanged for cash. To earn revenue directly from your audience, use artist subscriptions (Creator tier+) which enable withdrawal of funds to your bank account.
 
 ### Financial Analytics
 

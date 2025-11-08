@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 
@@ -10,8 +11,8 @@ class BecomeArtistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Become an Artist',
+      appBar: EnhancedUniversalHeader(
+        title: 'become_artist_title'.tr(),
         showLogo: false,
       ),
       body: SafeArea(
@@ -21,39 +22,38 @@ class BecomeArtistScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome to ARTbeat for Artists',
+                'become_artist_welcome'.tr(),
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 16),
               Text(
-                'Join our creative community and unlock these features:',
+                'become_artist_description'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
               _buildFeatureCard(
                 context,
                 icon: Icons.palette,
-                title: 'Artist Profile',
-                description:
-                    'Create a professional profile to showcase your work',
+                title: 'become_artist_feature_profile_title'.tr(),
+                description: 'become_artist_feature_profile_desc'.tr(),
               ),
               _buildFeatureCard(
                 context,
                 icon: Icons.store,
-                title: 'Gallery Integration',
-                description: 'Connect with galleries and sell your artwork',
+                title: 'become_artist_feature_gallery_title'.tr(),
+                description: 'become_artist_feature_gallery_desc'.tr(),
               ),
               _buildFeatureCard(
                 context,
                 icon: Icons.analytics,
-                title: 'Analytics Dashboard',
-                description: 'Track your performance and audience engagement',
+                title: 'become_artist_feature_analytics_title'.tr(),
+                description: 'become_artist_feature_analytics_desc'.tr(),
               ),
               _buildFeatureCard(
                 context,
                 icon: Icons.event,
-                title: 'Event Management',
-                description: 'Create and promote your exhibitions and events',
+                title: 'become_artist_feature_events_title'.tr(),
+                description: 'become_artist_feature_events_desc'.tr(),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -70,7 +70,7 @@ class BecomeArtistScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Get Started'),
+                  child: Text('become_artist_get_started_button'.tr()),
                 ),
               ),
             ],

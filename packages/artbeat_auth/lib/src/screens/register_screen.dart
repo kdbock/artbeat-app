@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart'; // Only import local AuthService
+import '../services/auth_service.dart';
 import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatInput, ArtbeatButton;
-import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 import 'package:artbeat_core/artbeat_core.dart' show UserService;
 
@@ -23,7 +23,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _zipCodeController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -46,43 +45,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _zipCodeController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  /// Get zip code from device location
-  Future<void> _getZipCodeFromLocation() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final zipCode = await LocationUtils.getZipCodeFromCurrentPosition();
-      if (zipCode.isNotEmpty) {
-        setState(() {
-          _zipCodeController.text = zipCode;
-        });
-      } else {
-        _showErrorSnackBar(
-          'Could not determine your location. Please enter your ZIP code manually.',
-        );
-      }
-    } catch (e) {
-      _showErrorSnackBar('Error accessing location: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 
   /// Handle register button press
@@ -91,8 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!_agreedToTerms) {
       setState(() {
-        _errorMessage =
-            'Please agree to the Terms of Service and Privacy Policy';
+        _errorMessage = 'auth_register_error_agree_terms'.tr();
       });
       return;
     }
@@ -107,14 +72,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      final zipCode = _zipCodeController.text.trim();
 
       // Register user and create profile in Firestore
       final userCredential = await _authService.registerWithEmailAndPassword(
         email,
         password,
         fullName,
-        zipCode: zipCode,
       );
 
       // Double-check that user document exists in Firestore
@@ -128,7 +91,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             uid: user.uid,
             email: user.email ?? email,
             displayName: fullName,
-            zipCode: zipCode,
           );
         }
       }
@@ -142,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'An unexpected error occurred. Please try again.';
+        _errorMessage = 'auth_register_error_unexpected'.tr();
       });
     } finally {
       if (mounted) {
@@ -157,13 +119,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _getErrorMessage(FirebaseAuthException e) {
     switch (e.code) {
       case 'email-already-in-use':
-        return 'An account already exists with this email.';
+        return 'auth_register_error_email_exists'.tr();
       case 'invalid-email':
-        return 'Invalid email address.';
+        return 'auth_register_error_invalid_email'.tr();
       case 'weak-password':
-        return 'Password is too weak. Please use a stronger password.';
+        return 'auth_register_error_weak_password'.tr();
       default:
-        return 'Registration failed. Please try again. (${e.code})';
+        return 'auth_register_error_failed'.tr(namedArgs: {'code': e.code});
     }
   }
 
@@ -185,9 +147,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Terms of Service',
-                      style: TextStyle(
+                    Text(
+                      'auth_register_terms_title'.tr(),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -351,9 +313,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Privacy Policy',
-                      style: TextStyle(
+                    Text(
+                      'auth_register_privacy_title'.tr(),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -494,7 +456,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      'Join ARTbeat',
+                      'auth_register_title'.tr(),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         color: ArtbeatColors.primaryPurple,
@@ -503,7 +465,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Create your account to start your artistic journey',
+                      'auth_register_subtitle'.tr(),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: ArtbeatColors.textSecondary,
@@ -542,11 +504,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: ArtbeatInput(
                             controller: _firstNameController,
-                            label: 'First Name',
+                            label: 'auth_register_first_name'.tr(),
                             prefixIcon: const Icon(Icons.person_outline),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return 'auth_register_first_name_required'.tr();
                               }
                               return null;
                             },
@@ -556,59 +518,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: ArtbeatInput(
                             controller: _lastNameController,
-                            label: 'Last Name',
+                            label: 'auth_register_last_name'.tr(),
                             prefixIcon: const Icon(Icons.person_outline),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Required';
+                                return 'auth_register_last_name_required'.tr();
                               }
                               return null;
                             },
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ArtbeatInput(
-                            controller: _zipCodeController,
-                            label: 'ZIP Code (Optional)',
-                            keyboardType: TextInputType.number,
-                            prefixIcon: const Icon(Icons.location_on_outlined),
-                            validator: (value) {
-                              // Made optional for App Store compliance (Guideline 5.1.1)
-                              if (value != null &&
-                                  value.isNotEmpty &&
-                                  value.length != 5) {
-                                return 'Invalid ZIP';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        IconButton(
-                          onPressed: _getZipCodeFromLocation,
-                          icon: const Icon(Icons.my_location),
-                          color: ArtbeatColors.primaryPurple,
-                          tooltip: 'Use current location',
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     ArtbeatInput(
                       controller: _emailController,
-                      label: 'Email',
+                      label: 'auth_register_email'.tr(),
                       keyboardType: TextInputType.emailAddress,
                       prefixIcon: const Icon(Icons.email_outlined),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
+                          return 'auth_register_email_required'.tr();
                         }
                         if (!value.contains('@')) {
-                          return 'Invalid email format';
+                          return 'auth_register_email_invalid'.tr();
                         }
                         return null;
                       },
@@ -616,7 +549,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 16),
                     ArtbeatInput(
                       controller: _passwordController,
-                      label: 'Password',
+                      label: 'auth_register_password'.tr(),
                       obscureText: _obscurePassword,
                       prefixIcon: const Icon(Icons.lock_outlined),
                       suffixIcon: IconButton(
@@ -634,10 +567,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
+                          return 'auth_register_password_required'.tr();
                         }
                         if (value.length < 8) {
-                          return 'Password must be at least 8 characters';
+                          return 'auth_register_password_min_length'.tr();
                         }
                         return null;
                       },
@@ -645,7 +578,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 16),
                     ArtbeatInput(
                       controller: _confirmPasswordController,
-                      label: 'Confirm Password',
+                      label: 'auth_register_confirm_password'.tr(),
                       obscureText: _obscureConfirmPassword,
                       prefixIcon: const Icon(Icons.lock_outlined),
                       suffixIcon: IconButton(
@@ -663,10 +596,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please confirm your password';
+                          return 'auth_register_confirm_password_required'.tr();
                         }
                         if (value != _passwordController.text) {
-                          return 'Passwords do not match';
+                          return 'auth_register_passwords_mismatch'.tr();
                         }
                         return null;
                       },
@@ -691,11 +624,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: Text.rich(
                             TextSpan(
-                              text: 'I agree to the ',
+                              text: 'auth_register_agree_prefix'.tr(),
                               style: Theme.of(context).textTheme.bodyMedium,
                               children: [
                                 TextSpan(
-                                  text: 'Terms of Service',
+                                  text: 'auth_register_terms_link'.tr(),
                                   style: const TextStyle(
                                     color: ArtbeatColors.primaryPurple,
                                     fontWeight: FontWeight.w600,
@@ -703,9 +636,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = _navigateToTerms,
                                 ),
-                                const TextSpan(text: ' and '),
+                                TextSpan(text: ' ${'auth_register_and'.tr()} '),
                                 TextSpan(
-                                  text: 'Privacy Policy',
+                                  text: 'auth_register_privacy_link'.tr(),
                                   style: const TextStyle(
                                     color: ArtbeatColors.primaryPurple,
                                     fontWeight: FontWeight.w600,
@@ -736,7 +669,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Register'),
+                            : Text('auth_register_button'.tr()),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -763,7 +696,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              'Already have an account? Log in',
+                              'auth_register_login_link'.tr(),
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
                                     color: Colors.white,

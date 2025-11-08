@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:logger/logger.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/artbeat_event.dart';
 import '../forms/event_form_builder.dart';
 import '../services/event_service.dart';
@@ -53,15 +54,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget _buildLoadingOverlay() {
     return Container(
       color: Colors.black54,
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: Colors.white),
-            SizedBox(height: 16),
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 16),
             Text(
-              'Creating event...',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              'events_creating'.tr(),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -84,8 +85,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Event updated successfully!'),
+            SnackBar(
+              content: Text('events_updated_success'.tr()),
               backgroundColor: Colors.green,
             ),
           );
@@ -95,7 +96,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         eventId = await _eventService.createEvent(event);
 
         // Schedule event reminders if enabled
-        String successMessage = 'Event created successfully!';
+        String successMessage = 'events_created_success'.tr();
         if (event.reminderEnabled) {
           try {
             // Initialize notification service first
@@ -138,19 +139,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text(isEdit ? '✅ Event Updated!' : '✅ Event Created!'),
+        title: Text(isEdit ? 'events_updated_title'.tr() : 'events_created_title'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               isEdit
-                  ? 'Your event has been successfully updated.'
-                  : 'Your event has been successfully created and is now live!',
+                  ? 'events_updated_success'.tr()
+                  : 'events_created_success'.tr(),
             ),
             const SizedBox(height: 16),
             if (!isEdit) ...[
-              const Text('What would you like to do next?'),
+              Text('events_next_action'.tr()),
               const SizedBox(height: 16),
             ],
           ],
@@ -159,27 +160,27 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           if (!isEdit) ...[
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to previous screen
+                Navigator.pop(context);
+                Navigator.pop(context);
                 _shareEvent(eventId);
               },
-              child: const Text('Share Event'),
+              child: Text('events_share_button'.tr()),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to previous screen
+                Navigator.pop(context);
+                Navigator.pop(context);
                 _viewEvent(eventId);
               },
-              child: const Text('View Event'),
+              child: Text('events_view_button'.tr()),
             ),
           ],
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Go back to previous screen
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
-            child: const Text('Done'),
+            child: Text('events_done_button'.tr()),
           ),
         ],
       ),
@@ -190,8 +191,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('❌ Error'),
-        content: Text('Failed to save event: $error'),
+        title: Text('events_error_title'.tr()),
+        content: Text('${'events_failed_save'.tr()}$error'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -206,7 +207,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unsaved Changes'),
+        title: Text('events_unsaved_changes'.tr()),
         content: const Text(
           'You have unsaved changes. Are you sure you want to leave?',
         ),

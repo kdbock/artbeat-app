@@ -418,15 +418,70 @@ class IntegratedSettingsService extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
+      // Use the same structure as ModerationService: users/{userId}/blockedUsers
       final querySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
           .collection('blockedUsers')
-          .where('blockedBy', isEqualTo: userId)
-          .orderBy('blockedAt', descending: true)
           .get();
 
-      final blockedUsers = querySnapshot.docs
-          .map((doc) => BlockedUserModel.fromMap(doc.data()))
-          .toList();
+      final blockedUsers = <BlockedUserModel>[];
+
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data();
+        final blockedUserId = data['blockedUserId'] as String;
+        final blockedAt =
+            (data['blockedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+
+        // First try to get stored user name from block relationship
+        String userName = data['blockedUserName'] as String? ?? '';
+        String profileImage = '';
+
+        // If no stored name, fetch from users collection
+        if (userName.isEmpty) {
+          try {
+            final userDoc = await _firestore
+                .collection('users')
+                .doc(blockedUserId)
+                .get();
+            if (userDoc.exists) {
+              final userData = userDoc.data() as Map<String, dynamic>;
+              AppLogger.info(
+                '🔍 Fetching user data for blocked user $blockedUserId: ${userData.keys}',
+              );
+
+              // Use same priority as community service
+              userName =
+                  userData['fullName'] as String? ??
+                  userData['displayName'] as String? ??
+                  userData['name'] as String? ??
+                  'Unknown User';
+              profileImage = userData['profileImage'] as String? ?? '';
+
+              AppLogger.info('📝 Resolved blocked user name: $userName');
+            }
+          } catch (e) {
+            AppLogger.error(
+              '⚠️ Could not fetch user details for blocked user $blockedUserId: $e',
+            );
+            userName = 'Unknown User';
+          }
+        }
+
+        blockedUsers.add(
+          BlockedUserModel(
+            blockedUserId: blockedUserId,
+            blockedUserName: userName,
+            blockedAt: blockedAt,
+            reason: (data['reason'] ?? '') as String,
+            blockedBy: userId,
+            blockedUserProfileImage: profileImage,
+          ),
+        );
+      }
+
+      // Sort by blocked date, most recent first
+      blockedUsers.sort((a, b) => b.blockedAt.compareTo(a.blockedAt));
 
       _setCached(cacheKey, blockedUsers);
       return blockedUsers;
@@ -448,19 +503,18 @@ class IntegratedSettingsService extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
-      final blockedUser = BlockedUserModel(
-        blockedUserId: targetUserId,
-        blockedUserName: targetUserName,
-        reason: reason,
-        blockedAt: DateTime.now(),
-        blockedBy: userId,
-      );
-
-      final blockId = '${userId}_$targetUserId';
+      // Use the same structure as ModerationService: users/{userId}/blockedUsers/{targetUserId}
       await _firestore
+          .collection('users')
+          .doc(userId)
           .collection('blockedUsers')
-          .doc(blockId)
-          .set(blockedUser.toMap());
+          .doc(targetUserId)
+          .set({
+            'blockedUserId': targetUserId,
+            'blockedAt': FieldValue.serverTimestamp(),
+            'reason': reason,
+            'blockedUserName': targetUserName,
+          });
 
       // Invalidate cache to force refresh
       _invalidateCache('blockedUsers');
@@ -479,8 +533,13 @@ class IntegratedSettingsService extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
-      final blockId = '${userId}_$targetUserId';
-      await _firestore.collection('blockedUsers').doc(blockId).delete();
+      // Use the same structure as ModerationService: users/{userId}/blockedUsers/{targetUserId}
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('blockedUsers')
+          .doc(targetUserId)
+          .delete();
 
       // Invalidate cache to force refresh
       _invalidateCache('blockedUsers');

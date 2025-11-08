@@ -3,11 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
 import '../models/models.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
-  const AccountSettingsScreen({super.key});
+  final bool useOwnScaffold;
+
+  const AccountSettingsScreen({super.key, this.useOwnScaffold = true});
 
   @override
   State<AccountSettingsScreen> createState() => _AccountSettingsScreenState();
@@ -60,10 +63,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         throw Exception('User not authenticated');
       }
 
-      // Load user model from Firestore
       final userModel = await _userService.getUserModel(user.uid);
 
-      // Create account settings from user model and Firebase Auth data
       _accountSettings = AccountSettingsModel(
         userId: user.uid,
         email: user.email ?? userModel.email,
@@ -83,7 +84,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to load account settings: $e');
+        _showErrorMessage('${'error_generic'.tr()}: $e');
       }
     } finally {
       if (mounted) {
@@ -152,30 +153,29 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           _hasChanges = false;
         });
 
-        _showSuccessMessage('Account settings updated successfully');
+        _showSuccessMessage('settings_updated_success'.tr());
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        String errorMessage = 'Failed to save changes';
+        String errorMessage = 'error_generic'.tr();
         switch (e.code) {
           case 'requires-recent-login':
-            errorMessage =
-                'This operation requires recent authentication. Please log out and log in again.';
+            errorMessage = 'settings_reauth_needed'.tr();
             break;
           case 'email-already-in-use':
-            errorMessage = 'This email is already in use by another account.';
+            errorMessage = 'settings_email_in_use'.tr();
             break;
           case 'invalid-email':
-            errorMessage = 'The email address is invalid.';
+            errorMessage = 'settings_email_invalid_format'.tr();
             break;
           default:
-            errorMessage = 'Failed to save changes: ${e.message}';
+            errorMessage = '${'error_generic'.tr()}: ${e.message}';
         }
         _showErrorMessage(errorMessage);
       }
     } catch (e) {
       if (mounted) {
-        _showErrorMessage('Failed to save changes: $e');
+        _showErrorMessage('${'error_generic'.tr()}: $e');
       }
     } finally {
       if (mounted) {
@@ -186,33 +186,60 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
   void _showSuccessMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account Settings'),
-        actions: [
+    final body = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _buildAccountForm();
+
+    if (widget.useOwnScaffold) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('settings_account_title'.tr()),
+          actions: [
+            if (_hasChanges)
+              TextButton(
+                onPressed: _isLoading ? null : _saveChanges,
+                child: Text('common_save'.tr()),
+              ),
+          ],
+        ),
+        body: body,
+      );
+    } else {
+      return Column(
+        children: [
           if (_hasChanges)
-            TextButton(
-              onPressed: _isLoading ? null : _saveChanges,
-              child: const Text('Save'),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveChanges,
+                child: Text('settings_save_changes'.tr()),
+              ),
             ),
+          Expanded(child: body),
         ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildAccountForm(),
-    );
+      );
+    }
   }
 
   Widget _buildAccountForm() {
@@ -227,19 +254,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           const SizedBox(height: 24),
 
           // Basic Information
-          _buildSectionHeader('Basic Information'),
+          _buildSectionHeader('settings_basic_info'.tr()),
           const SizedBox(height: 12),
 
           TextFormField(
             controller: _displayNameController,
-            decoration: const InputDecoration(
-              labelText: 'Display Name',
-              border: OutlineInputBorder(),
-              helperText: 'This is how others will see your name',
+            decoration: InputDecoration(
+              labelText: 'settings_display_name'.tr(),
+              border: const OutlineInputBorder(),
+              helperText: 'settings_display_name_hint'.tr(),
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Display name is required';
+                return 'settings_display_name_required'.tr();
               }
               return null;
             },
@@ -248,18 +275,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
           TextFormField(
             controller: _usernameController,
-            decoration: const InputDecoration(
-              labelText: 'Username',
-              border: OutlineInputBorder(),
-              helperText: 'Unique identifier for your profile',
+            decoration: InputDecoration(
+              labelText: 'settings_username'.tr(),
+              border: const OutlineInputBorder(),
+              helperText: 'settings_username_hint'.tr(),
               prefixText: '@',
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Username is required';
+                return 'settings_username_required'.tr();
               }
               if (value.length < 3) {
-                return 'Username must be at least 3 characters';
+                return 'settings_username_min_length'.tr();
               }
               return null;
             },
@@ -268,10 +295,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
           TextFormField(
             controller: _bioController,
-            decoration: const InputDecoration(
-              labelText: 'Bio',
-              border: OutlineInputBorder(),
-              helperText: 'Tell others about yourself',
+            decoration: InputDecoration(
+              labelText: 'settings_bio'.tr(),
+              border: const OutlineInputBorder(),
+              helperText: 'settings_bio_hint'.tr(),
             ),
             maxLines: 3,
             maxLength: 200,
@@ -279,30 +306,30 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           const SizedBox(height: 24),
 
           // Contact Information
-          _buildSectionHeader('Contact Information'),
+          _buildSectionHeader('settings_contact_info'.tr()),
           const SizedBox(height: 12),
 
           TextFormField(
             controller: _emailController,
             decoration: InputDecoration(
-              labelText: 'Email',
+              labelText: 'settings_email'.tr(),
               border: const OutlineInputBorder(),
               suffixIcon: _accountSettings?.emailVerified == true
                   ? const Icon(Icons.verified, color: Colors.green)
                   : const Icon(Icons.warning, color: Colors.orange),
               helperText: _accountSettings?.emailVerified == true
-                  ? 'Email verified'
-                  : 'Email not verified',
+                  ? 'settings_email_verified'.tr()
+                  : 'settings_email_not_verified'.tr(),
             ),
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Email is required';
+                return 'settings_email_required'.tr();
               }
               if (!RegExp(
                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
               ).hasMatch(value)) {
-                return 'Enter a valid email address';
+                return 'settings_email_invalid'.tr();
               }
               return null;
             },
@@ -312,33 +339,33 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           TextFormField(
             controller: _phoneController,
             decoration: InputDecoration(
-              labelText: 'Phone Number',
+              labelText: 'settings_phone'.tr(),
               border: const OutlineInputBorder(),
               suffixIcon: _accountSettings?.phoneVerified == true
                   ? const Icon(Icons.verified, color: Colors.green)
                   : null,
               helperText: _accountSettings?.phoneVerified == true
-                  ? 'Phone verified'
-                  : 'Phone not verified',
+                  ? 'settings_phone_verified'.tr()
+                  : 'settings_phone_not_verified'.tr(),
             ),
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 24),
 
           // Account Actions
-          _buildSectionHeader('Account Actions'),
+          _buildSectionHeader('settings_account_actions'.tr()),
           const SizedBox(height: 12),
 
           ListTile(
-            title: const Text('Change Password'),
-            subtitle: const Text('Update your account password'),
+            title: Text('settings_change_password'.tr()),
+            subtitle: Text('settings_change_password_hint'.tr()),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: _showChangePasswordDialog,
           ),
 
           ListTile(
-            title: const Text('Verify Email'),
-            subtitle: const Text('Send verification email'),
+            title: Text('settings_verify_email'.tr()),
+            subtitle: Text('settings_verify_email_hint'.tr()),
             trailing: const Icon(Icons.arrow_forward_ios),
             enabled: _accountSettings?.emailVerified != true,
             onTap: _accountSettings?.emailVerified != true
@@ -347,8 +374,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           ),
 
           ListTile(
-            title: const Text('Verify Phone'),
-            subtitle: const Text('Send verification SMS'),
+            title: Text('settings_verify_phone'.tr()),
+            subtitle: Text('settings_verify_phone_hint'.tr()),
             trailing: const Icon(Icons.arrow_forward_ios),
             enabled:
                 _accountSettings?.phoneVerified != true &&

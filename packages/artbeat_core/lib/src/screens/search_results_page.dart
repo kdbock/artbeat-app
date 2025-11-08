@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../controllers/search_controller.dart' as search_controller;
 import '../models/known_entity_model.dart';
@@ -113,7 +114,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Search artists, artwork, captures...',
+          hintText: 'search_hint'.tr(),
           hintStyle: TextStyle(
             color: ArtbeatColors.textSecondary.withValues(alpha: 0.7),
             fontSize: 16,
@@ -210,7 +211,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'All',
+                      'search_filter_all'.tr(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -333,11 +334,11 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   String _sortOptionLabel(search_controller.SearchSortOption option) {
     switch (option) {
       case search_controller.SearchSortOption.relevant:
-        return 'Relevant';
+        return 'search_sort_relevant'.tr();
       case search_controller.SearchSortOption.recent:
-        return 'Recent';
+        return 'search_sort_recent'.tr();
       case search_controller.SearchSortOption.popular:
-        return 'Popular';
+        return 'search_sort_popular'.tr();
     }
   }
 
@@ -416,9 +417,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Discover Amazing Art',
-                    style: TextStyle(
+                  Text(
+                    'search_empty_title'.tr(),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: ArtbeatColors.textPrimary,
@@ -426,7 +427,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Search for artists, artwork, captures, and more',
+                    'search_empty_desc'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       color: ArtbeatColors.textSecondary.withValues(alpha: 0.8),
@@ -437,7 +438,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                   if (hasHistory) ...[
                     const SizedBox(height: 32),
                     Text(
-                      'Recent Searches',
+                      'search_recent_searches'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -554,9 +555,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Searching...',
-              style: TextStyle(
+            Text(
+              'search_loading'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: ArtbeatColors.textPrimary,
@@ -614,9 +615,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Search Error',
-              style: TextStyle(
+            Text(
+              'search_error_title'.tr(),
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: ArtbeatColors.textPrimary,
@@ -658,9 +659,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child: const Text(
-                  'Try Again',
-                  style: TextStyle(
+                child: Text(
+                  'search_try_again'.tr(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -721,7 +722,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             ),
             const SizedBox(height: 20),
             Text(
-              'No results for "$query"',
+              'search_no_results'.tr(namedArgs: {'query': query}),
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -731,7 +732,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Try different keywords or check spelling',
+              'search_no_results_hint'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 color: ArtbeatColors.textSecondary.withValues(alpha: 0.8),

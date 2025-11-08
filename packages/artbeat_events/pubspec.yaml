@@ -47,6 +47,9 @@ dependencies:
 
   # Logging
   logger: ^2.4.0
+  
+  # Localization
+  easy_localization: ^3.0.7
 
   # Local packages
   artbeat_core:

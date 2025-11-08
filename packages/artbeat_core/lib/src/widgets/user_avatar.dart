@@ -122,10 +122,14 @@ class UserAvatar extends StatelessWidget {
   }
 
   String _getInitials() {
-    final nameParts = displayName.trim().split(' ');
+    final trimmedName = displayName.trim();
+    if (trimmedName.isEmpty) {
+      return '?';
+    }
+    final nameParts = trimmedName.split(' ').where((part) => part.isNotEmpty).toList();
     if (nameParts.length >= 2) {
       return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
     }
-    return displayName.substring(0, 1).toUpperCase();
+    return trimmedName.substring(0, 1).toUpperCase();
   }
 }
