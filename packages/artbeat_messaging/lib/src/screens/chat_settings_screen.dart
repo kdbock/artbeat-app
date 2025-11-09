@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:provider/provider.dart';
@@ -58,8 +59,8 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.notifications),
-            title: const Text('Chat Notifications'),
-            subtitle: const Text('Get notified about new messages'),
+            title: Text('messaging_chat_settings_text_chat_notifications'.tr()),
+            subtitle: Text('messaging_chat_settings_message_get_notified_about'.tr()),
             trailing: Switch(
               value: _notificationsEnabled,
               onChanged: (value) async {
@@ -72,8 +73,8 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.download),
-            title: const Text('Auto-download Media'),
-            subtitle: const Text('Automatically download photos and videos'),
+            title: Text('messaging_chat_settings_text_autodownload_media'.tr()),
+            subtitle: Text('messaging_chat_settings_text_automatically_download_photos'.tr()),
             trailing: Switch(
               value: _mediaAutoDownload,
               onChanged: (value) async {
@@ -86,7 +87,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.palette),
-            title: const Text('Chat Theme'),
+            title: Text('messaging_chat_settings_text_chat_theme'.tr()),
             subtitle: Text(
               _selectedTheme.substring(0, 1).toUpperCase() +
                   _selectedTheme.substring(1),
@@ -96,7 +97,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
               showDialog<void>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Select Theme'),
+                  title: Text('messaging_chat_settings_text_select_theme'.tr()),
                   content: MenuAnchor(
                     controller: controller,
                     menuChildren: [
@@ -111,7 +112,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                             Navigator.pop(context);
                           }
                         },
-                        child: const Text('System'),
+                        child: Text('messaging_chat_settings_text_system'.tr()),
                       ),
                       RadioMenuButton<String>(
                         value: 'light',
@@ -124,7 +125,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                             Navigator.pop(context);
                           }
                         },
-                        child: const Text('Light'),
+                        child: Text('messaging_chat_settings_text_light'.tr()),
                       ),
                       RadioMenuButton<String>(
                         value: 'dark',
@@ -137,7 +138,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                             Navigator.pop(context);
                           }
                         },
-                        child: const Text('Dark'),
+                        child: Text('messaging_chat_settings_text_dark'.tr()),
                       ),
                     ],
                     child: const SizedBox.shrink(),
@@ -149,19 +150,19 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.delete_outline),
-            title: const Text('Clear Chat History'),
+            title: Text('messaging_chat_settings_text_clear_chat_history'.tr()),
             onTap: () {
               showDialog<void>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Clear Chat History'),
+                  title: Text('messaging_chat_settings_text_clear_chat_history'.tr()),
                   content: const Text(
                     'Are you sure you want to clear all chat history? This action cannot be undone.',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text('artwork_edit_delete_cancel'.tr()),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -174,8 +175,8 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                           await chatService.clearChatHistory(widget.chat.id);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Chat history cleared'),
+                              SnackBar(
+                                content: Text('messaging_chat_settings_text_chat_history_cleared'.tr()),
                               ),
                             );
                           }
@@ -183,7 +184,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Failed to clear chat: $e'),
+                                content: Text('messaging_chat_settings_error_failed_to_clear'.tr()),
                               ),
                             );
                           }
@@ -201,7 +202,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.block),
-            title: const Text('Blocked Users'),
+            title: Text('messaging_artistic_messaging_text_blocked_users'.tr()),
             onTap: () {
               Navigator.pushNamed(context, '/messaging/blocked-users');
             },

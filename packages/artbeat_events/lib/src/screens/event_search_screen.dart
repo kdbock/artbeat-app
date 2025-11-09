@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/artbeat_event.dart';
@@ -149,7 +150,7 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error searching events: $e')));
+        ).showSnackBar(SnackBar(content: Text('events_search_error'.tr(namedArgs: {'error': e.toString()}))));
       }
     }
   }
@@ -229,9 +230,9 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
                           onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          '🔍 Search Events',
-                          style: TextStyle(
+                        Text(
+                          'events_search_title'.tr(),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -258,7 +259,7 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
                         controller: _searchController,
                         focusNode: _searchFocusNode,
                         decoration: InputDecoration(
-                          hintText: 'Search events, artists, venues...',
+                          hintText: 'events_search_hint'.tr(),
                           prefixIcon: const Icon(
                             Icons.search,
                             color: ArtbeatColors.primaryPurple,
@@ -311,7 +312,7 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
                           _buildFilterChip(
                             label: _startDate != null
                                 ? '${_startDate!.month}/${_startDate!.day} - ${_endDate!.month}/${_endDate!.day}'
-                                : 'Date',
+                                : 'events_search_date_filter'.tr(),
                             icon: Icons.calendar_today,
                             onTap: _selectDateRange,
                           ),
@@ -322,7 +323,7 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
                               _startDate != null ||
                               _selectedLocation != null)
                             _buildFilterChip(
-                              label: 'Clear',
+                              label: 'common_clear'.tr(),
                               icon: Icons.clear,
                               onTap: () {
                                 setState(() {
@@ -409,9 +410,9 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
         children: [
           // Recent searches
           if (_recentSearches.isNotEmpty) ...[
-            const Text(
-              'Recent Searches',
-              style: TextStyle(
+            Text(
+              'events_search_recent'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: ArtbeatColors.textPrimary,
@@ -462,9 +463,9 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
           ],
 
           // Popular searches
-          const Text(
-            'Popular Searches',
-            style: TextStyle(
+          Text(
+            'events_search_popular'.tr(),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: ArtbeatColors.textPrimary,
@@ -546,18 +547,18 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'No Events Found',
-              style: TextStyle(
+            Text(
+              'events_search_no_results_title'.tr(),
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: ArtbeatColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Try adjusting your search or filters',
-              style: TextStyle(
+            Text(
+              'events_search_no_results_desc'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 color: ArtbeatColors.textSecondary,
               ),
@@ -606,9 +607,9 @@ class _EventSearchScreenState extends State<EventSearchScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Select Category',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                'events_search_select_category'.tr(),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               ...(_categories.map((category) {

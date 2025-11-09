@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileHistoryScreen extends StatefulWidget {
   const ProfileHistoryScreen({super.key});
@@ -222,7 +223,7 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity History'),
+        title: Text('profile_history_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -799,7 +800,7 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
               _clearAllHistory();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Clear All'),
+            child: Text('profile_history_clear_all'.tr()),
           ),
         ],
       ),
@@ -815,7 +816,7 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
     });
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('All history cleared')));
+    ).showSnackBar(SnackBar(content: Text('profile_history_cleared'.tr())));
   }
 
   void _clearSearchHistory() {

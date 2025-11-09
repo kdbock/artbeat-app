@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -101,27 +102,27 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 PopupMenuButton<String>(
                   onSelected: _handleMenuAction,
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'add_to_calendar',
                       child: ListTile(
-                        leading: Icon(Icons.calendar_today),
-                        title: Text('Add to Calendar'),
+                        leading: const Icon(Icons.calendar_today),
+                        title: Text('events_add_to_calendar'.tr()),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'set_reminder',
                       child: ListTile(
-                        leading: Icon(Icons.notifications),
-                        title: Text('Set Reminder'),
+                        leading: const Icon(Icons.notifications),
+                        title: Text('events_set_reminder'.tr()),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'report',
                       child: ListTile(
-                        leading: Icon(Icons.flag),
-                        title: Text('Report Event'),
+                        leading: const Icon(Icons.flag),
+                        title: Text('events_report_event'.tr()),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -148,14 +149,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           children: [
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadEvent, child: const Text('Retry')),
+            ElevatedButton(onPressed: _loadEvent, child: Text('events_retry'.tr())),
           ],
         ),
       );
     }
 
     if (_event == null) {
-      return const Center(child: Text('Event not found'));
+      return Center(child: Text('event_not_found'.tr()));
     }
 
     return Container(
@@ -638,7 +639,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           if (mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Added to calendar')));
+            ).showSnackBar(SnackBar(content: Text('events_added_to_calendar'.tr())));
           }
           break;
 
@@ -647,7 +648,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           if (mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Reminders set')));
+            ).showSnackBar(SnackBar(content: Text('events_reminder_set'.tr())));
           }
           break;
 
@@ -658,7 +659,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('events_calendar_error'.tr(namedArgs: {'error': e.toString()})), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -676,19 +677,19 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Login Required'),
-          content: const Text('Please log in to purchase tickets.'),
+          title: Text('events_login_required'.tr()),
+          content: Text('events_login_required_message'.tr()),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('common_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/login');
               },
-              child: const Text('Login'),
+              child: Text('auth_sign_in'.tr()),
             ),
           ],
         ),
@@ -710,25 +711,25 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('🎫 Tickets Purchased!'),
+              title: Text('events_tickets_purchased_title'.tr()),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Your tickets have been purchased successfully.'),
+                  Text('events_tickets_purchased_message'.tr()),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/events/my-tickets');
                     },
-                    child: const Text('View My Tickets'),
+                    child: Text('events_view_my_tickets'.tr()),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
+                  child: Text('events_close'.tr()),
                 ),
               ],
             ),
@@ -755,11 +756,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Report Event'),
+        title: Text('events_report_event'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please select a reason for reporting:'),
+            Text('events_report_reason_prompt'.tr()),
             const SizedBox(height: 16),
             _buildReportOption('Inappropriate content'),
             _buildReportOption('Misleading information'),
@@ -770,7 +771,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
         ],
       ),
@@ -792,7 +793,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please log in to report events')),
+          SnackBar(content: Text('events_login_to_report'.tr())),
         );
         return;
       }
@@ -824,10 +825,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Report submitted. Thank you for helping keep ARTbeat safe.',
-            ),
+          SnackBar(
+            content: Text('events_report_submitted'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -836,7 +835,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to submit report: $e'),
+            content: Text('events_report_failed'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
           ),
         );

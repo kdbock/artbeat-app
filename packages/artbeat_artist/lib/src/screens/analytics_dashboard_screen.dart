@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 
 // Import the models and services from our packages
 import 'package:artbeat_artist/src/services/analytics_service.dart';
@@ -89,7 +89,8 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading analytics data: ${e.toString()}'),
+          content: Text(
+              'artist_analytics_dashboard_error_error_loading_analytics'.tr()),
         ),
       );
     }
@@ -285,11 +286,11 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         _analytics['visitorsOverTime'] as List<dynamic>? ?? [];
 
     if (visitorsData.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Center(
-            child: Text('No visitor data available'),
+            child: Text('artist_analytics_dashboard_text_no_visitor_data'.tr()),
           ),
         ),
       );
@@ -346,11 +347,12 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         _analytics['locationBreakdown'] as Map<dynamic, dynamic>? ?? {};
 
     if (locationData.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Center(
-            child: Text('No location data available'),
+            child:
+                Text('artist_analytics_dashboard_text_no_location_data'.tr()),
           ),
         ),
       );
@@ -420,11 +422,12 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         ),
         const SizedBox(height: 16),
         if (topArtworkIds.isEmpty)
-          const Card(
+          Card(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Center(
-                child: Text('No artwork data available'),
+                child: Text(
+                    'artist_analytics_dashboard_text_no_artwork_data'.tr()),
               ),
             ),
           )
@@ -516,11 +519,12 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         _analytics['referralSources'] as Map<dynamic, dynamic>? ?? {};
 
     if (referralData.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Center(
-            child: Text('No referral data available'),
+            child:
+                Text('artist_analytics_dashboard_text_no_referral_data'.tr()),
           ),
         ),
       );
@@ -625,7 +629,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                 // Navigate to subscription screen
                 Navigator.pushNamed(context, '/subscription');
               },
-              child: const Text('Upgrade Now'),
+              child: Text('artist_analytics_dashboard_text_upgrade_now'.tr()),
             ),
           ],
         ),

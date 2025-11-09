@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -520,7 +521,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
               child: ElevatedButton.icon(
                 onPressed: _shareAchievement,
                 icon: const Icon(Icons.share),
-                label: const Text('Share Achievement'),
+                label: Text('art_walk_art_walk_celebration_text_share_achievement'.tr()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple.shade600,
                   foregroundColor: Colors.white,
@@ -542,7 +543,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
                     onPressed: () =>
                         Navigator.pushNamed(context, '/achievements'),
                     icon: const Icon(Icons.emoji_events),
-                    label: const Text('View All'),
+                    label: Text('admin_admin_system_monitoring_text_view_all'.tr()),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -562,7 +563,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
                       (route) => false,
                     ),
                     icon: const Icon(Icons.explore),
-                    label: const Text('Explore More'),
+                    label: Text('art_walk_art_walk_celebration_text_explore_more'.tr()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
@@ -613,8 +614,8 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Achievement posted to community feed!'),
+          SnackBar(
+            content: Text('art_walk_art_walk_celebration_text_achievement_posted_to'.tr()),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -624,7 +625,7 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to post achievement: $e'),
+            content: Text('art_walk_art_walk_celebration_error_failed_to_post'.tr()),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

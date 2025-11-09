@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_model.dart';
@@ -75,7 +76,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading participants: $e'),
+            content: Text('messaging_chat_info_error_error_loading_participants'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -87,12 +88,12 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Chat'),
-        content: const Text('Are you sure you want to delete this chat?'),
+        title: Text('messaging_chat_info_text_delete_chat'.tr()),
+        content: Text('messaging_chat_info_text_are_you_sure'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('artwork_edit_delete_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -107,17 +108,17 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                   Navigator.pop(context); // Go back to previous screen
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(const SnackBar(content: Text('Chat deleted')));
+                  ).showSnackBar(SnackBar(content: Text('messaging_chat_info_text_chat_deleted'.tr())));
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to delete chat: $e')),
+                    SnackBar(content: Text('messaging_chat_info_error_failed_to_delete'.tr())),
                   );
                 }
               }
             },
-            child: const Text('Delete'),
+            child: Text('artwork_edit_delete_confirm_button'.tr()),
           ),
         ],
       ),
@@ -191,7 +192,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                       if (_isGroup) ...[
                         const Divider(),
                         ListTile(
-                          title: const Text('Participants'),
+                          title: Text('messaging_chat_info_text_participants'.tr()),
                           subtitle: Text('${_participants.length} members'),
                         ),
                         ...(_participants.map(
@@ -216,7 +217,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                       const Divider(),
                       ListTile(
                         leading: const Icon(Icons.delete),
-                        title: const Text('Delete Chat'),
+                        title: Text('messaging_chat_info_text_delete_chat'.tr()),
                         onTap: _deleteChat,
                       ),
                     ],

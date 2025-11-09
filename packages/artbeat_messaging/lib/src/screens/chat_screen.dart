@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart'
@@ -175,7 +176,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send message: ${e.toString()}'),
+            content: Text('messaging_chat_error_failed_to_send'.tr()),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -235,7 +236,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send image: ${e.toString()}'),
+            content: Text('messaging_chat_error_failed_to_send_2'.tr()),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -270,7 +271,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send image: ${e.toString()}'),
+            content: Text('messaging_chat_error_failed_to_send_2'.tr()),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -296,12 +297,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   topRight: Radius.circular(20),
                 ),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Initializing voice recorder...'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text('messaging_chat_text_initializing_voice_recorder'.tr()),
                 ],
               ),
             );
@@ -328,7 +329,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
+                    child: Text('artwork_close_button'.tr()),
                   ),
                 ],
               ),
@@ -392,7 +393,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send voice message: ${e.toString()}'),
+            content: Text('messaging_chat_error_failed_to_send_7'.tr()),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -528,10 +529,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   void _showSendingMediaIndicator() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
@@ -541,11 +542,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            SizedBox(width: 16),
-            Text('Sending media...'),
+            const SizedBox(width: 16),
+            Text('messaging_chat_text_sending_media'.tr()),
           ],
         ),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
         backgroundColor: Colors.black87,
       ),
     );
@@ -684,7 +685,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             ElevatedButton.icon(
                               onPressed: () => setState(() {}),
                               icon: const Icon(Icons.refresh),
-                              label: const Text('Try Again'),
+                              label: Text('error_try_again'.tr()),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.colorScheme.error,
                                 foregroundColor: theme.colorScheme.onError,

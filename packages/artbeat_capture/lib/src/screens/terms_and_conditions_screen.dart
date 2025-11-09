@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'capture_screen.dart';
 
@@ -287,7 +288,7 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Cancel'),
+                        child: Text('admin_admin_payment_text_cancel'.tr()),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -307,7 +308,7 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
                               ? _acceptTermsAndProceed
                               : null,
                           icon: const Icon(Icons.camera_alt),
-                          label: const Text('Accept & Continue'),
+                          label: Text('capture_terms_and_conditions_text_accept_continue'.tr()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,

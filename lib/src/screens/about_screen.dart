@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'terms_of_service_screen.dart';
@@ -74,9 +75,9 @@ class _AboutScreenState extends State<AboutScreen> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'ARTbeat',
-              style: TextStyle(
+            Text(
+              'about_app_name'.tr(),
+              style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: ArtbeatColors.primaryPurple,
@@ -86,7 +87,7 @@ class _AboutScreenState extends State<AboutScreen> {
             const SizedBox(height: 8),
 
             Text(
-              'Version ${_packageInfo?.version ?? 'Unknown'} (${_packageInfo?.buildNumber ?? 'Unknown'})',
+              'about_version'.tr(namedArgs: {'version': _packageInfo?.version ?? 'Unknown', 'buildNumber': _packageInfo?.buildNumber ?? 'Unknown'}),
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
 
@@ -103,9 +104,9 @@ class _AboutScreenState extends State<AboutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'About ARTbeat',
-                    style: TextStyle(
+                  Text(
+                    'about_description'.tr(),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: ArtbeatColors.primaryPurple,
@@ -113,8 +114,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'ARTbeat is a comprehensive platform designed for artists, galleries, and art enthusiasts. '
-                    'Discover, create, and share art while connecting with a vibrant community of creators.',
+                    'about_description_text'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.5,
@@ -163,9 +163,9 @@ class _AboutScreenState extends State<AboutScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Key Features',
-          style: TextStyle(
+        Text(
+          'about_features_title'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.primaryPurple,
@@ -174,33 +174,33 @@ class _AboutScreenState extends State<AboutScreen> {
         const SizedBox(height: 16),
         _buildFeatureItem(
           Icons.camera_alt,
-          'Art Capture',
-          'Capture and share your artwork with the community',
+          'about_feature_art_capture'.tr(),
+          'about_feature_art_capture_desc'.tr(),
         ),
         _buildFeatureItem(
           Icons.palette,
-          'Artist Profiles',
-          'Create and manage your professional artist profile',
+          'about_feature_artist_profiles'.tr(),
+          'about_feature_artist_profiles_desc'.tr(),
         ),
         _buildFeatureItem(
           Icons.map,
-          'Art Walks',
-          'Discover local art through guided walking tours',
+          'about_feature_art_walks'.tr(),
+          'about_feature_art_walks_desc'.tr(),
         ),
         _buildFeatureItem(
           Icons.people,
-          'Community',
-          'Connect with artists and art lovers worldwide',
+          'about_feature_community'.tr(),
+          'about_feature_community_desc'.tr(),
         ),
         _buildFeatureItem(
           Icons.event,
-          'Events',
-          'Find and participate in art events and exhibitions',
+          'about_feature_events'.tr(),
+          'about_feature_events_desc'.tr(),
         ),
         _buildFeatureItem(
           Icons.star,
-          'Rewards',
-          'Earn XP and unlock achievements for your activities',
+          'about_feature_rewards'.tr(),
+          'about_feature_rewards_desc'.tr(),
         ),
       ],
     ),
@@ -259,20 +259,20 @@ class _AboutScreenState extends State<AboutScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Technical Information',
-          style: TextStyle(
+        Text(
+          'about_technical_info'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.primaryPurple,
           ),
         ),
         const SizedBox(height: 16),
-        _buildInfoRow('App Name', _packageInfo?.appName ?? 'ARTbeat'),
-        _buildInfoRow('Package Name', _packageInfo?.packageName ?? 'Unknown'),
-        _buildInfoRow('Version', _packageInfo?.version ?? 'Unknown'),
-        _buildInfoRow('Build Number', _packageInfo?.buildNumber ?? 'Unknown'),
-        _buildInfoRow('Built with', 'Flutter & Firebase'),
+        _buildInfoRow('about_app_name_label'.tr(), _packageInfo?.appName ?? 'ARTbeat'),
+        _buildInfoRow('about_package_name'.tr(), _packageInfo?.packageName ?? 'Unknown'),
+        _buildInfoRow('about_version_label'.tr(), _packageInfo?.version ?? 'Unknown'),
+        _buildInfoRow('about_build_number'.tr(), _packageInfo?.buildNumber ?? 'Unknown'),
+        _buildInfoRow('about_built_with'.tr(), 'about_built_with_value'.tr()),
       ],
     ),
   );
@@ -315,9 +315,9 @@ class _AboutScreenState extends State<AboutScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Credits & Legal',
-          style: TextStyle(
+        Text(
+          'about_credits_legal'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.primaryPurple,
@@ -325,13 +325,12 @@ class _AboutScreenState extends State<AboutScreen> {
         ),
         const SizedBox(height: 16),
         Text(
-          '© 2024 ARTbeat. All rights reserved.',
+          'about_copyright'.tr(),
           style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
         const SizedBox(height: 12),
         Text(
-          'ARTbeat is built with love for the art community. We believe in empowering artists '
-          'and connecting art enthusiasts through technology.',
+          'about_credits_text'.tr(),
           style: TextStyle(
             fontSize: 14,
             height: 1.5,
@@ -343,10 +342,9 @@ class _AboutScreenState extends State<AboutScreen> {
           children: [
             TextButton(
               onPressed: () {
-                // Navigate to privacy policy
                 Navigator.pushNamed(context, '/settings/privacy');
               },
-              child: const Text('Privacy Policy'),
+              child: Text('about_privacy_policy'.tr()),
             ),
             const Text(' • '),
             TextButton(
@@ -358,7 +356,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 );
               },
-              child: const Text('Terms of Service'),
+              child: Text('about_terms_of_service'.tr()),
             ),
           ],
         ),

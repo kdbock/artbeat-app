@@ -154,6 +154,38 @@ service firebase.storage {
       allow write: if isAuthenticated(); // More permissive for development
     }
 
+    // Written content files - for uploaded manuscripts and documents
+    match /written_content/{userId}/{artworkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate file types for written content
+        (resource.contentType == null ||
+         resource.contentType.matches('text/plain') ||
+         resource.contentType.matches('text/markdown') ||
+         resource.contentType.matches('application/pdf') ||
+         resource.contentType.matches('application/msword') ||
+         resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+         resource.contentType.matches('application/rtf') ||
+         resource.contentType.matches('text/rtf'));
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Written content files with subdirectories (for chapter files, etc.)
+    match /written_content/{userId}/{artworkId}/{chapterId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate file types for written content
+        (resource.contentType == null ||
+         resource.contentType.matches('text/plain') ||
+         resource.contentType.matches('text/markdown') ||
+         resource.contentType.matches('application/pdf') ||
+         resource.contentType.matches('application/msword') ||
+         resource.contentType.matches('application/vnd.openxmlformats-officedocument.wordprocessingml.document') ||
+         resource.contentType.matches('application/rtf') ||
+         resource.contentType.matches('text/rtf'));
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
     // Artist images - for artist profiles (portfolio, banner, etc.)
     match /artist_images/{userId}/{type}/{fileName} {
       allow read: if isAuthenticated();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FollowingListScreen extends StatefulWidget {
   final String userId;
@@ -60,7 +61,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Unfollow ${followedUser.username}?'),
-          content: const Text('Are you sure you want to unfollow this user?'),
+          content: Text('profile_following_confirm_unfollow'.tr()),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -68,7 +69,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('UNFOLLOW'),
+              child: Text('profile_following_unfollow_button'.tr()),
             ),
           ],
         );

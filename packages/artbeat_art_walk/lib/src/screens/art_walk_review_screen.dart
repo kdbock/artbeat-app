@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -744,7 +745,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error capturing selfie: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_review_error_error_capturing_selfie'.tr())));
       }
     }
   }
@@ -763,7 +764,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error starting art walk: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_review_error_error_starting_art'.tr())));
       }
     }
   }

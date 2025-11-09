@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_admin_model.dart';
@@ -413,7 +414,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     ),
                     if (_currentUser.suspensionReason != null) ...[
                       const SizedBox(height: 8),
-                      Text('Reason: ${_currentUser.suspensionReason}'),
+                      Text('admin_admin_user_detail_text_reason_currentusersuspensionreason'.tr()),
                     ],
                     if (_currentUser.suspendedAt != null) ...[
                       const SizedBox(height: 4),
@@ -422,7 +423,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     ],
                     if (_currentUser.suspendedBy != null) ...[
                       const SizedBox(height: 4),
-                      Text('By: ${_currentUser.suspendedBy}'),
+                      Text('admin_admin_user_detail_text_by_currentusersuspendedby'.tr()),
                     ],
                   ],
                 ),
@@ -600,7 +601,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                       children: [
                         ElevatedButton(
                           onPressed: _updateUserProfile,
-                          child: const Text('Save Changes'),
+                          child: Text('admin_admin_user_detail_text_save_changes'.tr()),
                         ),
                         const SizedBox(width: 8),
                         TextButton(
@@ -615,7 +616,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                             _zipCodeController.text =
                                 _currentUser.zipCode ?? '';
                           },
-                          child: const Text('Cancel'),
+                          child: Text('admin_admin_payment_text_cancel'.tr()),
                         ),
                       ],
                     ),
@@ -623,7 +624,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     ElevatedButton.icon(
                       onPressed: () => setState(() => _isEditing = true),
                       icon: const Icon(Icons.edit),
-                      label: const Text('Edit Profile'),
+                      label: Text('admin_admin_user_detail_text_edit_profile'.tr()),
                     ),
                   ],
                   const SizedBox(height: 16),
@@ -635,7 +636,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     ElevatedButton.icon(
                       onPressed: _removeProfileImage,
                       icon: const Icon(Icons.delete),
-                      label: const Text('Remove Profile Image'),
+                      label: Text('admin_admin_user_detail_text_remove_profile_image'.tr()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
@@ -679,12 +680,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                       style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   SwitchListTile(
-                    title: const Text('Verified'),
+                    title: Text('admin_admin_user_detail_text_verified'.tr()),
                     value: _currentUser.isVerified,
                     onChanged: (_) => _toggleVerificationStatus(),
                   ),
                   SwitchListTile(
-                    title: const Text('Featured'),
+                    title: Text('admin_admin_user_detail_text_featured'.tr()),
                     value: _currentUser.isFeatured,
                     onChanged: (_) => _toggleFeaturedStatus(),
                   ),
@@ -941,13 +942,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User profile updated successfully')),
+          SnackBar(content: Text('admin_admin_user_detail_success_user_profile_updated'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
+          SnackBar(content: Text('admin_admin_user_detail_error_failed_to_update'.tr())),
         );
       }
     } finally {
@@ -960,17 +961,17 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Profile Image'),
+        title: Text('admin_admin_user_detail_text_remove_profile_image'.tr()),
         content: const Text(
             'Are you sure you want to remove this user\'s profile image?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Remove'),
+            child: Text('admin_admin_user_detail_text_remove'.tr()),
           ),
         ],
       ),
@@ -988,13 +989,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile image removed successfully')),
+            SnackBar(content: Text('admin_admin_user_detail_success_profile_image_removed'.tr())),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to remove profile image: $e')),
+            SnackBar(content: Text('admin_admin_user_detail_error_failed_to_remove'.tr())),
           );
         }
       } finally {
@@ -1027,7 +1028,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update featured status: $e')),
+          SnackBar(content: Text('admin_admin_user_detail_error_failed_to_update_28'.tr())),
         );
       }
     } finally {
@@ -1048,13 +1049,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User type updated to ${newType.name}')),
+          SnackBar(content: Text('admin_admin_user_detail_success_user_type_updated'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update user type: $e')),
+          SnackBar(content: Text('admin_admin_user_detail_error_failed_to_update_30'.tr())),
         );
       }
     } finally {
@@ -1088,7 +1089,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update verification status: $e')),
+          SnackBar(content: Text('admin_admin_user_detail_error_failed_to_update_31'.tr())),
         );
       }
     } finally {

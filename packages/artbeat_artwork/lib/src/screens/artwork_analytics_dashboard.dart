@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show EnhancedUniversalHeader, MainLayout, AppLogger;
 import '../services/artwork_analytics_service.dart';
@@ -80,11 +81,11 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
       showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Export Analytics'),
+          title: Text('artwork_analytics_title'.tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Analytics data exported successfully!'),
+              Text('artwork_analytics_exported'.tr()),
               const SizedBox(height: 16),
               Text(
                 'Exported ${exportData.length} characters of data',
@@ -92,7 +93,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Data includes: Views, Revenue, Search Analytics, and Performance Metrics',
+                'artwork_analytics_export_info'.tr(),
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),
             ],
@@ -100,25 +101,25 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: Text('common_close'.tr()),
             ),
             TextButton(
               onPressed: () {
                 // Copy to clipboard functionality could be added here
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Analytics data copied to clipboard')),
+                  SnackBar(
+                      content: Text('artwork_analytics_data_copied'.tr())),
                 );
                 Navigator.pop(context);
               },
-              child: const Text('Copy Data'),
+              child: Text('artwork_analytics_copy_data'.tr()),
             ),
           ],
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error exporting analytics')),
+        SnackBar(content: Text('artwork_analytics_export_error'.tr())),
       );
     }
   }
@@ -128,7 +129,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return MainLayout(
       currentIndex: 0,
       appBar: EnhancedUniversalHeader(
-        title: 'Analytics Dashboard',
+        title: 'artwork_analytics_dashboard_title'.tr(),
         showLogo: false,
         showBackButton: true,
         backgroundGradient: const LinearGradient(
@@ -151,7 +152,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           IconButton(
             icon: const Icon(Icons.download, color: Colors.white),
             onPressed: _exportAnalytics,
-            tooltip: 'Export Analytics',
+            tooltip: 'artwork_analytics_export_button'.tr(),
           ),
         ],
       ),
@@ -215,7 +216,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
       children: [
         Expanded(
           child: _buildMetricCard(
-            'Total Views',
+            'artwork_analytics_total_views'.tr(),
             totalViews.toString(),
             Icons.visibility,
             Colors.blue,
@@ -224,7 +225,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
         const SizedBox(width: 16),
         Expanded(
           child: _buildMetricCard(
-            'Total Engagement',
+            'artwork_analytics_total_engagement'.tr(),
             totalEngagement.toString(),
             Icons.thumb_up,
             Colors.green,
@@ -233,7 +234,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
         const SizedBox(width: 16),
         Expanded(
           child: _buildMetricCard(
-            'Avg Engagement Rate',
+            'artwork_analytics_avg_engagement'.tr(),
             '${avgEngagementRate.toStringAsFixed(1)}%',
             Icons.trending_up,
             Colors.orange,
@@ -286,9 +287,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Revenue Analytics',
-          style: TextStyle(
+        Text(
+          'artwork_analytics_revenue_section'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -298,7 +299,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Revenue',
+                'artwork_analytics_total_revenue'.tr(),
                 '\$${totalRevenue.toStringAsFixed(2)}',
                 Icons.attach_money,
                 Colors.green,
@@ -307,7 +308,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildMetricCard(
-                'Total Sales',
+                'artwork_analytics_total_sales'.tr(),
                 totalSales.toString(),
                 Icons.shopping_cart,
                 Colors.blue,
@@ -316,7 +317,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildMetricCard(
-                'Average Sale',
+                'artwork_analytics_avg_sale'.tr(),
                 '\$${averageSale.toStringAsFixed(2)}',
                 Icons.analytics,
                 Colors.purple,
@@ -337,9 +338,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Cross-Package Analytics',
-          style: TextStyle(
+        Text(
+          'artwork_analytics_cross_package'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -349,7 +350,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Conversion Rate',
+                'artwork_analytics_conversion_rate'.tr(),
                 '${conversionRate.toStringAsFixed(2)}%',
                 Icons.trending_up,
                 Colors.orange,
@@ -358,7 +359,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildMetricCard(
-                'Engagement/Revenue',
+                'artwork_analytics_engagement_revenue'.tr(),
                 engagementToRevenueRatio.toStringAsFixed(2),
                 Icons.link,
                 Colors.teal,
@@ -373,18 +374,22 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Performance Insights',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  'artwork_analytics_performance_insights'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Conversion Rate: ${conversionRate.toStringAsFixed(2)}% of views result in sales',
+                  'artwork_analytics_insights_conversion'.tr(namedArgs: {
+                    'rate': conversionRate.toStringAsFixed(2),
+                  }),
                   style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Engagement Ratio: ${engagementToRevenueRatio.toStringAsFixed(2)} engagements per dollar',
+                  'artwork_analytics_insights_engagement'.tr(namedArgs: {
+                    'ratio': engagementToRevenueRatio.toStringAsFixed(2),
+                  }),
                   style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                 ),
               ],
@@ -399,19 +404,19 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Top Performing Artworks',
-          style: TextStyle(
+        Text(
+          'artwork_analytics_top_artworks'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 16),
         _topArtworks.isEmpty
-            ? const Card(
+            ? Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('No artwork performance data available yet'),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('artwork_analytics_no_data'.tr()),
                 ),
               )
             : ListView.builder(
@@ -425,7 +430,10 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
                     child: ListTile(
                       title: Text(artwork['title'] as String? ?? 'Untitled'),
                       subtitle: Text(
-                        'Views: ${artwork['totalViews']} | Engagement: ${artwork['engagementRate'].toStringAsFixed(1)}%',
+                        'artwork_analytics_views_engagement'.tr(namedArgs: {
+                          'views': (artwork['totalViews'] as int).toString(),
+                          'rate': (artwork['engagementRate'] as double).toStringAsFixed(1),
+                        }),
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.analytics),
@@ -448,9 +456,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Search Analytics',
-          style: TextStyle(
+        Text(
+          'artwork_analytics_search_section'.tr(),
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -460,7 +468,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Searches',
+                'artwork_analytics_total_searches'.tr(),
                 totalSearches.toString(),
                 Icons.search,
                 Colors.purple,
@@ -469,7 +477,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildMetricCard(
-                'Unique Queries',
+                'artwork_analytics_unique_queries'.tr(),
                 uniqueQueries.toString(),
                 Icons.query_stats,
                 Colors.teal,
@@ -478,7 +486,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 16),
             Expanded(
               child: _buildMetricCard(
-                'Avg Results',
+                'artwork_analytics_avg_results'.tr(),
                 averageResults.toStringAsFixed(1),
                 Icons.list,
                 Colors.indigo,
@@ -488,9 +496,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
         ),
         const SizedBox(height: 16),
         if (topQueries.isNotEmpty) ...[
-          const Text(
-            'Top Search Queries',
-            style: TextStyle(
+          Text(
+            'artwork_analytics_top_queries'.tr(),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -528,9 +536,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Performance Optimization',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_analytics_performance_optimization'.tr(),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
 
@@ -539,7 +547,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Analytics',
+                'artwork_analytics_total_analytics'.tr(),
                 totalAnalytics.toString(),
                 Icons.analytics,
                 Colors.blue,
@@ -548,7 +556,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Total Sales',
+                'artwork_analytics_total_sales'.tr(),
                 totalSales.toString(),
                 Icons.shopping_cart,
                 Colors.green,
@@ -562,7 +570,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Revenue',
+                'artwork_analytics_total_revenue'.tr(),
                 '\$${totalRevenue.toStringAsFixed(2)}',
                 Icons.attach_money,
                 Colors.purple,
@@ -571,7 +579,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Avg per Sale',
+                'artwork_analytics_avg_per_sale'.tr(),
                 '\$${avgRevenuePerSale.toStringAsFixed(2)}',
                 Icons.trending_up,
                 Colors.orange,
@@ -588,9 +596,9 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Action Breakdown',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    'artwork_analytics_action_breakdown'.tr(),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   ...actionBreakdown.entries.map((entry) {

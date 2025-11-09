@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import '../services/admin_messaging_service.dart';
 import '../utils/messaging_navigation_helper.dart';
@@ -369,7 +370,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
           backgroundColor: primaryColor,
           foregroundColor: textColor,
           icon: const Icon(Icons.campaign),
-          label: const Text('Broadcast'),
+          label: Text('messaging_enhanced_messaging_dashboard_text_broadcast'.tr()),
         ),
       );
     } catch (e, stackTrace) {
@@ -383,7 +384,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
       return Scaffold(
         backgroundColor: cardColor,
         appBar: AppBar(
-          title: const Text('Messaging Dashboard'),
+          title: Text('messaging_enhanced_messaging_dashboard_text_messaging_dashboard'.tr()),
           backgroundColor: primaryColor,
           foregroundColor: textColor,
         ),
@@ -410,7 +411,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
                     _loadData();
                   });
                 },
-                child: const Text('Retry'),
+                child: Text('artwork_retry_button'.tr()),
               ),
             ],
           ),
@@ -555,7 +556,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
             TextButton.icon(
               onPressed: () => _refreshActivity(),
               icon: const Icon(Icons.refresh),
-              label: const Text('Refresh'),
+              label: Text('curated_gallery_refresh_button'.tr()),
             ),
           ],
         ),
@@ -569,13 +570,13 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(child: Text('messaging_enhanced_messaging_dashboard_error_error_snapshoterror'.tr()));
               }
 
               final activities = snapshot.data ?? [];
 
               if (activities.isEmpty) {
-                return const Center(child: Text('No recent activity'));
+                return Center(child: Text('messaging_enhanced_messaging_dashboard_text_no_recent_activity'.tr()));
               }
 
               return ListView.builder(
@@ -706,9 +707,9 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
               child: snapshot.connectionState == ConnectionState.waiting
                   ? const Center(child: CircularProgressIndicator())
                   : snapshot.hasError
-                  ? Center(child: Text('Error: ${snapshot.error}'))
+                  ? Center(child: Text('messaging_enhanced_messaging_dashboard_error_error_snapshoterror'.tr()))
                   : users.isEmpty
-                  ? const Center(child: Text('No users online'))
+                  ? Center(child: Text('messaging_enhanced_messaging_dashboard_text_no_users_online'.tr()))
                   : ListView.builder(
                       itemCount: users.length,
                       itemBuilder: (context, index) {
@@ -796,33 +797,33 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
         trailing: PopupMenuButton(
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'message',
               child: Row(
                 children: [
-                  Icon(Icons.message),
-                  SizedBox(width: 8),
-                  Text('Send Message'),
+                  const Icon(Icons.message),
+                  const SizedBox(width: 8),
+                  Text('messaging_enhanced_messaging_dashboard_message_send_message'.tr()),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'view',
               child: Row(
                 children: [
-                  Icon(Icons.visibility),
-                  SizedBox(width: 8),
-                  Text('View Profile'),
+                  const Icon(Icons.visibility),
+                  const SizedBox(width: 8),
+                  Text('messaging_blocked_users_text_view_profile'.tr()),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'moderate',
               child: Row(
                 children: [
-                  Icon(Icons.admin_panel_settings),
-                  SizedBox(width: 8),
-                  Text('Moderate'),
+                  const Icon(Icons.admin_panel_settings),
+                  const SizedBox(width: 8),
+                  Text('messaging_enhanced_messaging_dashboard_text_moderate'.tr()),
                 ],
               ),
             ),
@@ -980,31 +981,31 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Messaging Settings'),
-        content: const Column(
+        title: Text('messaging_enhanced_messaging_dashboard_text_messaging_settings'.tr()),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.notifications),
-              title: Text('Push Notifications'),
-              trailing: Switch(value: true, onChanged: null),
+              leading: const Icon(Icons.notifications),
+              title: Text('messaging_enhanced_messaging_dashboard_text_push_notifications'.tr()),
+              trailing: const Switch(value: true, onChanged: null),
             ),
             ListTile(
-              leading: Icon(Icons.auto_delete),
-              title: Text('Auto-delete spam'),
-              trailing: Switch(value: true, onChanged: null),
+              leading: const Icon(Icons.auto_delete),
+              title: Text('messaging_enhanced_messaging_dashboard_text_autodelete_spam'.tr()),
+              trailing: const Switch(value: true, onChanged: null),
             ),
             ListTile(
-              leading: Icon(Icons.schedule),
-              title: Text('Quiet hours'),
-              trailing: Switch(value: false, onChanged: null),
+              leading: const Icon(Icons.schedule),
+              title: Text('messaging_enhanced_messaging_dashboard_text_quiet_hours'.tr()),
+              trailing: const Switch(value: false, onChanged: null),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('artwork_close_button'.tr()),
           ),
         ],
       ),
@@ -1015,7 +1016,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Send Broadcast Message'),
+        title: Text('messaging_enhanced_messaging_dashboard_message_send_broadcast_message'.tr()),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1045,14 +1046,14 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('artwork_edit_delete_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _sendBroadcast();
             },
-            child: const Text('Send'),
+            child: Text('messaging_enhanced_messaging_dashboard_text_send'.tr()),
           ),
         ],
       ),
@@ -1082,8 +1083,8 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
           MessagingNavigationHelper.navigateToUserChat(context, userId);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to start chat: User ID not found'),
+            SnackBar(
+              content: Text('messaging_enhanced_messaging_dashboard_text_unable_to_start'.tr()),
               backgroundColor: Colors.red,
             ),
           );
@@ -1099,8 +1100,8 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
       case 'moderate':
         // Show moderation options
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Moderation features coming soon'),
+          SnackBar(
+            content: Text('messaging_enhanced_messaging_dashboard_text_moderation_features_coming'.tr()),
             backgroundColor: Colors.blue,
           ),
         );
@@ -1111,8 +1112,8 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
   void _sendBroadcast() {
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Broadcast message sent successfully'),
+      SnackBar(
+        content: Text('messaging_enhanced_messaging_dashboard_success_broadcast_message_sent'.tr()),
         backgroundColor: primaryColor,
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show EnhancedUniversalHeader, ArtbeatColors, ArtbeatGradientBackground;
@@ -78,7 +79,7 @@ class ChatListScreen extends StatelessWidget {
                       ElevatedButton.icon(
                         onPressed: () => chatService.refresh(),
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Try Again'),
+                        label: Text('error_try_again'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.error,
                           foregroundColor: theme.colorScheme.onError,
@@ -167,7 +168,7 @@ class ChatListScreen extends StatelessWidget {
                       ElevatedButton.icon(
                         onPressed: () => _navigateToNewChat(context),
                         icon: const Icon(Icons.add),
-                        label: const Text('New Message'),
+                        label: Text('messaging_chat_list_message_new_message'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ArtbeatColors.primaryPurple,
                           foregroundColor: Colors.white,
@@ -218,7 +219,7 @@ class ChatListScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _navigateToNewChat(context),
           icon: const Icon(Icons.chat),
-          label: const Text('New Chat'),
+          label: Text('messaging_chat_list_text_new_chat'.tr()),
           backgroundColor: ArtbeatColors.primaryPurple,
           foregroundColor: Colors.white,
           elevation: 4,
@@ -267,7 +268,7 @@ class ChatListScreen extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Failed to restore chat: $e'),
+                        content: Text('messaging_chat_list_error_failed_to_restore'.tr()),
                         backgroundColor: ArtbeatColors.error,
                       ),
                     );
@@ -282,7 +283,7 @@ class ChatListScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to archive chat: $e'),
+            content: Text('messaging_chat_list_error_failed_to_archive'.tr()),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -306,7 +307,7 @@ class ChatListScreen extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.group_add),
-              title: const Text('New Group'),
+              title: Text('messaging_chat_list_text_new_group'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/messaging/group/new');
@@ -314,7 +315,7 @@ class ChatListScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Chat Settings'),
+              title: Text('messaging_chat_list_text_chat_settings'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(context, '/messaging/settings');

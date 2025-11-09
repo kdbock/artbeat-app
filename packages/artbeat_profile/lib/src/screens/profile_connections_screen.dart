@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/profile_connection_model.dart';
 import '../services/profile_connection_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileConnectionsScreen extends StatefulWidget {
   const ProfileConnectionsScreen({super.key});
@@ -87,7 +88,7 @@ class _ProfileConnectionsScreenState extends State<ProfileConnectionsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Connections'),
+        title: Text('profile_connections_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -402,7 +403,7 @@ class _ProfileConnectionsScreenState extends State<ProfileConnectionsScreen>
                     ),
                     ElevatedButton(
                       onPressed: () => _sendConnectionRequest(userId),
-                      child: const Text('Connect'),
+                      child: Text('profile_connections_connect'.tr()),
                     ),
                   ],
                 ),
@@ -478,7 +479,7 @@ class _ProfileConnectionsScreenState extends State<ProfileConnectionsScreen>
     } else {
       return ElevatedButton(
         onPressed: () => _sendConnectionRequest(userId),
-        child: const Text('Connect'),
+        child: Text('profile_connections_connect'.tr()),
       );
     }
   }
@@ -560,7 +561,7 @@ class _ProfileConnectionsScreenState extends State<ProfileConnectionsScreen>
       // Implement connection request logic
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Connection request sent!')));
+      ).showSnackBar(SnackBar(content: Text('profile_connections_request_sent'.tr())));
     } catch (e) {
       ScaffoldMessenger.of(
         context,

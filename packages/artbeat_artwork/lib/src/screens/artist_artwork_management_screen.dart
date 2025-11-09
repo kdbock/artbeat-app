@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../models/artwork_model.dart';
@@ -41,7 +42,7 @@ class _ArtistArtworkManagementScreenState
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
         setState(() {
-          _error = 'Please log in to view your artwork';
+          _error = 'artist_artwork_management_login_required'.tr();
           _isLoading = false;
         });
         return;
@@ -64,7 +65,7 @@ class _ArtistArtworkManagementScreenState
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Error loading artwork: $e';
+          _error = 'artist_artwork_management_error_message'.tr(namedArgs: {'error': e.toString()});
           _isLoading = false;
         });
       }
@@ -111,7 +112,7 @@ class _ArtistArtworkManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('"${artwork.title}" has been deleted successfully'),
+            content: Text('artist_artwork_management_delete_success'.tr(namedArgs: {'title': artwork.title})),
             backgroundColor: core.ArtbeatColors.primaryGreen,
           ),
         );
@@ -121,7 +122,7 @@ class _ArtistArtworkManagementScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete artwork: $e'),
+            content: Text('artist_artwork_management_delete_error'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: core.ArtbeatColors.error,
           ),
         );
@@ -133,16 +134,16 @@ class _ArtistArtworkManagementScreenState
   Widget build(BuildContext context) {
     return core.MainLayout(
       currentIndex:
-          -1, // Artist artwork management doesn't use bottom navigation
+          -1,
       appBar: core.EnhancedUniversalHeader(
-        title: 'My Artwork',
+        title: 'artist_artwork_management_title'.tr(),
         showBackButton: true,
         showSearch: false,
         actions: [
           IconButton(
             onPressed: _navigateToUpload,
             icon: const Icon(Icons.add),
-            tooltip: 'Upload Artwork',
+            tooltip: 'artist_artwork_management_upload_tooltip'.tr(),
           ),
         ],
       ),
@@ -167,7 +168,7 @@ class _ArtistArtworkManagementScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'Error',
+              'artist_artwork_management_error_title'.tr(),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -182,7 +183,7 @@ class _ArtistArtworkManagementScreenState
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _refreshArtwork,
-              child: const Text('Retry'),
+              child: Text('artist_artwork_management_error_retry'.tr()),
             ),
           ],
         ),
@@ -201,19 +202,15 @@ class _ArtistArtworkManagementScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'No Artwork Yet',
+              'artist_artwork_management_empty_message'.tr(),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Upload your first artwork to get started!',
-              style: TextStyle(color: core.ArtbeatColors.textSecondary),
-            ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _navigateToUpload,
               icon: const Icon(Icons.add_photo_alternate),
-              label: const Text('Upload Artwork'),
+              label: Text('artist_artwork_management_empty_action'.tr()),
             ),
           ],
         ),
@@ -222,14 +219,15 @@ class _ArtistArtworkManagementScreenState
 
     return Column(
       children: [
-        // Header with artwork count and upload button
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_artworks.length} ${_artworks.length == 1 ? 'Artwork' : 'Artworks'}',
+                _artworks.length == 1 
+                  ? 'artist_artwork_management_count_singular'.tr(namedArgs: {'count': _artworks.length.toString()})
+                  : 'artist_artwork_management_count_plural'.tr(namedArgs: {'count': _artworks.length.toString()}),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -237,7 +235,7 @@ class _ArtistArtworkManagementScreenState
               TextButton.icon(
                 onPressed: _navigateToUpload,
                 icon: const Icon(Icons.add),
-                label: const Text('Upload'),
+                label: Text('artwork_upload_button'.tr()),
               ),
             ],
           ),

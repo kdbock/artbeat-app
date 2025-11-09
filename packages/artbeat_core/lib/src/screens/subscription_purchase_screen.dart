@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/in_app_subscription_service.dart';
 import '../models/subscription_tier.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Screen for purchasing artist or gallery subscriptions via in-app purchase
 class SubscriptionPurchaseScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _SubscriptionPurchaseScreenState
                   Center(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text('core_subscription_cancel'.tr()),
                     ),
                   ),
                 ],

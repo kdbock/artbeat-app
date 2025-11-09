@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -141,7 +142,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             ],
           ),
           child: EnhancedUniversalHeader(
-            title: 'Discover Events',
+            title: 'user_events_discover_title'.tr(),
             showLogo: false,
             showDeveloperTools: true,
             showBackButton: true,
@@ -149,7 +150,6 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             onSearchPressed: (String query) => _showSearchModal(context),
             onProfilePressed: () => _showProfileMenu(context),
             backgroundColor: Colors.transparent,
-            // Removed foregroundColor to use deep purple default
           ),
         ),
       ),
@@ -203,32 +203,31 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Search content
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.search,
                       color: ArtbeatColors.primaryPurple,
                       size: 24,
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Search Events',
-                            style: TextStyle(
+                            'events_search_title'.tr(),
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: ArtbeatColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Find events by name, artist, or location',
-                            style: TextStyle(
+                            'events_search_subtitle'.tr(),
+                            style: const TextStyle(
                               fontSize: 14,
                               color: ArtbeatColors.textSecondary,
                             ),
@@ -247,8 +246,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   children: [
                     _buildSearchOption(
                       icon: Icons.palette,
-                      title: 'Art Exhibitions',
-                      subtitle: 'Gallery openings and exhibitions',
+                      title: 'user_events_search_exhibitions_title'.tr(),
+                      subtitle: 'user_events_search_exhibitions_subtitle'.tr(),
                       color: ArtbeatColors.primaryPurple,
                       onTap: () {
                         Navigator.pop(context);
@@ -261,8 +260,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                     ),
                     _buildSearchOption(
                       icon: Icons.music_note,
-                      title: 'Art Performances',
-                      subtitle: 'Live art performances and shows',
+                      title: 'user_events_search_performances_title'.tr(),
+                      subtitle: 'user_events_search_performances_subtitle'.tr(),
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
@@ -275,8 +274,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                     ),
                     _buildSearchOption(
                       icon: Icons.build,
-                      title: 'Workshops',
-                      subtitle: 'Learn new art techniques',
+                      title: 'user_events_search_workshops_title'.tr(),
+                      subtitle: 'user_events_search_workshops_subtitle'.tr(),
                       color: ArtbeatColors.secondaryTeal,
                       onTap: () {
                         Navigator.pop(context);
@@ -289,16 +288,16 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                     ),
                     _buildSearchOption(
                       icon: Icons.location_on,
-                      title: 'Nearby Events',
-                      subtitle: 'Events in your area',
+                      title: 'user_events_search_nearby_title'.tr(),
+                      subtitle: 'user_events_search_nearby_subtitle'.tr(),
                       color: ArtbeatColors.accentYellow,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const EventsListScreen(
-                              title: 'Events Near You',
-                              tags: ['nearby'],
+                            builder: (context) => EventsListScreen(
+                              title: 'user_events_search_nearby_title'.tr(),
+                              tags: const ['nearby'],
                             ),
                           ),
                         );
@@ -339,32 +338,31 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Profile options
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.account_circle,
                       color: ArtbeatColors.primaryPurple,
                       size: 24,
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Your Events',
-                            style: TextStyle(
+                            'events_my_events_title'.tr(),
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: ArtbeatColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Manage your event activities',
-                            style: TextStyle(
+                            'events_my_events_subtitle'.tr(),
+                            style: const TextStyle(
                               fontSize: 14,
                               color: ArtbeatColors.textSecondary,
                             ),
@@ -382,8 +380,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   children: [
                     _buildProfileOption(
                       icon: Icons.confirmation_number,
-                      title: 'My Tickets',
-                      subtitle: 'View your event tickets',
+                      title: 'events_my_tickets_title'.tr(),
+                      subtitle: 'events_my_tickets_subtitle'.tr(),
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
@@ -392,8 +390,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                     ),
                     _buildProfileOption(
                       icon: Icons.favorite,
-                      title: 'Saved Events',
-                      subtitle: 'Events you\'ve bookmarked',
+                      title: 'events_saved_title'.tr(),
+                      subtitle: 'events_saved_subtitle'.tr(),
                       color: ArtbeatColors.secondaryTeal,
                       onTap: () {
                         Navigator.pop(context);
@@ -402,8 +400,8 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                     ),
                     _buildProfileOption(
                       icon: Icons.history,
-                      title: 'Event History',
-                      subtitle: 'Events you\'ve attended',
+                      title: 'events_history_title'.tr(),
+                      subtitle: 'events_history_subtitle'.tr(),
                       color: ArtbeatColors.primaryPurple,
                       onTap: () {
                         Navigator.pop(context);
@@ -563,7 +561,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
-              'Error loading events',
+              'user_events_error_load'.tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -586,7 +584,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                 backgroundColor: ArtbeatColors.primaryPurple,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text('common_retry'.tr()),
             ),
           ],
         ),
@@ -602,10 +600,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
           _buildWelcomeHeader(context),
           const SizedBox(height: 24),
 
-          // Today's Events
           if (_todayEvents.isNotEmpty) ...[
             _buildSectionHeader(
-              'Happening Today',
+              'user_events_today_section'.tr(),
               Icons.today,
               ArtbeatColors.primaryGreen,
             ),
@@ -614,10 +611,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             const SizedBox(height: 24),
           ],
 
-          // Featured Events
           if (_featuredEvents.isNotEmpty) ...[
             _buildSectionHeader(
-              'Featured Events',
+              'user_events_featured_section'.tr(),
               Icons.star,
               ArtbeatColors.accentYellow,
             ),
@@ -626,10 +622,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             const SizedBox(height: 24),
           ],
 
-          // This Week's Events
           if (_thisWeekEvents.isNotEmpty) ...[
             _buildSectionHeader(
-              'This Week',
+              'user_events_this_week_section'.tr(),
               Icons.calendar_today,
               ArtbeatColors.secondaryTeal,
             ),
@@ -638,10 +633,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             const SizedBox(height: 24),
           ],
 
-          // All Upcoming Events
           if (_upcomingEvents.isNotEmpty) ...[
             _buildSectionHeader(
-              'All Upcoming Events',
+              'user_events_upcoming_section'.tr(),
               Icons.event,
               ArtbeatColors.primaryPurple,
             ),
@@ -697,17 +691,17 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   children: [
                     Text(
                       currentUser != null
-                          ? 'Welcome back!'
-                          : 'Discover Art Events',
+                          ? 'common_welcome_back'.tr()
+                          : 'user_events_discover_title'.tr(),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: ArtbeatColors.textPrimary,
                       ),
                     ),
-                    const Text(
-                      'Explore exhibitions, workshops, and community art events',
-                      style: TextStyle(
+                    Text(
+                      'events_discover_subtitle'.tr(),
+                      style: const TextStyle(
                         fontSize: 14,
                         color: ArtbeatColors.textSecondary,
                       ),
@@ -745,9 +739,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
         const Spacer(),
         TextButton(
           onPressed: () => Navigator.pushNamed(context, '/events/all'),
-          child: const Text(
-            'View All',
-            style: TextStyle(
+          child: Text(
+            'events_view_all'.tr(),
+            style: const TextStyle(
               color: ArtbeatColors.primaryPurple,
               fontWeight: FontWeight.w500,
             ),
@@ -945,9 +939,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'FREE',
-                        style: TextStyle(
+                      child: Text(
+                        'events_badge_free'.tr(),
+                        style: const TextStyle(
                           fontSize: 10,
                           color: ArtbeatColors.primaryGreen,
                           fontWeight: FontWeight.bold,
@@ -997,14 +991,14 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                   color: ArtbeatColors.accentYellow,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.star, size: 14, color: Colors.white),
-                    SizedBox(width: 4),
+                    const Icon(Icons.star, size: 14, color: Colors.white),
+                    const SizedBox(width: 4),
                     Text(
-                      'FEATURED',
-                      style: TextStyle(
+                      'events_badge_featured'.tr(),
+                      style: const TextStyle(
                         fontSize: 10,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -1098,7 +1092,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${event.attendeeIds.length} attending',
+                              'events_attending_count'.tr(namedArgs: {'count': event.attendeeIds.length.toString()}),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey[600],
@@ -1117,9 +1111,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                               color: ArtbeatColors.primaryGreen,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
-                              'FREE',
-                              style: TextStyle(
+                            child: Text(
+                              'events_badge_free'.tr(),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -1365,9 +1359,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'FREE',
-                        style: TextStyle(
+                      child: Text(
+                        'events_badge_free'.tr(),
+                        style: const TextStyle(
                           fontSize: 10,
                           color: ArtbeatColors.primaryGreen,
                           fontWeight: FontWeight.bold,
@@ -1397,7 +1391,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
           Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No upcoming events',
+            'user_events_empty_title'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -1406,7 +1400,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Check back later for new art events and exhibitions',
+            'user_events_empty_subtitle'.tr(),
             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
@@ -1417,7 +1411,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
               backgroundColor: ArtbeatColors.primaryPurple,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Refresh'),
+            child: Text('common_refresh'.tr()),
           ),
         ],
       ),

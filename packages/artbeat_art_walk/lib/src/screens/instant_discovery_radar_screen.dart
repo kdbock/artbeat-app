@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/public_art_model.dart';
 import '../widgets/instant_discovery_radar.dart';
@@ -97,9 +98,9 @@ class _InstantDiscoveryRadarScreenState
         await Future<void>.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('🎉 You discovered all nearby art!'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text('art_walk_instant_discovery_radar_text_you_discovered_all'.tr()),
+              duration: const Duration(seconds: 2),
             ),
           );
           await Future<void>.delayed(const Duration(seconds: 2));

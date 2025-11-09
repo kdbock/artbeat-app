@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:share_plus/share_plus.dart';
@@ -71,12 +72,12 @@ class _CaptureDetailViewerScreenState extends State<CaptureDetailViewerScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Capture'),
-        content: const Text('Are you sure you want to delete this capture?'),
+        title: Text('capture_admin_content_moderation_text_delete_capture'.tr()),
+        content: Text('capture_capture_detail_viewer_text_are_you_sure'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -84,7 +85,7 @@ class _CaptureDetailViewerScreenState extends State<CaptureDetailViewerScreen> {
               _deleteCapture();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
           ),
         ],
       ),
@@ -96,7 +97,7 @@ class _CaptureDetailViewerScreenState extends State<CaptureDetailViewerScreen> {
       await _captureService.deleteCapture(widget.captureId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Capture deleted successfully')),
+          SnackBar(content: Text('capture_capture_detail_viewer_success_capture_deleted_successfully'.tr())),
         );
         Navigator.pop(context);
       }
@@ -105,7 +106,7 @@ class _CaptureDetailViewerScreenState extends State<CaptureDetailViewerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete capture: $e'),
+            content: Text('capture_capture_detail_viewer_error_failed_to_delete'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -166,13 +167,13 @@ class _CaptureDetailViewerScreenState extends State<CaptureDetailViewerScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadCapture,
-                    child: const Text('Retry'),
+                    child: Text('admin_admin_settings_text_retry'.tr()),
                   ),
                 ],
               ),
             )
           : _capture == null
-          ? const Center(child: Text('No capture found'))
+          ? Center(child: Text('capture_capture_detail_viewer_text_no_capture_found'.tr()))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(

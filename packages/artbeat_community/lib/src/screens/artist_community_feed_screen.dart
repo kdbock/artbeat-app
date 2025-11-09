@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_events/artbeat_events.dart' as events;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 
 /// Screen for displaying an artist's community feed
 /// Shows their posts, artwork updates, events, and community interactions
@@ -72,9 +72,13 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading feed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'community_artist_community_feed_error_error_loading_feed'.tr(),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -191,13 +195,16 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
 
   Widget _buildFeedContent() {
     if (_feedItems.isEmpty && _isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Loading artist feed...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(
+              'community_artist_community_feed_loading_loading_artist_feed'
+                  .tr(),
+            ),
           ],
         ),
       );
@@ -237,7 +244,9 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: () => _loadFeed(loadMore: true),
-                  child: const Text('Load More'),
+                  child: Text(
+                    'community_artist_community_feed_text_load_more'.tr(),
+                  ),
                 ),
               );
             }

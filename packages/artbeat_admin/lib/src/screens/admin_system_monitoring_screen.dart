@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -99,7 +100,7 @@ class _AdminSystemMonitoringScreenState
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading system data: $e')),
+          SnackBar(content: Text('admin_admin_system_monitoring_error_error_loading_system'.tr())),
         );
       }
     }
@@ -134,7 +135,7 @@ class _AdminSystemMonitoringScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('System Monitoring'),
+        title: Text('admin_admin_system_monitoring_text_system_monitoring'.tr()),
         backgroundColor: Colors.blue[800],
         foregroundColor: Colors.white,
         actions: [
@@ -339,16 +340,16 @@ class _AdminSystemMonitoringScreenState
                       ),
                       TextButton(
                         onPressed: () => _tabController.animateTo(2),
-                        child: const Text('View All'),
+                        child: Text('admin_admin_system_monitoring_text_view_all'.tr()),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   if (_systemAlerts.isEmpty)
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text('No recent alerts'),
+                        padding: const EdgeInsets.all(32),
+                        child: Text('admin_admin_system_monitoring_text_no_recent_alerts'.tr()),
                       ),
                     )
                   else
@@ -483,10 +484,10 @@ class _AdminSystemMonitoringScreenState
                   ),
                   const SizedBox(height: 16),
                   if (_systemAlerts.isEmpty)
-                    const Center(
+                    Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text('No system alerts'),
+                        padding: const EdgeInsets.all(32),
+                        child: Text('admin_admin_system_monitoring_text_no_system_alerts'.tr()),
                       ),
                     )
                   else

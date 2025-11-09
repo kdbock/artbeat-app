@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Screen that explains the ARTbeat achievement and experience system
 class AchievementInfoScreen extends StatelessWidget {
@@ -8,8 +9,8 @@ class AchievementInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Achievement System',
+      appBar: EnhancedUniversalHeader(
+        title: 'profile_achievement_title'.tr(),
         showLogo: false,
         showSearch: false,
         showBackButton: true,
@@ -61,7 +62,7 @@ class AchievementInfoScreen extends StatelessWidget {
 
             // Experience Points Section
             _buildSection(
-              title: '🌟 Experience Points (XP)',
+              title: 'profile_achievement_xp'.tr(),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -86,7 +87,7 @@ class AchievementInfoScreen extends StatelessWidget {
 
             // Level System Section
             _buildSection(
-              title: '🎨 Level System',
+              title: 'profile_achievement_level'.tr(),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -255,7 +256,7 @@ class AchievementInfoScreen extends StatelessWidget {
 
             // Level Perks Section
             _buildSection(
-              title: '🎁 Level Perks',
+              title: 'profile_achievement_perks'.tr(),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -314,7 +315,7 @@ class AchievementInfoScreen extends StatelessWidget {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('Explore Art Walks'),
+                    child: Text('profile_achievement_explore'.tr()),
                   ),
                 ],
               ),

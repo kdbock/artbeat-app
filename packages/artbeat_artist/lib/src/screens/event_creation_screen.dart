@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:artbeat_core/artbeat_core.dart' as core;
@@ -144,7 +144,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error selecting image: ${e.toString()}')),
+          SnackBar(
+              content: Text(
+                  'artist_event_creation_error_error_selecting_image'.tr())),
         );
       }
     }
@@ -272,7 +274,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Event saved successfully')),
+          SnackBar(
+              content: Text(
+                  'artist_event_creation_success_event_saved_successfully'
+                      .tr())),
         );
         Navigator.of(context).pop(true); // Return true to trigger refresh
       }
@@ -295,7 +300,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Event')),
+        appBar: AppBar(title: Text('artist_event_creation_text_event'.tr())),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -303,7 +308,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     // Show upgrade prompt if user can't create events
     if (!_canCreateEvents) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Create Event')),
+        appBar: AppBar(
+            title: Text('artist_artist_dashboard_text_create_event'.tr())),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -343,7 +349,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                       vertical: 12,
                     ),
                   ),
-                  child: const Text('Upgrade to Pro'),
+                  child: Text('artist_event_creation_text_upgrade_to_pro'.tr()),
                 ),
               ],
             ),
@@ -649,7 +655,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
               // Public/Private toggle
               SwitchListTile(
-                title: const Text('Public Event'),
+                title: Text('artist_event_creation_text_public_event'.tr()),
                 subtitle: const Text(
                     'Allow others to see and register for this event'),
                 value: _isPublic,

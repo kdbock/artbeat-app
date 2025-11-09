@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/artbeat_event.dart';
 import '../services/event_service.dart';
@@ -38,7 +39,7 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
     } on Exception catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load event: $e';
+          _error = '${'event_wrap_load_error'.tr()}: $e';
           _isLoading = false;
         });
       }
@@ -70,8 +71,8 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
                 ),
               ],
             ),
-            child: const EnhancedUniversalHeader(
-              title: 'Loading Event...',
+            child: EnhancedUniversalHeader(
+              title: 'event_wrap_loading'.tr(),
               showLogo: false,
               showBackButton: true,
             ),
@@ -107,8 +108,8 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
                 ),
               ],
             ),
-            child: const EnhancedUniversalHeader(
-              title: 'Event Not Found',
+            child: EnhancedUniversalHeader(
+              title: 'event_wrap_not_found'.tr(),
               showLogo: false,
               showBackButton: true,
             ),
@@ -130,7 +131,7 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Go Back'),
+                  child: Text('event_wrap_go_back'.tr()),
                 ),
               ],
             ),
@@ -162,8 +163,8 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
                 ),
               ],
             ),
-            child: const EnhancedUniversalHeader(
-              title: 'Event Not Found',
+            child: EnhancedUniversalHeader(
+              title: 'event_wrap_not_found'.tr(),
               showLogo: false,
               showBackButton: true,
             ),
@@ -177,15 +178,15 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
               children: [
                 const Icon(Icons.event_busy, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
-                const Text(
-                  'Event not found or no longer available',
-                  style: TextStyle(fontSize: 16),
+                Text(
+                  'event_wrap_unavailable'.tr(),
+                  style: const TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Go Back'),
+                  child: Text('event_wrap_go_back'.tr()),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'artist_profile_edit_screen.dart';
 
@@ -775,7 +776,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
     if (tier == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a plan')),
+          SnackBar(content: Text('artist_modern_2025_onboarding_text_please_select_a'.tr())),
         );
       }
       return;
@@ -800,7 +801,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Welcome! Setting up your profile...')),
+            SnackBar(content: Text('artist_modern_2025_onboarding_title_welcome_setting_up'.tr())),
           );
           Navigator.pushReplacement(
             context,
@@ -813,7 +814,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         setState(() => _isProcessingPlan = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${e.toString()}')),
+            SnackBar(content: Text('art_walk_art_walk_detail_error_error_etostring'.tr())),
           );
         }
       }
@@ -830,7 +831,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         if (purchaseSuccess == true && mounted) {
           // Payment successful, continue to profile setup
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Welcome! Setting up your profile...')),
+            SnackBar(content: Text('artist_modern_2025_onboarding_title_welcome_setting_up'.tr())),
           );
           Navigator.pushReplacement(
             context,
@@ -939,7 +940,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Back'),
+                child: Text('artist_artist_journey_text_back'.tr()),
               ),
             ),
             const SizedBox(width: 12),

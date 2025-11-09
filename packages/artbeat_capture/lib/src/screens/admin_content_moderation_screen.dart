@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
 
@@ -38,9 +39,14 @@ class _AdminContentModerationScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading captures: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'capture_admin_content_moderation_error_error_loading_captures'
+                  .tr(),
+            ),
+          ),
+        );
       }
     }
   }
@@ -67,9 +73,14 @@ class _AdminContentModerationScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading captures: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'capture_admin_content_moderation_error_error_loading_captures'
+                  .tr(),
+            ),
+          ),
+        );
       }
     }
   }
@@ -81,11 +92,13 @@ class _AdminContentModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Approve Capture'),
+          title: Text(
+            'capture_admin_content_moderation_text_approve_capture'.tr(),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Are you sure you want to approve this capture?'),
+              Text('capture_admin_content_moderation_text_are_you_sure'.tr()),
               const SizedBox(height: 16),
               TextField(
                 controller: notesController,
@@ -100,7 +113,7 @@ class _AdminContentModerationScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -108,7 +121,9 @@ class _AdminContentModerationScreenState
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Approve'),
+              child: Text(
+                'admin_modern_unified_admin_dashboard_text_approve'.tr(),
+              ),
             ),
           ],
         );
@@ -126,16 +141,21 @@ class _AdminContentModerationScreenState
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Capture approved successfully'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_success_capture_approved_successfully'
+                    .tr(),
+              ),
               backgroundColor: Colors.green,
             ),
           );
           _loadCapturesByStatus(_selectedTab);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to approve capture'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_error_failed_to_approve'.tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -151,11 +171,15 @@ class _AdminContentModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Reject Capture'),
+          title: Text(
+            'capture_admin_content_moderation_text_reject_capture'.tr(),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Are you sure you want to reject this capture?'),
+              Text(
+                'capture_admin_content_moderation_text_are_you_sure_15'.tr(),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: notesController,
@@ -170,7 +194,7 @@ class _AdminContentModerationScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -178,7 +202,9 @@ class _AdminContentModerationScreenState
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Reject'),
+              child: Text(
+                'admin_modern_unified_admin_dashboard_text_reject'.tr(),
+              ),
             ),
           ],
         );
@@ -196,16 +222,20 @@ class _AdminContentModerationScreenState
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Capture rejected'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_text_capture_rejected'.tr(),
+              ),
               backgroundColor: Colors.orange,
             ),
           );
           _loadCapturesByStatus(_selectedTab);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to reject capture'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_error_failed_to_reject'.tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -219,14 +249,16 @@ class _AdminContentModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Capture'),
+          title: Text(
+            'capture_admin_content_moderation_text_delete_capture'.tr(),
+          ),
           content: const Text(
             'Are you sure you want to permanently delete this capture? This action cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -234,7 +266,9 @@ class _AdminContentModerationScreenState
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Delete'),
+              child: Text(
+                'admin_modern_unified_admin_dashboard_text_delete'.tr(),
+              ),
             ),
           ],
         );
@@ -247,16 +281,21 @@ class _AdminContentModerationScreenState
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Capture deleted permanently'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_text_capture_deleted_permanently'
+                    .tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );
           _loadCapturesByStatus(_selectedTab);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to delete capture'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_error_failed_to_delete'.tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -270,14 +309,16 @@ class _AdminContentModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Clear Reports'),
+          title: Text(
+            'art_walk_admin_art_walk_moderation_text_clear_reports'.tr(),
+          ),
           content: Text(
             'Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -285,7 +326,9 @@ class _AdminContentModerationScreenState
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Clear Reports'),
+              child: Text(
+                'art_walk_admin_art_walk_moderation_text_clear_reports'.tr(),
+              ),
             ),
           ],
         );
@@ -298,16 +341,21 @@ class _AdminContentModerationScreenState
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Reports cleared successfully'),
+            SnackBar(
+              content: Text(
+                'art_walk_admin_art_walk_moderation_success_reports_cleared_successfully'
+                    .tr(),
+              ),
               backgroundColor: Colors.green,
             ),
           );
           _loadCapturesByStatus(_selectedTab);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to clear reports'),
+            SnackBar(
+              content: Text(
+                'capture_admin_content_moderation_error_failed_to_clear'.tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -506,26 +554,38 @@ class _AdminContentModerationScreenState
                   children: [
                     Expanded(
                       child: SegmentedButton<String>(
-                        segments: const [
+                        segments: [
                           ButtonSegment(
                             value: 'pending',
-                            label: Text('Pending'),
-                            icon: Icon(Icons.schedule),
+                            label: Text(
+                              'capture_admin_content_moderation_text_pending'
+                                  .tr(),
+                            ),
+                            icon: const Icon(Icons.schedule),
                           ),
                           ButtonSegment(
                             value: 'approved',
-                            label: Text('Approved'),
-                            icon: Icon(Icons.check_circle),
+                            label: Text(
+                              'capture_admin_content_moderation_text_approved'
+                                  .tr(),
+                            ),
+                            icon: const Icon(Icons.check_circle),
                           ),
                           ButtonSegment(
                             value: 'rejected',
-                            label: Text('Rejected'),
-                            icon: Icon(Icons.cancel),
+                            label: Text(
+                              'capture_admin_content_moderation_text_rejected'
+                                  .tr(),
+                            ),
+                            icon: const Icon(Icons.cancel),
                           ),
                           ButtonSegment(
                             value: 'reported',
-                            label: Text('Reported'),
-                            icon: Icon(Icons.flag),
+                            label: Text(
+                              'art_walk_admin_art_walk_moderation_text_reported'
+                                  .tr(),
+                            ),
+                            icon: const Icon(Icons.flag),
                           ),
                         ],
                         selected: {_selectedTab},
@@ -633,9 +693,15 @@ class _AdminContentModerationScreenState
                                       ),
                                     ),
                                     if (capture.artistName != null)
-                                      Text('Artist: ${capture.artistName!}'),
+                                      Text(
+                                        'capture_admin_content_moderation_label_artist_captureartistname'
+                                            .tr(),
+                                      ),
                                     if (capture.artType != null)
-                                      Text('Type: ${capture.artType!}'),
+                                      Text(
+                                        'capture_admin_content_moderation_hint_type_capturearttype'
+                                            .tr(),
+                                      ),
                                     Text(
                                       'Created: ${capture.createdAt.toLocal().toString().split(' ')[0]}',
                                       style: TextStyle(

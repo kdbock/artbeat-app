@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/artbeat_colors.dart';
@@ -24,21 +25,20 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Help & Support',
+      appBar: EnhancedUniversalHeader(
+        title: 'help_title'.tr(),
         showLogo: false,
         showBackButton: true,
       ),
       body: Column(
         children: [
-          // Search bar
           Container(
             padding: const EdgeInsets.all(16),
             color: Theme.of(context).colorScheme.surface,
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search help topics...',
+                hintText: 'help_search_hint'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -115,7 +115,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Welcome to ARTbeat',
+                  'help_welcome_title'.tr(),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: ArtbeatColors.primary,
@@ -126,7 +126,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Your All-in-One Art Platform',
+            'help_welcome_subtitle'.tr(),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: ArtbeatColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -134,7 +134,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Welcome to ARTbeat, the premier application designed to connect the global art community. Whether you\'re an art enthusiast exploring local masterpieces, an artist showcasing your portfolio, a gallery managing talent, or an administrator overseeing the platform, ARTbeat provides a rich, integrated experience.',
+            'help_welcome_text'.tr(),
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.justify,
           ),
@@ -148,7 +148,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Quick Actions',
+          'help_quick_actions'.tr(),
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -158,7 +158,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           children: [
             Expanded(
               child: _buildActionCard(
-                title: 'Contact Support',
+                title: 'help_contact_support'.tr(),
                 icon: Icons.support_agent,
                 onTap: () => _contactSupport(),
               ),
@@ -166,7 +166,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                title: 'Report Issue',
+                title: 'help_report_issue'.tr(),
                 icon: Icons.bug_report,
                 onTap: () => _reportIssue(),
               ),
@@ -178,7 +178,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           children: [
             Expanded(
               child: _buildActionCard(
-                title: 'Video Tutorials',
+                title: 'help_video_tutorials'.tr(),
                 icon: Icons.play_circle_fill,
                 onTap: () => _openVideoTutorials(),
               ),
@@ -186,7 +186,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                title: 'Community Forum',
+                title: 'help_community_forum'.tr(),
                 icon: Icons.forum,
                 onTap: () => _openCommunityForum(),
               ),
@@ -231,89 +231,89 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   List<Widget> _buildHelpSections() {
     final sections = [
       _buildSection(
-        'Getting Started & Account Management',
-        'Set up your account and get familiar with ARTbeat',
+        'help_section_getting_started'.tr(),
+        'help_section_getting_started_desc'.tr(),
         Icons.person_add,
         [
-          'Registration & Login: Create your account using email and password, verify your email, and set up your profile',
-          'User Types: ARTbeat supports Regular Users, Artists, Galleries, Moderators, and Admins with different access levels',
-          'Profile Creation: Set up your identity on the platform with personalized information',
+          'help_registration'.tr(),
+          'help_user_types'.tr(),
+          'help_profile_creation'.tr(),
         ],
       ),
       _buildSection(
-        'Discovering & Experiencing Art',
-        'Find and experience art in interactive ways',
+        'help_section_discovery'.tr(),
+        'help_section_discovery_desc'.tr(),
         Icons.explore,
         [
-          'Art Walks: Discover guided art adventures with GPS navigation and gamification features',
-          'Artwork Browsing: Browse comprehensive art database with filtering and search',
-          'Events: Find exhibitions, workshops, and art events with ticketing integration',
-          'Capturing Inspiration: Take photos and contribute to public art collections',
+          'help_art_walks'.tr(),
+          'help_artwork_browsing'.tr(),
+          'help_events'.tr(),
+          'help_capturing'.tr(),
         ],
       ),
       _buildSection(
-        'For Artists & Galleries',
-        'Manage your creative career and business',
+        'help_section_artists'.tr(),
+        'help_section_artists_desc'.tr(),
         Icons.palette,
         [
-          'Artist Dashboard: View sales, engagement metrics, and manage your portfolio',
-          'Gallery Operations: Manage artist rosters, track performance, and handle commissions',
-          'Earnings & Financial Management: Track revenue, request payouts, and manage payments',
-          'Advertising & Marketing: Create campaigns and track performance',
-          'Subscription Tiers: Free, Starter (\$4.99), Creator (\$12.99), Business (\$29.99), Enterprise (\$79.99)',
+          'help_artist_dashboard'.tr(),
+          'help_gallery_ops'.tr(),
+          'help_earnings'.tr(),
+          'help_advertising'.tr(),
+          'help_subscriptions'.tr(),
         ],
       ),
       _buildSection(
-        'Community & Social Features',
-        'Connect and engage with the art community',
+        'help_section_community'.tr(),
+        'help_section_community_desc'.tr(),
         Icons.people,
         [
-          'Community Feed: Create posts, engage with content using the Applause System',
-          'Direct Commissions: Manage custom art requests and negotiations',
-          'Studio System: Create collaborative workspaces with real-time messaging',
-          'Profile Features: Customize your profile and manage connections',
-          'Messaging System: Real-time chat with advanced features',
-          'Gifts: Send themed monetary gifts and create gift campaigns',
+          'help_community_feed'.tr(),
+          'help_direct_commissions'.tr(),
+          'help_studio_system'.tr(),
+          'help_profile_features'.tr(),
+          'help_messaging'.tr(),
+          'help_gifts'.tr(),
         ],
       ),
       _buildSection(
-        'AI-Powered Features',
-        'Enhance your workflow with artificial intelligence',
+        'help_section_ai'.tr(),
+        'help_section_ai_desc'.tr(),
         Icons.auto_awesome,
         [
-          'Smart Cropping: Automatically crop images for optimal composition (1 AI credit)',
-          'Background Removal: Remove backgrounds from artwork images (2 AI credits)',
-          'Auto-Tagging: Generate relevant tags for artwork (1 AI credit)',
-          'Color Palette Extraction: Extract dominant colors (1 AI credit)',
-          'Content Recommendations: Get personalized suggestions (2 AI credits)',
-          'Performance Insights: AI-driven analytics (3 AI credits)',
-          'Similar Artwork Detection: Find visually similar artworks (2 AI credits)',
+          'help_smart_cropping'.tr(),
+          'help_bg_removal'.tr(),
+          'help_auto_tagging'.tr(),
+          'help_color_palette'.tr(),
+          'help_recommendations'.tr(),
+          'help_insights'.tr(),
+          'help_similar_artwork'.tr(),
         ],
       ),
       _buildSection(
-        'Settings & Security',
-        'Manage your preferences and security',
+        'help_section_settings'.tr(),
+        'help_section_settings_desc'.tr(),
         Icons.security,
         [
-          'Account Settings: Edit profile, manage email/phone, upload pictures',
-          'Privacy Controls: Control profile visibility, content privacy, data privacy',
-          'Security Settings: Two-Factor Authentication, login history, device management',
-          'Notification Settings: Granular controls for email, push, and in-app notifications',
-          'Blocked Users: Manage blocked users and privacy settings',
+          'help_account_settings'.tr(),
+          'help_privacy_controls'.tr(),
+          'help_security_settings'.tr(),
+          'help_notification_settings'.tr(),
+          'help_blocked_users'.tr(),
         ],
       ),
       _buildSection(
-        'Admin & Moderation Tools',
-        'Platform administration and content management',
+        'help_section_admin'.tr(),
+        'help_section_admin_desc'.tr(),
         Icons.admin_panel_settings,
         [
-          'Admin Dashboard: Central command center with real-time metrics',
-          'User Management: Complete user lifecycle management',
-          'Content Moderation: Unified moderation hub for all content types',
-          'Events Management: Event approval workflows and analytics',
-          'Advertising Management: Ad administration with revenue tracking',
-          'Financial Analytics: Revenue tracking and reporting',
-          'System Administration: Settings, data management, security center',
+          'help_admin_dashboard'.tr(),
+          'help_user_management'.tr(),
+          'help_content_moderation'.tr(),
+          'help_events_management'.tr(),
+          'help_advertising_mgmt'.tr(),
+          'help_financial_analytics'.tr(),
+          'help_system_admin'.tr(),
         ],
       ),
     ];
@@ -412,10 +412,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Could not open email client. Please contact support@artbeat.com',
-            ),
+          SnackBar(
+            content: Text('help_contact_email_error'.tr()),
           ),
         );
       }
@@ -423,25 +421,22 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   }
 
   Future<void> _reportIssue() async {
-    // Navigate to feedback screen or show dialog
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Report an Issue'),
-        content: const Text(
-          'To report an issue, please use the feedback form in Settings or contact our support team directly.',
-        ),
+        title: Text('help_report_dialog_title'.tr()),
+        content: Text('help_report_dialog_text'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text('common_ok'.tr()),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _contactSupport();
             },
-            child: const Text('Contact Support'),
+            child: Text('help_contact_support_btn'.tr()),
           ),
         ],
       ),
@@ -457,7 +452,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open video tutorials')),
+          SnackBar(content: Text('help_video_tutorials_error'.tr())),
         );
       }
     }
@@ -472,7 +467,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open community forum')),
+          SnackBar(content: Text('help_forum_error'.tr())),
         );
       }
     }

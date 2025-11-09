@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artbeat_event.dart';
@@ -46,11 +47,17 @@ class _EventsListScreenState extends State<EventsListScreen>
   late TabController _tabController;
   int _currentTabIndex = 0;
 
-  final List<String> _filterTabs = ['All', 'Upcoming', 'Today', 'This Week'];
+  late List<String> _filterTabs;
 
   @override
   void initState() {
     super.initState();
+    _filterTabs = [
+      'events_list_tab_all'.tr(),
+      'events_list_tab_upcoming'.tr(),
+      'events_list_tab_today'.tr(),
+      'events_list_tab_this_week'.tr(),
+    ];
     _tabController = TabController(length: _filterTabs.length, vsync: this);
     _loadEvents();
   }
@@ -84,16 +91,15 @@ class _EventsListScreenState extends State<EventsListScreen>
       if (mounted) {
         setState(() {
           _error = e.code == 'permission-denied'
-              ? 'You don\'t have permission to view these events. Please sign in first.'
-              : 'Failed to load events: ${e.message}';
+              ? 'events_list_error_permission'.tr()
+              : 'events_list_error_load'.tr(namedArgs: {'message': e.message ?? ''});
           _isLoading = false;
         });
       }
     } on Exception {
       if (mounted) {
         setState(() {
-          _error =
-              'An unexpected error occurred while loading events. Please try again.';
+          _error = 'events_list_error_unexpected'.tr();
           _isLoading = false;
         });
       }
@@ -170,6 +176,15 @@ class _EventsListScreenState extends State<EventsListScreen>
   }
 
   Widget _buildSearchAndFilter() {
+    final categories = [
+      ('events_list_category_all'.tr(), 'events_list_category_all'),
+      ('events_list_category_art_show'.tr(), 'events_list_category_art_show'),
+      ('events_list_category_workshop'.tr(), 'events_list_category_workshop'),
+      ('events_list_category_exhibition'.tr(), 'events_list_category_exhibition'),
+      ('events_list_category_gallery_opening'.tr(), 'events_list_category_gallery_opening'),
+      ('events_list_category_other'.tr(), 'events_list_category_other'),
+    ];
+    
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -178,7 +193,7 @@ class _EventsListScreenState extends State<EventsListScreen>
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search events...',
+                hintText: 'events_list_search_hint'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -190,19 +205,11 @@ class _EventsListScreenState extends State<EventsListScreen>
           const SizedBox(width: 8),
           DropdownButton<String>(
             value: _selectedCategory,
-            items:
-                [
-                      'All',
-                      'Art Show',
-                      'Workshop',
-                      'Exhibition',
-                      'Gallery Opening',
-                      'Other',
-                    ]
+            items: categories
                     .map(
                       (category) => DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
+                        value: category.$2,
+                        child: Text(category.$1),
                       ),
                     )
                     .toList(),
@@ -225,11 +232,11 @@ class _EventsListScreenState extends State<EventsListScreen>
 
     switch (widget.mode) {
       case EventListMode.all:
-        return 'Events';
+        return 'events_list_title_events'.tr();
       case EventListMode.myEvents:
-        return 'My Events';
+        return 'events_list_title_my_events'.tr();
       case EventListMode.myTickets:
-        return 'My Tickets';
+        return 'events_list_title_my_tickets'.tr();
     }
   }
 
@@ -301,7 +308,7 @@ class _EventsListScreenState extends State<EventsListScreen>
           children: [
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadEvents, child: const Text('Retry')),
+            ElevatedButton(onPressed: _loadEvents, child: Text('events_list_retry'.tr())),
           ],
         ),
       );
@@ -398,16 +405,16 @@ class _EventsListScreenState extends State<EventsListScreen>
     final title = widget.title?.toLowerCase() ?? '';
 
     if (title.contains('near') || title.contains('location')) {
-      return 'No Events Near You';
+      return 'events_list_empty_near_you'.tr();
     } else if (title.contains('trending')) {
-      return 'No Trending Events';
+      return 'events_list_empty_trending'.tr();
     } else if (title.contains('weekend')) {
-      return 'No Weekend Events';
+      return 'events_list_empty_weekend'.tr();
     } else if (title.contains('ticket') ||
         widget.mode == EventListMode.myTickets) {
-      return 'No Tickets Found';
+      return 'events_list_empty_tickets'.tr();
     } else {
-      return 'No Events Found';
+      return 'events_list_empty_default'.tr();
     }
   }
 
@@ -416,16 +423,16 @@ class _EventsListScreenState extends State<EventsListScreen>
     final title = widget.title?.toLowerCase() ?? '';
 
     if (title.contains('near') || title.contains('location')) {
-      return 'There are no events currently scheduled in your area. Check back soon or create your own event to get the community started!';
+      return 'events_list_empty_msg_near_you'.tr();
     } else if (title.contains('trending')) {
-      return 'No events are trending right now. Be the first to create an event that gets everyone talking!';
+      return 'events_list_empty_msg_trending'.tr();
     } else if (title.contains('weekend')) {
-      return 'No events are scheduled for this weekend. Why not plan something exciting for the community?';
+      return 'events_list_empty_msg_weekend'.tr();
     } else if (title.contains('ticket') ||
         widget.mode == EventListMode.myTickets) {
-      return 'You haven\'t purchased any event tickets yet. Discover amazing events happening in your area!';
+      return 'events_list_empty_msg_tickets'.tr();
     } else {
-      return 'No events match your current filters. Try adjusting your search or create a new event.';
+      return 'events_list_empty_msg_default'.tr();
     }
   }
 
@@ -439,7 +446,7 @@ class _EventsListScreenState extends State<EventsListScreen>
           ElevatedButton.icon(
             onPressed: () => Navigator.pushReplacementNamed(context, '/events'),
             icon: const Icon(Icons.explore),
-            label: const Text('Discover Events'),
+            label: Text('events_list_discover_events'.tr()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -451,7 +458,7 @@ class _EventsListScreenState extends State<EventsListScreen>
               MaterialPageRoute(builder: (_) => const CreateEventScreen()),
             ),
             icon: const Icon(Icons.add),
-            label: const Text('Create Event'),
+            label: Text('events_list_create_event'.tr()),
           ),
         ],
       );
@@ -465,7 +472,7 @@ class _EventsListScreenState extends State<EventsListScreen>
                 MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               ),
               icon: const Icon(Icons.add),
-              label: const Text('Create Event'),
+              label: Text('events_list_create_event'.tr()),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -477,7 +484,7 @@ class _EventsListScreenState extends State<EventsListScreen>
           OutlinedButton.icon(
             onPressed: () => Navigator.pushReplacementNamed(context, '/events'),
             icon: const Icon(Icons.refresh),
-            label: const Text('View All Events'),
+            label: Text('events_list_view_all_events'.tr()),
           ),
         ],
       );

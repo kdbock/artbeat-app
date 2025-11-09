@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
@@ -59,7 +60,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       if (artwork == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Artwork not found')),
+            SnackBar(content: Text('artwork_detail_not_found'.tr())),
           );
           Navigator.pop(context);
         }
@@ -117,7 +118,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artwork: $e')),
+          SnackBar(content: Text('artwork_error_loading'.tr(namedArgs: {'error': e.toString()}))),
         );
         setState(() {
           _isLoading = false;
@@ -153,9 +154,9 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Share Artwork',
-                style: TextStyle(
+              Text(
+                'artwork_share_title'.tr(),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -175,7 +176,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                 children: [
                   _buildShareOption(
                     icon: Icons.message,
-                    label: 'Messages',
+                    label: 'artwork_share_messages'.tr(),
                     onTap: () async {
                       Navigator.pop(context);
                       await SharePlus.instance.share(ShareParams(
@@ -187,20 +188,19 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                   ),
                   _buildShareOption(
                     icon: Icons.copy,
-                    label: 'Copy Link',
+                    label: 'artwork_share_copy_link'.tr(),
                     onTap: () async {
                       Navigator.pop(context);
-                      // In a real app, you'd copy the dynamic link to clipboard
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Link copied to clipboard')),
+                        SnackBar(
+                            content: Text('artwork_share_link_copied'.tr())),
                       );
                       await _trackShare('copy_link');
                     },
                   ),
                   _buildShareOption(
                     icon: Icons.share,
-                    label: 'More',
+                    label: 'artwork_share_more'.tr(),
                     onTap: () async {
                       Navigator.pop(context);
                       await SharePlus.instance.share(ShareParams(
@@ -219,39 +219,39 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                 children: [
                   _buildShareOption(
                     icon: Icons.camera_alt,
-                    label: 'Stories',
+                    label: 'artwork_share_stories'.tr(),
                     color: Colors.purple,
                     onTap: () async {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Stories sharing coming soon!')),
+                        SnackBar(
+                            content: Text('artwork_share_stories_coming'.tr())),
                       );
                       await _trackShare('stories');
                     },
                   ),
                   _buildShareOption(
                     icon: Icons.facebook,
-                    label: 'Facebook',
+                    label: 'artwork_share_facebook'.tr(),
                     color: Colors.blue,
                     onTap: () async {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Facebook sharing coming soon!')),
+                        SnackBar(
+                            content: Text('artwork_share_facebook_coming'.tr())),
                       );
                       await _trackShare('facebook');
                     },
                   ),
                   _buildShareOption(
                     icon: Icons.photo_camera,
-                    label: 'Instagram',
+                    label: 'artwork_share_instagram'.tr(),
                     color: Colors.pink,
                     onTap: () async {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Instagram sharing coming soon!')),
+                        SnackBar(
+                            content: Text('artwork_share_instagram_coming'.tr())),
                       );
                       await _trackShare('instagram');
                     },
@@ -261,7 +261,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
               const SizedBox(height: 24),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text('common_cancel'.tr()),
               ),
             ],
           ),
@@ -359,21 +359,21 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Artwork'),
+        title: Text('artwork_delete_title'.tr()),
         content: Text(
-          'Are you sure you want to delete "${_artwork!.title}"? This action cannot be undone.',
+          'artwork_delete_confirm'.tr(namedArgs: {'title': _artwork!.title}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('common_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('Delete'),
+            child: Text('common_delete'.tr()),
           ),
         ],
       ),
@@ -388,21 +388,20 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     if (_artwork == null) return;
 
     try {
-      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              SizedBox(width: 16),
-              Text('Deleting artwork...'),
+              const SizedBox(width: 16),
+              Text('artwork_deleting'.tr()),
             ],
           ),
-          duration: Duration(seconds: 30),
+          duration: const Duration(seconds: 30),
         ),
       );
 
@@ -412,10 +411,9 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         // Hide loading snackbar
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('"${_artwork!.title}" has been deleted successfully'),
+            content: Text('artwork_deleted_success'.tr(namedArgs: {'title': _artwork!.title})),
             backgroundColor: ArtbeatColors.primaryGreen,
           ),
         );
@@ -428,10 +426,9 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         // Hide loading snackbar
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete artwork: $e'),
+            content: Text('artwork_delete_failed'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -442,14 +439,14 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const MainLayout(
+      return MainLayout(
         currentIndex: -1, // No navigation highlight for detail screens
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
-            title: 'Artwork',
+            title: 'artwork_detail_title'.tr(),
             showLogo: false,
           ),
-          body: Center(child: CircularProgressIndicator()),
+          body: const Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -461,7 +458,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       currentIndex: -1, // No navigation highlight for detail screens
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Artwork'),
+          title: Text('artwork_detail_title'.tr()),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
@@ -481,23 +478,23 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit, size: 18),
-                        SizedBox(width: 8),
-                        Text('Edit'),
+                        const Icon(Icons.edit, size: 18),
+                        const SizedBox(width: 8),
+                        Text('common_edit'.tr()),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete, size: 18, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
+                        const Icon(Icons.delete, size: 18, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Text('common_delete'.tr(), style: const TextStyle(color: Colors.red)),
                       ],
                     ),
                   ),
@@ -781,7 +778,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                             );
                           },
                           icon: const Icon(Icons.shopping_cart),
-                          label: const Text('Purchase'),
+                          label: Text('artwork_purchase_button'.tr()),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),

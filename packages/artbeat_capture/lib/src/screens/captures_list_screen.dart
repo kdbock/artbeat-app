@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_core/src/theme/artbeat_colors.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
@@ -156,7 +157,7 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadCaptures,
-                    child: const Text('Retry'),
+                    child: Text('admin_admin_settings_text_retry'.tr()),
                   ),
                 ],
               ),

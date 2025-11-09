@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/art_walk_model.dart';
 import '../services/art_walk_service.dart';
@@ -70,9 +71,13 @@ class _AdminArtWalkModerationScreenState
       AppLogger.error('Stack trace: $stackTrace');
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading art walks: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'art_walk_admin_art_walk_moderation_error_error_loading_art'.tr(),
+            ),
+          ),
+        );
       }
     }
   }
@@ -82,19 +87,23 @@ class _AdminArtWalkModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Art Walk'),
+          title: Text(
+            'art_walk_admin_art_walk_moderation_text_delete_art_walk'.tr(),
+          ),
           content: Text(
             'Are you sure you want to permanently delete "${walk.title}"? This action cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
+              child: Text(
+                'admin_modern_unified_admin_dashboard_text_delete'.tr(),
+              ),
             ),
           ],
         );
@@ -106,14 +115,24 @@ class _AdminArtWalkModerationScreenState
         await _artWalkService.adminDeleteArtWalk(walk.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Art walk deleted successfully')),
+            SnackBar(
+              content: Text(
+                'art_walk_admin_art_walk_moderation_success_art_walk_deleted'
+                    .tr(),
+              ),
+            ),
           );
           _loadArtWalks();
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting art walk: $e')),
+            SnackBar(
+              content: Text(
+                'art_walk_admin_art_walk_moderation_error_error_deleting_art'
+                    .tr(),
+              ),
+            ),
           );
         }
       }
@@ -125,18 +144,22 @@ class _AdminArtWalkModerationScreenState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Clear Reports'),
+          title: Text(
+            'art_walk_admin_art_walk_moderation_text_clear_reports'.tr(),
+          ),
           content: Text(
             'Clear ${walk.reportCount} report(s) from "${walk.title}"?',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Clear Reports'),
+              child: Text(
+                'art_walk_admin_art_walk_moderation_text_clear_reports'.tr(),
+              ),
             ),
           ],
         );
@@ -148,15 +171,25 @@ class _AdminArtWalkModerationScreenState
         await _artWalkService.clearArtWalkReports(walk.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reports cleared successfully')),
+            SnackBar(
+              content: Text(
+                'art_walk_admin_art_walk_moderation_success_reports_cleared_successfully'
+                    .tr(),
+              ),
+            ),
           );
           _loadArtWalks();
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error clearing reports: $e')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'art_walk_admin_art_walk_moderation_error_error_clearing_reports'
+                    .tr(),
+              ),
+            ),
+          );
         }
       }
     }
@@ -225,7 +258,7 @@ class _AdminArtWalkModerationScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: Text('admin_admin_payment_text_close'.tr()),
             ),
           ],
         );
@@ -273,7 +306,9 @@ class _AdminArtWalkModerationScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Art Walk Moderation'),
+        title: Text(
+          'art_walk_admin_art_walk_moderation_text_art_walk_moderation'.tr(),
+        ),
         backgroundColor: ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
       ),
@@ -283,16 +318,20 @@ class _AdminArtWalkModerationScreenState
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SegmentedButton<String>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: 'all',
-                  label: Text('All'),
-                  icon: Icon(Icons.route),
+                  label: Text(
+                    'art_walk_admin_art_walk_moderation_text_all'.tr(),
+                  ),
+                  icon: const Icon(Icons.route),
                 ),
                 ButtonSegment(
                   value: 'reported',
-                  label: Text('Reported'),
-                  icon: Icon(Icons.flag),
+                  label: Text(
+                    'art_walk_admin_art_walk_moderation_text_reported'.tr(),
+                  ),
+                  icon: const Icon(Icons.flag),
                 ),
               ],
               selected: {_selectedTab},

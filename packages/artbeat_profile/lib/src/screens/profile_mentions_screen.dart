@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileMentionsScreen extends StatefulWidget {
   const ProfileMentionsScreen({super.key});
@@ -152,12 +153,12 @@ class _ProfileMentionsScreenState extends State<ProfileMentionsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mentions'),
+        title: Text('profile_mentions_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
             Tab(
-              text: 'Mentions',
+              text: 'profile_mentions_title'.tr(),
               icon: _mentions.any((m) => !(m['isRead'] as bool))
                   ? const Badge(child: Icon(Icons.alternate_email))
                   : const Icon(Icons.alternate_email),
@@ -776,7 +777,7 @@ class _ProfileMentionsScreenState extends State<ProfileMentionsScreen>
       }
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('All mentions marked as read')),
+      SnackBar(content: Text('profile_mentions_all_read'.tr())),
     );
   }
 }

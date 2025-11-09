@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -364,7 +365,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () => Navigator.pushNamed(context, '/ads/create'),
                   icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Create Ad'),
+                  label: Text('ads_create_local_ad_text_create_ad'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
                     foregroundColor: Colors.white,
@@ -453,7 +454,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadArtistData,
-              child: const Text('Retry'),
+              child: Text('admin_admin_settings_text_retry'.tr()),
             ),
           ],
         ),
@@ -647,7 +648,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/artist/activity');
                         },
-                        child: const Text('View All Activity'),
+                        child: Text('artist_artist_dashboard_text_view_all_activity'.tr()),
                       ),
                     ),
                   ],

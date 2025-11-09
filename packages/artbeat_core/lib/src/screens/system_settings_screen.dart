@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SystemSettingsScreen extends StatefulWidget {
   const SystemSettingsScreen({super.key});
@@ -62,7 +63,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
 
   Widget _buildAppInfoSection() {
     return _buildSection(
-      title: 'App Information',
+      title: 'core_settings_app_info'.tr(),
       icon: Icons.info_outline,
       children: [
         _buildInfoTile('App Name', _packageInfo?.appName ?? 'ARTbeat'),
@@ -117,7 +118,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
       icon: Icons.developer_mode,
       children: [
         _buildActionTile(
-          'Clear Cache',
+          'core_settings_clear_cache'.tr(),
           'Clear application cache and temporary files',
           Icons.clear_all,
           () => _showClearCacheDialog(),
@@ -146,7 +147,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
 
   Widget _buildActionsSection() {
     return _buildSection(
-      title: 'Actions',
+      title: 'core_settings_actions'.tr(),
       icon: Icons.build_outlined,
       children: [
         _buildActionTile(
@@ -260,7 +261,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
+        title: Text('core_settings_clear_cache'.tr()),
         content: const Text(
           'Are you sure you want to clear the application cache?',
         ),
@@ -274,7 +275,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
               Navigator.pop(context);
               _clearCache();
             },
-            child: const Text('Clear'),
+            child: Text('core_settings_clear'.tr()),
           ),
         ],
       ),
@@ -310,7 +311,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Application Logs'),
+        title: Text('core_settings_app_logs'.tr()),
         content: const SizedBox(
           height: 300,
           width: double.maxFinite,
@@ -329,7 +330,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('core_settings_close'.tr()),
           ),
         ],
       ),
@@ -339,8 +340,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   void _clearCache() {
     // Implement cache clearing logic
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Cache cleared successfully'),
+      SnackBar(
+        content: Text('core_settings_cache_cleared'.tr()),
         backgroundColor: ArtbeatColors.success,
       ),
     );
@@ -359,8 +360,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   void _testConnectivity() {
     // Implement connectivity test
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Connectivity test: All services online'),
+      SnackBar(
+        content: Text('core_settings_connectivity'.tr()),
         backgroundColor: ArtbeatColors.success,
       ),
     );
@@ -369,8 +370,8 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
   void _refreshAppState() {
     // Implement app state refresh
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('App state refreshed successfully'),
+      SnackBar(
+        content: Text('core_settings_state_refreshed'.tr()),
         backgroundColor: ArtbeatColors.success,
       ),
     );

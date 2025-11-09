@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String userId;
@@ -155,10 +156,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile image uploaded successfully!'),
+              SnackBar(
+                content: Text('profile_edit_image_success'.tr()),
                 backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
+                duration: const Duration(seconds: 2),
               ),
             );
           }
@@ -279,8 +280,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const EnhancedUniversalHeader(
-          title: 'Edit Profile',
+        appBar: EnhancedUniversalHeader(
+          title: 'profile_edit_title'.tr(),
           showLogo: false,
           showBackButton: true,
         ),

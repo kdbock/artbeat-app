@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -198,7 +199,7 @@ class _EnhancedArtworkUploadScreenState
       if (!doc.exists) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Artwork not found')),
+            SnackBar(content: Text('enhanced_upload_not_found'.tr())),
           );
           Navigator.pop(context);
         }
@@ -245,7 +246,7 @@ class _EnhancedArtworkUploadScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artwork: $e')),
+          SnackBar(content: Text('enhanced_upload_load_error'.tr(namedArgs: {'error': e.toString()}))),
         );
       }
     } finally {
@@ -274,13 +275,13 @@ class _EnhancedArtworkUploadScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
+          SnackBar(content: Text('enhanced_upload_image_error'.tr(namedArgs: {'error': e.toString()}))),
         );
       }
     }
   }
 
-  // Pick additional images
+
   Future<void> _pickAdditionalImages() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -413,19 +414,19 @@ class _EnhancedArtworkUploadScreenState
     if (!_formKey.currentState!.validate()) return;
     if (_mainImageFile == null && _imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a main image')),
+        SnackBar(content: Text('enhanced_upload_select_main_image'.tr())),
       );
       return;
     }
     if (_medium.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a medium')),
+        SnackBar(content: Text('enhanced_upload_select_medium'.tr())),
       );
       return;
     }
     if (_styles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one style')),
+        SnackBar(content: Text('enhanced_upload_select_style'.tr())),
       );
       return;
     }
@@ -491,14 +492,14 @@ class _EnhancedArtworkUploadScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Artwork saved successfully')),
+          SnackBar(content: Text('enhanced_upload_success'.tr())),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving artwork: $e')),
+          SnackBar(content: Text('enhanced_upload_error'.tr(namedArgs: {'error': e.toString()}))),
         );
       }
     } finally {
@@ -567,25 +568,24 @@ class _EnhancedArtworkUploadScreenState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const MainLayout(
+      return MainLayout(
         currentIndex: -1,
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
-            title: 'Upload Artwork',
+            title: 'enhanced_upload_title'.tr(),
             showLogo: false,
           ),
-          body: Center(child: CircularProgressIndicator()),
+          body: const Center(child: CircularProgressIndicator()),
         ),
       );
     }
 
-    // Show upgrade prompt if user can't upload more artwork
     if (!_canUpload && widget.artworkId == null) {
       return MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: const EnhancedUniversalHeader(
-            title: 'Upload Artwork',
+          appBar: EnhancedUniversalHeader(
+            title: 'enhanced_upload_title'.tr(),
             showLogo: false,
           ),
           body: Center(
@@ -596,18 +596,17 @@ class _EnhancedArtworkUploadScreenState
                 children: [
                   const Icon(Icons.lock, size: 72, color: Colors.grey),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Free Plan Artwork Limit Reached',
-                    style: TextStyle(
+                  Text(
+                    'enhanced_upload_limit_title'.tr(),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
-                    'Upgrade to Artist Pro for unlimited artwork uploads.',
+                  Text(
+                    'enhanced_upload_limit_message'.tr(),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -622,7 +621,7 @@ class _EnhancedArtworkUploadScreenState
                         vertical: 16,
                       ),
                     ),
-                    child: const Text('Upgrade Now'),
+                    child: Text('enhanced_upload_upgrade_button'.tr()),
                   ),
                 ],
               ),
@@ -636,7 +635,7 @@ class _EnhancedArtworkUploadScreenState
         currentIndex: -1,
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
-            title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
+            title: widget.artworkId == null ? 'enhanced_upload_title'.tr() : 'enhanced_upload_title_edit'.tr(),
             showLogo: false,
           ),
           body: SingleChildScrollView(
@@ -692,9 +691,9 @@ class _EnhancedArtworkUploadScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Main Image *',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_main_image_label'.tr(),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -722,12 +721,12 @@ class _EnhancedArtworkUploadScreenState
                         : null,
               ),
               child: _mainImageFile == null && _imageUrl == null
-                  ? const Column(
+                  ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_photo_alternate, size: 64),
-                        SizedBox(height: 8),
-                        Text('Select Main Image'),
+                        const Icon(Icons.add_photo_alternate, size: 64),
+                        const SizedBox(height: 8),
+                        Text('enhanced_upload_select_main_image_text'.tr()),
                       ],
                     )
                   : null,
@@ -745,9 +744,9 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Additional Images',
-              style: TextStyle(
+            Text(
+              'enhanced_upload_additional_images_label'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -755,7 +754,7 @@ class _EnhancedArtworkUploadScreenState
             TextButton.icon(
               onPressed: _pickAdditionalImages,
               icon: const Icon(Icons.add_photo_alternate),
-              label: const Text('Add Images'),
+              label: Text('enhanced_upload_add_images_button'.tr()),
             ),
           ],
         ),
@@ -814,10 +813,10 @@ class _EnhancedArtworkUploadScreenState
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'No additional images selected',
-                style: TextStyle(color: Colors.grey),
+                'enhanced_upload_no_additional_images_text'.tr(),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ),
@@ -832,9 +831,9 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Videos',
-              style: TextStyle(
+            Text(
+              'enhanced_upload_videos_label'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -842,7 +841,7 @@ class _EnhancedArtworkUploadScreenState
             TextButton.icon(
               onPressed: _pickVideos,
               icon: const Icon(Icons.video_library),
-              label: const Text('Add Videos'),
+              label: Text('enhanced_upload_add_videos_button'.tr()),
             ),
           ],
         ),
@@ -873,10 +872,10 @@ class _EnhancedArtworkUploadScreenState
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'No videos selected',
-                style: TextStyle(color: Colors.grey),
+                'enhanced_upload_no_videos_text'.tr(),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ),
@@ -891,9 +890,9 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Audio Files',
-              style: TextStyle(
+            Text(
+              'enhanced_upload_audio_label'.tr(),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -901,7 +900,7 @@ class _EnhancedArtworkUploadScreenState
             TextButton.icon(
               onPressed: _pickAudioFiles,
               icon: const Icon(Icons.audiotrack),
-              label: const Text('Add Audio'),
+              label: Text('enhanced_upload_add_audio_button'.tr()),
             ),
           ],
         ),
@@ -932,10 +931,10 @@ class _EnhancedArtworkUploadScreenState
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'No audio files selected',
-                style: TextStyle(color: Colors.grey),
+                'enhanced_upload_no_audio_text'.tr(),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           ),
@@ -947,9 +946,9 @@ class _EnhancedArtworkUploadScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Basic Information',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_basic_info_title'.tr(),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -959,13 +958,13 @@ class _EnhancedArtworkUploadScreenState
         // Title
         TextFormField(
           controller: _titleController,
-          decoration: const InputDecoration(
-            labelText: 'Title',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_title_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please enter a title';
+              return 'enhanced_upload_title_error'.tr();
             }
             return null;
           },
@@ -976,14 +975,14 @@ class _EnhancedArtworkUploadScreenState
         TextFormField(
           controller: _descriptionController,
           maxLines: 4,
-          decoration: const InputDecoration(
-            labelText: 'Description',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_description_label'.tr(),
+            border: const OutlineInputBorder(),
             alignLabelWithHint: true,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please enter a description';
+              return 'enhanced_upload_description_error'.tr();
             }
             return null;
           },
@@ -997,9 +996,9 @@ class _EnhancedArtworkUploadScreenState
               child: TextFormField(
                 controller: _yearController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Year',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'enhanced_upload_year_label'.tr(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -1007,9 +1006,9 @@ class _EnhancedArtworkUploadScreenState
             Expanded(
               child: TextFormField(
                 controller: _dimensionsController,
-                decoration: const InputDecoration(
-                  labelText: 'Dimensions',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'enhanced_upload_dimensions_label'.tr(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -1023,9 +1022,9 @@ class _EnhancedArtworkUploadScreenState
             Expanded(
               child: TextFormField(
                 controller: _materialsController,
-                decoration: const InputDecoration(
-                  labelText: 'Materials',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'enhanced_upload_materials_label'.tr(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -1033,9 +1032,9 @@ class _EnhancedArtworkUploadScreenState
             Expanded(
               child: TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'enhanced_upload_location_label'.tr(),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -1049,9 +1048,9 @@ class _EnhancedArtworkUploadScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Medium & Styles',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_media_styles_title'.tr(),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -1061,11 +1060,11 @@ class _EnhancedArtworkUploadScreenState
         // Medium dropdown
         DropdownButtonFormField<String>(
           initialValue: _medium.isEmpty ? null : _medium,
-          decoration: const InputDecoration(
-            labelText: 'Medium',
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_medium_label'.tr(),
             filled: true,
             fillColor: ArtbeatColors.backgroundPrimary,
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
           dropdownColor: ArtbeatColors.backgroundPrimary,
           style: const TextStyle(color: Colors.black),
@@ -1084,7 +1083,7 @@ class _EnhancedArtworkUploadScreenState
           },
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please select a medium';
+              return 'enhanced_upload_medium_error'.tr();
             }
             return null;
           },
@@ -1092,9 +1091,9 @@ class _EnhancedArtworkUploadScreenState
         const SizedBox(height: 16),
 
         // Styles Multi-Select
-        const Text(
-          'Styles',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_styles_label'.tr(),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -1128,9 +1127,9 @@ class _EnhancedArtworkUploadScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tags, Hashtags & Keywords',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_tags_title'.tr(),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -1138,16 +1137,16 @@ class _EnhancedArtworkUploadScreenState
         const SizedBox(height: 16),
 
         // Tags
-        _buildTagInput('Tags', _tagController, _tags, _addTag, _removeTag),
+        _buildTagInput('enhanced_upload_tags_label'.tr(), _tagController, _tags, _addTag, _removeTag),
         const SizedBox(height: 16),
 
         // Hashtags
-        _buildTagInput('Hashtags', _hashtagController, _hashtags, _addHashtag,
+        _buildTagInput('enhanced_upload_hashtags_label'.tr(), _hashtagController, _hashtags, _addHashtag,
             _removeHashtag),
         const SizedBox(height: 16),
 
         // Keywords
-        _buildTagInput('Keywords', _keywordController, _keywords, _addKeyword,
+        _buildTagInput('enhanced_upload_keywords_label'.tr(), _keywordController, _keywords, _addKeyword,
             _removeKeyword),
       ],
     );
@@ -1213,9 +1212,9 @@ class _EnhancedArtworkUploadScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Pricing',
-          style: TextStyle(
+        Text(
+          'enhanced_upload_pricing_title'.tr(),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -1224,7 +1223,7 @@ class _EnhancedArtworkUploadScreenState
 
         // For Sale switch
         SwitchListTile(
-          title: const Text('Available for sale'),
+          title: Text('enhanced_upload_for_sale_label'.tr()),
           value: _isForSale,
           onChanged: (value) {
             setState(() {
@@ -1240,14 +1239,14 @@ class _EnhancedArtworkUploadScreenState
             child: TextFormField(
               controller: _priceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Price (USD)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'enhanced_upload_price_label'.tr(),
+                border: const OutlineInputBorder(),
                 prefixText: '\$ ',
               ),
               validator: (value) {
                 if (_isForSale && (value == null || value.isEmpty)) {
-                  return 'Please enter a price';
+                  return 'enhanced_upload_price_error'.tr();
                 }
                 return null;
               },
@@ -1269,8 +1268,8 @@ class _EnhancedArtworkUploadScreenState
             ? const CircularProgressIndicator()
             : Text(
                 widget.artworkId == null
-                    ? 'Upload Enhanced Artwork'
-                    : 'Save Changes',
+                    ? 'enhanced_upload_button_upload'.tr()
+                    : 'enhanced_upload_button_save'.tr(),
                 style: const TextStyle(fontSize: 16),
               ),
       ),

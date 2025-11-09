@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -248,8 +249,8 @@ class _GalleryArtistsManagementScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invitation sent successfully'),
+          SnackBar(
+            content: Text('artist_gallery_artists_management_success_invitation_sent_successfully'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -257,7 +258,7 @@ class _GalleryArtistsManagementScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send invitation: $e')),
+          SnackBar(content: Text('artist_gallery_artists_management_error_failed_to_send'.tr())),
         );
       }
     }
@@ -278,8 +279,8 @@ class _GalleryArtistsManagementScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invitation cancelled'),
+          SnackBar(
+            content: Text('artist_gallery_artists_management_text_invitation_cancelled'.tr()),
             backgroundColor: Colors.orange,
           ),
         );
@@ -287,7 +288,7 @@ class _GalleryArtistsManagementScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to cancel invitation: $e')),
+          SnackBar(content: Text('artist_gallery_artists_management_error_failed_to_cancel'.tr())),
         );
       }
     }
@@ -332,8 +333,8 @@ class _GalleryArtistsManagementScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Artist removed from gallery successfully'),
+          SnackBar(
+            content: Text('artist_gallery_artists_management_success_artist_removed_from'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -341,7 +342,7 @@ class _GalleryArtistsManagementScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to remove artist from gallery: $e')),
+          SnackBar(content: Text('artist_gallery_artists_management_error_failed_to_remove'.tr())),
         );
       }
     }
@@ -353,7 +354,7 @@ class _GalleryArtistsManagementScreenState
       currentIndex: -1,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Gallery Artists'),
+          title: Text('artist_gallery_artists_management_text_gallery_artists'.tr()),
           bottom: TabBar(
             controller: _tabController,
             tabs: const [
@@ -540,21 +541,21 @@ class _GalleryArtistsManagementScreenState
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel Invitation'),
+        title: Text('artist_gallery_artists_management_text_cancel_invitation'.tr()),
         content: Text(
           'Are you sure you want to cancel the invitation to ${invitation.artistName}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _cancelInvitation(invitation.id);
             },
-            child: const Text('Confirm'),
+            child: Text('admin_migration_text_confirm'.tr()),
           ),
         ],
       ),
@@ -593,8 +594,8 @@ class _GalleryArtistsManagementScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invitation reminder sent'),
+          SnackBar(
+            content: Text('artist_gallery_artists_management_text_invitation_reminder_sent'.tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -602,7 +603,7 @@ class _GalleryArtistsManagementScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to resend invitation: $e')),
+          SnackBar(content: Text('artist_gallery_artists_management_error_failed_to_resend'.tr())),
         );
       }
     }
@@ -671,7 +672,7 @@ class _ArtistSearchDialogState extends State<_ArtistSearchDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error searching artists: ${e.toString()}'),
+            content: Text('artist_gallery_artists_management_error_error_searching_artists'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -762,7 +763,7 @@ class _ArtistSearchDialogState extends State<_ArtistSearchDialog> {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
           ],
         ),

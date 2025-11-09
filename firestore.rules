@@ -328,6 +328,22 @@ service cloud.firestore {
         isArtist(request.auth.uid) && request.auth.uid == resource.data.artistId ||
         isAdmin(request.auth.uid)
       );
+
+      // Written Content Chapters subcollection
+      match /chapters/{chapterId} {
+        allow read: if true; // Public read access for published chapters
+        allow create: if isAuthenticated() && isArtist(request.auth.uid) && request.auth.uid == get(/databases/$(database)/documents/artwork/$(artworkId)).data.artistId;
+        allow update: if isAuthenticated() && (
+          (isArtist(request.auth.uid) && request.auth.uid == get(/databases/$(database)/documents/artwork/$(artworkId)).data.artistId) ||
+          isAdmin(request.auth.uid) ||
+          // Allow updating engagement stats from any authenticated user
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'readCount', 'engagementStats']))
+        );
+        allow delete: if isAuthenticated() && (
+          (isArtist(request.auth.uid) && request.auth.uid == get(/databases/$(database)/documents/artwork/$(artworkId)).data.artistId) ||
+          isAdmin(request.auth.uid)
+        );
+      }
     }
 
     // Subscriptions

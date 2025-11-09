@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
@@ -94,7 +95,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading verified artists: $e')),
+          SnackBar(content: Text('artist_verified_artist_error_error_loading_verified'.tr())),
         );
         setState(() {
           _isLoading = false;
@@ -216,13 +217,13 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: Text('Medium: $_selectedMedium'),
+                    label: Text('artist_artist_browse_text_medium_selectedmedium'.tr()),
                     selected: _selectedMedium != 'All',
                     onSelected: (_) => _showFilterDialog(),
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: Text('Style: $_selectedStyle'),
+                    label: Text('artist_artist_browse_text_style_selectedstyle'.tr()),
                     selected: _selectedStyle != 'All',
                     onSelected: (_) => _showFilterDialog(),
                   ),
@@ -418,7 +419,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
                       ),
                       if (artist.userType.name == core.UserType.gallery.name)
                         Chip(
-                          label: const Text('Gallery'),
+                          label: Text('artist_artist_browse_text_gallery'.tr()),
                           backgroundColor: Theme.of(context)
                               .colorScheme
                               .secondary
@@ -455,7 +456,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
                           )),
                       if (artist.mediums.length > 2)
                         Chip(
-                          label: Text('+${artist.mediums.length - 2}'),
+                          label: Text('artist_artist_browse_text_artistmediumslength_2'.tr()),
                           backgroundColor:
                               Theme.of(context).chipTheme.backgroundColor,
                           labelPadding:
@@ -483,7 +484,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
         String tempStyle = _selectedStyle;
 
         return AlertDialog(
-          title: const Text('Filter Verified Artists'),
+          title: Text('artist_verified_artist_text_filter_verified_artists'.tr()),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -532,7 +533,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             TextButton(
               onPressed: () {
@@ -543,7 +544,7 @@ class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
                 Navigator.pop(context);
                 _applyFilters();
               },
-              child: const Text('Apply'),
+              child: Text('artist_artist_browse_text_apply'.tr()),
             ),
           ],
         );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/artbeat_event.dart';
 import '../services/event_moderation_service.dart';
 
@@ -70,13 +70,13 @@ class _EventModerationDashboardScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event Moderation'),
+        title: Text('event_mod_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Flagged Events', icon: Icon(Icons.flag)),
-            Tab(text: 'Pending Review', icon: Icon(Icons.pending)),
-            Tab(text: 'Analytics', icon: Icon(Icons.analytics)),
+          tabs: [
+            Tab(text: 'event_mod_flagged_events'.tr(), icon: const Icon(Icons.flag)),
+            Tab(text: 'event_mod_pending_review'.tr(), icon: const Icon(Icons.pending)),
+            Tab(text: 'event_mod_analytics'.tr(), icon: const Icon(Icons.analytics)),
           ],
         ),
       ),
@@ -103,7 +103,7 @@ class _EventModerationDashboardScreenState
           Icon(Icons.error, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
-            'Error loading moderation data',
+            'event_mod_error_loading'.tr(),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -113,7 +113,7 @@ class _EventModerationDashboardScreenState
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+          ElevatedButton(onPressed: _loadData, child: Text('event_mod_retry'.tr())),
         ],
       ),
     );
@@ -121,17 +121,17 @@ class _EventModerationDashboardScreenState
 
   Widget _buildFlaggedEventsTab() {
     if (_flaggedEvents.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, size: 64, color: Colors.green),
-            SizedBox(height: 16),
+            const Icon(Icons.check_circle, size: 64, color: Colors.green),
+            const SizedBox(height: 16),
             Text(
-              'No flagged events',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'event_mod_no_flagged'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text('All events are currently clear of flags.'),
+            Text('event_mod_all_clear'.tr()),
           ],
         ),
       );
@@ -177,12 +177,12 @@ class _EventModerationDashboardScreenState
             ),
             const SizedBox(height: 8),
             Text(
-              'Reason: ${flag['reason']}',
+              '${'event_mod_reason_label'.tr()}: ${flag['reason']}',
               style: TextStyle(color: Colors.grey[700]),
             ),
             const SizedBox(height: 8),
             Text(
-              'Flagged: ${_formatTimestamp(flag['timestamp'])}',
+              '${'event_mod_flagged_label'.tr()}: ${_formatTimestamp(flag['timestamp'])}',
               style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
             const SizedBox(height: 16),
@@ -191,13 +191,13 @@ class _EventModerationDashboardScreenState
               children: [
                 TextButton(
                   onPressed: () => _dismissFlag(flagId),
-                  child: const Text('Dismiss'),
+                  child: Text('event_mod_dismiss'.tr()),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: () => _viewEventDetails(event),
                   icon: const Icon(Icons.visibility),
-                  label: const Text('Review'),
+                  label: Text('event_mod_review'.tr()),
                 ),
               ],
             ),
@@ -545,17 +545,17 @@ class _EventModerationDashboardScreenState
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dismiss Flag'),
+        title: Text('event_mod_dismiss_flag'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please provide a reason for dismissing this flag:'),
+            Text('event_mod_dismiss_reason_hint'.tr()),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                hintText: 'Dismissal reason...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'event_mod_dismissal_reason'.tr(),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
@@ -564,11 +564,11 @@ class _EventModerationDashboardScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('event_mod_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Dismiss'),
+            child: Text('event_mod_dismiss'.tr()),
           ),
         ],
       ),
@@ -585,22 +585,22 @@ class _EventModerationDashboardScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Description: ${event.description}'),
+              Text('${'event_mod_description_label'.tr()}: ${event.description}'),
               const SizedBox(height: 8),
-              Text('Location: ${event.location}'),
+              Text('${'event_mod_location_label'.tr()}: ${event.location}'),
               const SizedBox(height: 8),
               Text(
-                'Date: ${DateFormat('MMM dd, yyyy HH:mm').format(event.dateTime)}',
+                '${'event_mod_date_label'.tr()}: ${DateFormat('MMM dd, yyyy HH:mm').format(event.dateTime)}',
               ),
               const SizedBox(height: 8),
-              const Text('Status: pending'), // Default status for now
+              Text('${'event_mod_status_label'.tr()}: pending'),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('event_mod_close'.tr()),
           ),
           TextButton.icon(
             onPressed: () {
@@ -608,7 +608,7 @@ class _EventModerationDashboardScreenState
               _reviewEvent(event.id, false);
             },
             icon: const Icon(Icons.close, color: Colors.red),
-            label: const Text('Reject', style: TextStyle(color: Colors.red)),
+            label: Text('event_mod_reject'.tr(), style: const TextStyle(color: Colors.red)),
           ),
           ElevatedButton.icon(
             onPressed: () {
@@ -616,7 +616,7 @@ class _EventModerationDashboardScreenState
               _reviewEvent(event.id, true);
             },
             icon: const Icon(Icons.check),
-            label: const Text('Approve'),
+            label: Text('event_mod_approve'.tr()),
           ),
         ],
       ),

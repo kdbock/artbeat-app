@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/profile_activity_model.dart';
 import '../services/profile_activity_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileActivityScreen extends StatefulWidget {
   const ProfileActivityScreen({super.key});
@@ -325,7 +326,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('profile_activity_close'.tr()),
           ),
           if (!activity.isRead)
             TextButton(
@@ -333,7 +334,7 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen>
                 _markAsRead([activity.id]);
                 Navigator.pop(context);
               },
-              child: const Text('Mark as read'),
+              child: Text('profile_activity_mark_read'.tr()),
             ),
         ],
       ),

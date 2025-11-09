@@ -4,6 +4,7 @@ import '../models/subscription_tier.dart';
 import '../theme/artbeat_colors.dart';
 import '../widgets/usage_limits_widget.dart';
 import 'subscription_purchase_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Screen showing all available subscription plans for comparison
 ///
@@ -19,7 +20,7 @@ class SubscriptionPlansScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Choose Your Plan'),
+        title: Text('core_subscription_choose_plan'.tr()),
         backgroundColor: ArtbeatColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,

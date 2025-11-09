@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart' as intl;
@@ -169,22 +170,22 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Process Refund'),
+        title: Text('admin_admin_payment_text_process_refund'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Transaction: ${transaction.id}'),
-            Text('Amount: ${transaction.formattedAmount}'),
-            Text('User: ${transaction.userName}'),
+            Text('admin_admin_payment_text_transaction_transactionid'.tr()),
+            Text('admin_admin_payment_text_amount_transactionformattedamount'.tr()),
+            Text('admin_admin_payment_label_user_transactionusername'.tr()),
             const SizedBox(height: 16),
-            const Text('Are you sure you want to process this refund?'),
+            Text('admin_admin_payment_text_are_you_sure'.tr()),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -192,7 +193,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Process Refund'),
+            child: Text('admin_admin_payment_text_process_refund'.tr()),
           ),
         ],
       ),
@@ -277,7 +278,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Bulk Refund'),
+        title: Text('admin_admin_payment_text_bulk_refund'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +294,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -301,7 +302,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Process Bulk Refunds'),
+            child: Text('admin_admin_payment_text_process_bulk_refunds'.tr()),
           ),
         ],
       ),
@@ -751,7 +752,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                   value: _selectAll,
                   onChanged: (value) => _toggleSelectAll(),
                 ),
-                const Text('Select All'),
+                Text('admin_admin_payment_text_select_all'.tr()),
                 const SizedBox(width: 16),
                 Text('${_selectedTransactionIds.length} selected'),
                 const Spacer(),
@@ -759,7 +760,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                   ElevatedButton.icon(
                     onPressed: _processBulkRefund,
                     icon: const Icon(Icons.undo),
-                    label: const Text('Bulk Refund'),
+                    label: Text('admin_admin_payment_text_bulk_refund'.tr()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -769,30 +770,30 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                   PopupMenuButton<String>(
                     onSelected: _bulkUpdateStatus,
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'completed',
-                        child: Text('Mark as Completed'),
+                        child: Text('admin_admin_payment_text_mark_as_completed'.tr()),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'pending',
-                        child: Text('Mark as Pending'),
+                        child: Text('admin_admin_payment_text_mark_as_pending'.tr()),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'failed',
-                        child: Text('Mark as Failed'),
+                        child: Text('admin_admin_payment_error_mark_as_failed'.tr()),
                       ),
                     ],
                     child: ElevatedButton.icon(
                       onPressed: null,
                       icon: const Icon(Icons.edit),
-                      label: const Text('Update Status'),
+                      label: Text('admin_admin_payment_text_update_status'.tr()),
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: _exportSelectedTransactions,
                     icon: const Icon(Icons.file_download),
-                    label: const Text('Export Selected'),
+                    label: Text('admin_admin_payment_text_export_selected'.tr()),
                   ),
                 ],
               ],
@@ -846,15 +847,15 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Transaction ID: ${transaction.id}'),
+                Text('admin_admin_payment_text_transaction_id_transactionid'.tr()),
                 Text(
                     'Date: ${intl.DateFormat('MMM dd, yyyy HH:mm').format(transaction.transactionDate)}'),
-                Text('Payment Method: ${transaction.paymentMethod}'),
+                Text('admin_admin_payment_text_payment_method_transactionpaymentmethod'.tr()),
                 if (transaction.itemTitle != null) ...[
-                  Text('Item: ${transaction.itemTitle}'),
+                  Text('admin_admin_payment_title_item_transactionitemtitle'.tr()),
                 ],
                 if (transaction.description != null) ...[
-                  Text('Description: ${transaction.description}'),
+                  Text('admin_admin_payment_message_description_transactiondescription'.tr()),
                 ],
                 const SizedBox(height: 16),
                 Row(
@@ -871,7 +872,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                     TextButton.icon(
                       onPressed: () => _showTransactionDetails(transaction),
                       icon: const Icon(Icons.info),
-                      label: const Text('Details'),
+                      label: Text('admin_admin_payment_text_details'.tr()),
                     ),
                   ],
                 ),
@@ -896,7 +897,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           const SizedBox(height: 16),
           ..._revenueBreakdown.entries.map((entry) => ListTile(
                 title: Text(entry.key),
-                trailing: Text('\$${entry.value.toStringAsFixed(2)}'),
+                trailing: Text('admin_admin_payment_text_entryvaluetostringasfixed2'.tr()),
                 leading: const Icon(Icons.pie_chart),
               )),
           const SizedBox(height: 32),
@@ -1126,7 +1127,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
           // Date Range
           ListTile(
-            title: const Text('Date Range'),
+            title: Text('admin_admin_payment_text_date_range'.tr()),
             subtitle: Text(_dateRange == null
                 ? 'All dates'
                 : '${intl.DateFormat('MMM dd').format(_dateRange!.start)} - ${intl.DateFormat('MMM dd').format(_dateRange!.end)}'),
@@ -1202,7 +1203,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               _filterTransactions();
             },
             icon: const Icon(Icons.clear),
-            label: const Text('Clear All Filters'),
+            label: Text('admin_admin_payment_text_clear_all_filters'.tr()),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey,
               foregroundColor: Colors.white,
@@ -1217,7 +1218,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Transaction Details'),
+        title: Text('admin_admin_payment_text_transaction_details'.tr()),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1243,7 +1244,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text('admin_admin_payment_text_close'.tr()),
           ),
         ],
       ),
@@ -1341,11 +1342,11 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             showDialog<void>(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Download $fileName'),
+                title: Text('admin_admin_payment_label_download_filename'.tr()),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Click below to copy CSV content:'),
+                    Text('admin_admin_payment_button_click_below_to'.tr()),
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -1353,21 +1354,21 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                             ClipboardData(text: csvContent));
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                                 content:
-                                    Text('CSV content copied to clipboard')),
+                                    Text('admin_admin_payment_text_csv_content_copied'.tr())),
                           );
                         }
                       },
                       icon: const Icon(Icons.copy),
-                      label: const Text('Copy to Clipboard'),
+                      label: Text('admin_admin_payment_text_copy_to_clipboard'.tr()),
                     ),
                   ],
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
+                    child: Text('admin_admin_payment_text_close'.tr()),
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../services/capture_service.dart';
 
@@ -91,13 +92,13 @@ class _CaptureEditScreenState extends State<CaptureEditScreen> {
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Capture updated successfully')),
+          SnackBar(content: Text('capture_capture_edit_success_capture_updated_successfully'.tr())),
         );
         Navigator.pop(context, true);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update capture'),
+          SnackBar(
+            content: Text('capture_capture_edit_error_failed_to_update'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -107,7 +108,7 @@ class _CaptureEditScreenState extends State<CaptureEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text('art_walk_art_walk_detail_error_error_etostring'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -123,7 +124,7 @@ class _CaptureEditScreenState extends State<CaptureEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Capture'),
+        title: Text('capture_capture_edit_text_edit_capture'.tr()),
         backgroundColor: core.ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
       ),
@@ -334,7 +335,7 @@ class _CaptureEditScreenState extends State<CaptureEditScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Colors.grey),
                   ),
-                  child: const Text('Cancel'),
+                  child: Text('admin_admin_payment_text_cancel'.tr()),
                 ),
               ),
 

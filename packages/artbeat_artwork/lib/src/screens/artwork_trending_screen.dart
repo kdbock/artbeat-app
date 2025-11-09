@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' show MainLayout, AppLogger;
 import '../models/artwork_model.dart';
 import '../services/artwork_pagination_service.dart';
@@ -113,7 +114,7 @@ class _ArtworkTrendingScreenState extends State<ArtworkTrendingScreen> {
     return MainLayout(
       currentIndex: 0,
       appBar: ArtworkHeader(
-        title: 'Trending Artwork',
+        title: 'artwork_trending_title'.tr(),
         showBackButton: true,
         showSearch: true,
         onBackPressed: () => Navigator.of(context).pop(),
@@ -136,19 +137,19 @@ class _ArtworkTrendingScreenState extends State<ArtworkTrendingScreen> {
             const Icon(Icons.error_outline, size: 48, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'Error loading artwork',
+              'artwork_discover_error'.tr(),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              _error ?? 'Unknown error',
+              _error ?? 'error_unknown'.tr(),
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadInitialArtworks,
-              child: const Text('Retry'),
+              child: Text('artwork_retry_button'.tr()),
             ),
           ],
         ),
@@ -164,7 +165,7 @@ class _ArtworkTrendingScreenState extends State<ArtworkTrendingScreen> {
                 size: 48, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'No trending artwork yet',
+              'artwork_trending_no_results'.tr(),
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FavoriteDetailScreen extends StatefulWidget {
   final String favoriteId;
@@ -97,7 +98,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Go Back'),
+            child: Text('profile_favorite_go_back'.tr()),
           ),
         ],
       ),
@@ -315,7 +316,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('CANCEL'),
+            child: Text('profile_favorite_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),

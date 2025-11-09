@@ -44,9 +44,12 @@ dependencies:
 
   # Logging
   logger: ^2.4.0
-  
+
   # Localization
   easy_localization: ^3.0.7
+
+  # Rich text editing
+  flutter_markdown: ^0.6.0
 
   artbeat_profile:
     path: ../artbeat_profile

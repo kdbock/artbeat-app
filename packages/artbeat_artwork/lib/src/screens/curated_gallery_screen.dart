@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../models/collection_model.dart';
 import '../services/collection_service.dart';
@@ -76,7 +77,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Curated Galleries'),
+        title: Text('curated_gallery_title'.tr()),
         backgroundColor: core.ArtbeatColors.primaryGreen,
         foregroundColor: Colors.white,
         actions: [
@@ -84,9 +85,9 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
             icon: const Icon(Icons.filter_list),
             onSelected: _filterCollections,
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: null,
-                child: Text('All Types'),
+                child: Text('curated_gallery_filter_all'.tr()),
               ),
               ...CollectionType.values.map((type) => PopupMenuItem(
                     value: type,
@@ -119,14 +120,14 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Failed to load galleries',
+            'curated_gallery_error_loading'.tr(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: Colors.grey[600],
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            _error ?? 'Unknown error',
+            _error ?? 'curated_gallery_error_unknown'.tr(),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[500],
                 ),
@@ -135,7 +136,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadCollections,
-            child: const Text('Retry'),
+            child: Text('curated_gallery_retry_button'.tr()),
           ),
         ],
       ),
@@ -162,7 +163,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Featured Galleries',
+                    'curated_gallery_featured_section'.tr(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: core.ArtbeatColors.textPrimary,
@@ -202,7 +203,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
                 Text(
                   _filterType != null
                       ? '${_filterType!.displayName} Collections'
-                      : 'All Collections',
+                      : 'curated_gallery_all_collections'.tr(),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: core.ArtbeatColors.textPrimary,
@@ -219,7 +220,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  'No collections found',
+                  'curated_gallery_no_collections'.tr(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
                       ),
@@ -262,14 +263,14 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No Galleries Available',
+            'curated_gallery_empty_title'.tr(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: Colors.grey[600],
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Check back later for curated collections',
+            'curated_gallery_empty_message'.tr(),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[500],
                 ),
@@ -282,7 +283,7 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
               backgroundColor: core.ArtbeatColors.primaryGreen,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Refresh'),
+            child: Text('curated_gallery_refresh_button'.tr()),
           ),
         ],
       ),
@@ -358,18 +359,18 @@ class _CuratedGalleryScreenState extends State<CuratedGalleryScreen> {
                           color: Colors.amber[600],
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.star,
                               size: 14,
                               color: Colors.white,
                             ),
-                            SizedBox(width: 2),
+                            const SizedBox(width: 2),
                             Text(
-                              'Featured',
-                              style: TextStyle(
+                              'curated_gallery_featured_badge'.tr(),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/admin_settings_model.dart';
 import '../services/admin_settings_service.dart';
@@ -73,13 +74,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Settings saved successfully')),
+          SnackBar(content: Text('admin_admin_settings_success_settings_saved_successfully'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save settings: $e')),
+          SnackBar(content: Text('admin_admin_settings_error_failed_to_save'.tr())),
         );
       }
     }
@@ -169,7 +170,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadSettings,
-            child: const Text('Retry'),
+            child: Text('admin_admin_settings_text_retry'.tr()),
           ),
         ],
       ),
@@ -178,7 +179,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   Widget _buildSettingsContent() {
     if (_settings == null) {
-      return const Center(child: Text('No settings available'));
+      return Center(child: Text('admin_admin_settings_text_no_settings_available'.tr()));
     }
 
     return SingleChildScrollView(
@@ -413,19 +414,19 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               (s, v) => s.copyWith(maintenanceMessage: v)),
         ),
         ListTile(
-          title: const Text('Backup Database'),
-          subtitle: const Text('Create a backup of the database'),
+          title: Text('admin_admin_settings_text_backup_database'.tr()),
+          subtitle: Text('admin_admin_settings_text_create_a_backup'.tr()),
           trailing: ElevatedButton(
             onPressed: () => _showBackupDialog(),
-            child: const Text('Backup'),
+            child: Text('admin_admin_settings_text_backup'.tr()),
           ),
         ),
         ListTile(
-          title: const Text('Clear Cache'),
-          subtitle: const Text('Clear all cached data'),
+          title: Text('admin_admin_settings_text_clear_cache'.tr()),
+          subtitle: Text('admin_admin_settings_text_clear_all_cached'.tr()),
           trailing: ElevatedButton(
             onPressed: () => _showClearCacheDialog(),
-            child: const Text('Clear'),
+            child: Text('admin_admin_settings_text_clear'.tr()),
           ),
         ),
       ],
@@ -438,27 +439,27 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       color: Colors.red.shade50,
       children: [
         ListTile(
-          title: const Text('Reset All Settings'),
-          subtitle: const Text('Reset all settings to default values'),
+          title: Text('admin_admin_settings_text_reset_all_settings'.tr()),
+          subtitle: Text('admin_admin_settings_text_reset_all_settings_29'.tr()),
           trailing: ElevatedButton(
             onPressed: () => _showResetDialog(),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Reset'),
+            child: Text('admin_admin_settings_text_reset'.tr()),
           ),
         ),
         ListTile(
-          title: const Text('Factory Reset'),
-          subtitle: const Text('WARNING: This will delete all data'),
+          title: Text('admin_admin_settings_text_factory_reset'.tr()),
+          subtitle: Text('admin_admin_settings_text_warning_this_will'.tr()),
           trailing: ElevatedButton(
             onPressed: () => _showFactoryResetDialog(),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade700,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Factory Reset'),
+            child: Text('admin_admin_settings_text_factory_reset'.tr()),
           ),
         ),
       ],
@@ -549,23 +550,23 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Backup Database'),
+        title: Text('admin_admin_settings_text_backup_database'.tr()),
         content: const Text(
             'Are you sure you want to create a backup of the database?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               // Implement backup logic
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup created successfully')),
+                SnackBar(content: Text('admin_admin_settings_success_backup_created_successfully'.tr())),
               );
             },
-            child: const Text('Backup'),
+            child: Text('admin_admin_settings_text_backup'.tr()),
           ),
         ],
       ),
@@ -576,22 +577,22 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
-        content: const Text('Are you sure you want to clear all cached data?'),
+        title: Text('admin_admin_settings_text_clear_cache'.tr()),
+        content: Text('admin_admin_settings_text_are_you_sure'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               // Implement cache clearing logic
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cache cleared successfully')),
+                SnackBar(content: Text('admin_admin_settings_success_cache_cleared_successfully'.tr())),
               );
             },
-            child: const Text('Clear'),
+            child: Text('admin_admin_settings_text_clear'.tr()),
           ),
         ],
       ),
@@ -602,13 +603,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset Settings'),
+        title: Text('admin_admin_settings_text_reset_settings'.tr()),
         content: const Text(
             'Are you sure you want to reset all settings to default values?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -617,14 +618,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               await _settingsService.resetSettings();
               await _loadSettings();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings reset successfully')),
+                SnackBar(content: Text('admin_admin_settings_success_settings_reset_successfully'.tr())),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Reset'),
+            child: Text('admin_admin_settings_text_reset'.tr()),
           ),
         ],
       ),
@@ -635,33 +636,33 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Factory Reset'),
-        content: const Column(
+        title: Text('admin_admin_settings_text_factory_reset'.tr()),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('WARNING: This will delete all data and cannot be undone.'),
-            SizedBox(height: 16),
-            Text('Are you absolutely sure you want to proceed?'),
+            Text('admin_admin_settings_text_warning_this_will_64'.tr()),
+            const SizedBox(height: 16),
+            Text('admin_admin_settings_text_are_you_absolutely'.tr()),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               // Implement factory reset logic
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Factory reset completed')),
+                SnackBar(content: Text('admin_admin_settings_text_factory_reset_completed'.tr())),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade700,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Factory Reset'),
+            child: Text('admin_admin_settings_text_factory_reset'.tr()),
           ),
         ],
       ),

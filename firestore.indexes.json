@@ -159,9 +159,52 @@
       ]
     },
     {
-      "collectionGroup": "artist_reputation",
+      "collectionGroup": "artwork",
       "queryScope": "COLLECTION",
-      "fields": [{ "fieldPath": "artistId", "order": "ASCENDING" }]
+      "fields": [
+        { "fieldPath": "contentType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "artwork",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "artistId", "order": "ASCENDING" },
+        { "fieldPath": "contentType", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "artwork",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contentType", "order": "ASCENDING" },
+        { "fieldPath": "viewCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "artwork",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contentType", "order": "ASCENDING" },
+        { "fieldPath": "appreciateCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chapters",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "releaseDate", "order": "ASCENDING" },
+        { "fieldPath": "isReleased", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chapters",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "isPaid", "order": "ASCENDING" },
+        { "fieldPath": "releaseDate", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

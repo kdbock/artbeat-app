@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/ticket_purchase.dart';
@@ -30,7 +31,11 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
   late TabController _tabController;
   int _currentTabIndex = 0;
 
-  final List<String> _filterTabs = ['All', 'Upcoming', 'Past'];
+  late final List<String> _filterTabs = [
+    'tickets_tab_all'.tr(),
+    'tickets_tab_upcoming'.tr(),
+    'tickets_tab_past'.tr(),
+  ];
 
   @override
   void initState() {
@@ -162,8 +167,8 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
               ),
             ],
           ),
-          child: const EnhancedUniversalHeader(
-            title: 'My Tickets',
+          child: EnhancedUniversalHeader(
+            title: 'tickets_title'.tr(),
             showLogo: false,
             showBackButton: true,
           ),
@@ -253,7 +258,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text('Event not found for ticket ${ticket.id}'),
+          child: Text('tickets_error_loading'.tr()),
         ),
       );
     }
@@ -342,7 +347,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Quantity: ${ticket.quantity}',
+                            '${'tickets_quantity_label'.tr()}: ${ticket.quantity}',
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
@@ -350,7 +355,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Total: ${ticket.formattedAmount}',
+                            '${'tickets_total_label'.tr()}: ${ticket.formattedAmount}',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.green,
@@ -379,7 +384,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                       child: OutlinedButton.icon(
                         onPressed: () => _showQRCode(ticket, event),
                         icon: const Icon(Icons.qr_code),
-                        label: const Text('Show QR Code'),
+                        label: Text('tickets_qr_code_button'.tr()),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -388,7 +393,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _requestRefund(ticket, event),
                           icon: const Icon(Icons.money_off),
-                          label: const Text('Request Refund'),
+                          label: Text('tickets_refund_button'.tr()),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
                           ),
@@ -409,13 +414,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     Color color;
 
     if (ticket.isRefunded) {
-      text = 'Refunded';
+      text = 'tickets_status_refunded'.tr();
       color = Colors.orange;
     } else if (!isUpcoming) {
-      text = 'Past Event';
+      text = 'tickets_status_past_event'.tr();
       color = Colors.grey;
     } else if (ticket.isActive) {
-      text = 'Active';
+      text = 'tickets_status_active'.tr();
       color = Colors.green;
     } else {
       text = ticket.status.displayName;
@@ -449,7 +454,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
           Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
-            'Failed to load tickets',
+            'tickets_error_loading'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -463,7 +468,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
             style: TextStyle(color: Colors.red.shade600),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadTickets, child: const Text('Retry')),
+          ElevatedButton(onPressed: _loadTickets, child: Text('common_retry'.tr())),
         ],
       ),
     );
@@ -475,16 +480,16 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
 
     switch (_currentTabIndex) {
       case 1: // Upcoming
-        message = 'No upcoming events';
-        subtitle = 'Your future event tickets will appear here';
+        message = 'tickets_empty_upcoming'.tr();
+        subtitle = 'tickets_empty_upcoming_desc'.tr();
         break;
       case 2: // Past
-        message = 'No past events';
-        subtitle = 'Your previous event tickets will appear here';
+        message = 'tickets_empty_past'.tr();
+        subtitle = 'tickets_empty_past_desc'.tr();
         break;
       default:
-        message = 'No tickets found';
-        subtitle = 'Purchase tickets for events to see them here';
+        message = 'tickets_empty_default'.tr();
+        subtitle = 'tickets_empty_default_desc'.tr();
     }
 
     return Padding(
@@ -551,33 +556,32 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                     ),
                   ),
 
-                  // Ticket details
                   Text(
-                    'Ticket Details',
+                    'tickets_details_title'.tr(),
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 16),
 
-                  _buildDetailRow('Event', event.title),
+                  _buildDetailRow('tickets_details_event'.tr(), event.title),
                   _buildDetailRow(
-                    'Date',
+                    'tickets_details_date'.tr(),
                     EventUtils.formatEventDateTime(event.dateTime),
                   ),
-                  _buildDetailRow('Location', event.location),
-                  _buildDetailRow('Quantity', ticket.quantity.toString()),
-                  _buildDetailRow('Total Paid', ticket.formattedAmount),
+                  _buildDetailRow('tickets_details_location'.tr(), event.location),
+                  _buildDetailRow('tickets_details_quantity'.tr(), ticket.quantity.toString()),
+                  _buildDetailRow('tickets_details_total_paid'.tr(), ticket.formattedAmount),
                   _buildDetailRow(
-                    'Purchase Date',
+                    'tickets_details_purchase_date'.tr(),
                     intl.DateFormat(
                       'MMM d, y \'at\' h:mm a',
                     ).format(ticket.purchaseDate),
                   ),
-                  _buildDetailRow('Confirmation ID', ticket.id),
-                  _buildDetailRow('Status', ticket.status.displayName),
+                  _buildDetailRow('tickets_details_confirmation_id'.tr(), ticket.id),
+                  _buildDetailRow('tickets_details_status'.tr(), ticket.status.displayName),
 
                   if (ticket.refundDate != null)
                     _buildDetailRow(
-                      'Refund Date',
+                      'tickets_details_refund_date'.tr(),
                       intl.DateFormat(
                         'MMM d, y \'at\' h:mm a',
                       ).format(ticket.refundDate!),
@@ -631,19 +635,17 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Request Refund'),
+        title: Text('tickets_refund_dialog_title'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Are you sure you want to request a refund for this ticket?',
-            ),
+            Text('tickets_refund_dialog_message'.tr()),
             const SizedBox(height: 16),
-            Text('Refund amount: ${ticket.formattedAmount}'),
+            Text('tickets_refund_amount'.tr(namedArgs: {'amount': ticket.formattedAmount})),
             const SizedBox(height: 8),
             Text(
-              'Refund policy: ${event.refundPolicy.terms}',
+              'tickets_refund_policy'.tr(namedArgs: {'terms': event.refundPolicy.terms}),
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
@@ -651,7 +653,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('tickets_refund_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -659,7 +661,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
               _processRefund(ticket);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Request Refund'),
+            child: Text('tickets_refund_confirm'.tr()),
           ),
         ],
       ),
@@ -685,19 +687,19 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Refund request submitted successfully'),
+          SnackBar(
+            content: Text('tickets_refund_success'.tr()),
             backgroundColor: Colors.green,
           ),
         );
 
-        _loadTickets(); // Refresh the list
+        _loadTickets();
       }
     } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to process refund: $e'),
+            content: Text('tickets_refund_error'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
           ),
         );

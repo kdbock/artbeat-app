@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../services/chat_service.dart';
@@ -86,7 +87,7 @@ class UserProfileScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.chat),
-                          label: const Text('Message'),
+                          label: Text('messaging_message_user'.tr()),
                           onPressed: () async {
                             try {
                               final chat = await chatService.createOrGetChat(
@@ -142,7 +143,7 @@ class UserProfileScreen extends StatelessWidget {
       children: [
         ListTile(
           leading: const Icon(Icons.block),
-          title: const Text('Block User'),
+          title: Text('messaging_block_user'.tr()),
           onTap: () async {
             Navigator.pop(context);
             try {
@@ -153,29 +154,29 @@ class UserProfileScreen extends StatelessWidget {
               await chatService.blockUser(user.id);
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('User blocked')));
+              ).showSnackBar(SnackBar(content: Text('messaging_user_profile_text_user_blocked'.tr())));
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to block user: $e')),
+                SnackBar(content: Text('messaging_user_profile_error_failed_to_block'.tr())),
               );
             }
           },
         ),
         ListTile(
           leading: const Icon(Icons.flag),
-          title: const Text('Report User'),
+          title: Text('messaging_blocked_users_text_report_user'.tr()),
           onTap: () {
             Navigator.pop(context);
             // Placeholder for report user functionality
             showDialog<void>(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Report User'),
-                content: const Text('Reporting functionality coming soon.'),
+                title: Text('messaging_blocked_users_text_report_user'.tr()),
+                content: Text('messaging_user_profile_text_reporting_functionality_coming'.tr()),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+                    child: Text('common_ok'.tr()),
                   ),
                 ],
               ),

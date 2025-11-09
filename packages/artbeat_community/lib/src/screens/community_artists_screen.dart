@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class CommunityArtistsScreen extends StatefulWidget {
@@ -85,7 +86,7 @@ class _CommunityArtistsScreenState extends State<CommunityArtistsScreen> {
         } else {
           // Fallback: show error message
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unable to load artist feed')),
+            SnackBar(content: Text('community_community_artists_text_unable_to_load'.tr())),
           );
         }
       },

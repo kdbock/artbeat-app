@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
@@ -80,7 +81,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artists: $e')),
+          SnackBar(content: Text('artist_artist_browse_error_error_loading_artists'.tr())),
         );
         setState(() {
           _isLoading = false;
@@ -206,13 +207,13 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: Text('Medium: $_selectedMedium'),
+                    label: Text('artist_artist_browse_text_medium_selectedmedium'.tr()),
                     selected: _selectedMedium != 'All',
                     onSelected: (_) => _showFilterDialog(),
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: Text('Style: $_selectedStyle'),
+                    label: Text('artist_artist_browse_text_style_selectedstyle'.tr()),
                     selected: _selectedStyle != 'All',
                     onSelected: (_) => _showFilterDialog(),
                   ),
@@ -225,7 +226,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _artists.isEmpty
-                      ? const Center(child: Text('No artists found'))
+                      ? Center(child: Text('artist_artist_browse_text_no_artists_found'.tr()))
                       : ListView.builder(
                           itemCount: _artists.length,
                           itemBuilder: (context, index) {
@@ -401,7 +402,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                       ),
                       if (artist.userType.name == core.UserType.gallery.name)
                         Chip(
-                          label: const Text('Gallery'),
+                          label: Text('artist_artist_browse_text_gallery'.tr()),
                           backgroundColor: Theme.of(context)
                               .colorScheme
                               .secondary
@@ -438,7 +439,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           )),
                       if (artist.mediums.length > 2)
                         Chip(
-                          label: Text('+${artist.mediums.length - 2}'),
+                          label: Text('artist_artist_browse_text_artistmediumslength_2'.tr()),
                           backgroundColor:
                               Theme.of(context).chipTheme.backgroundColor,
                           labelPadding:
@@ -466,7 +467,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
         String tempStyle = _selectedStyle;
 
         return AlertDialog(
-          title: const Text('Filter Artists'),
+          title: Text('artist_artist_browse_text_filter_artists'.tr()),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -515,7 +516,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text('admin_admin_payment_text_cancel'.tr()),
             ),
             TextButton(
               onPressed: () {
@@ -526,7 +527,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                 Navigator.pop(context);
                 _applyFilters();
               },
-              child: const Text('Apply'),
+              child: Text('artist_artist_browse_text_apply'.tr()),
             ),
           ],
         );

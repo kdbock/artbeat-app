@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'modern_2025_onboarding_screen.dart';
@@ -767,7 +768,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
                     curve: Curves.easeInOut,
                   );
                 },
-                child: const Text('Back'),
+                child: Text('artist_artist_journey_text_back'.tr()),
               ),
             ),
             const SizedBox(width: 16),
@@ -845,7 +846,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     } finally {
@@ -907,7 +908,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     } finally {

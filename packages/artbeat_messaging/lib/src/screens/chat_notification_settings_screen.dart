@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -60,11 +61,11 @@ class _ChatNotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notification Settings')),
+      appBar: AppBar(title: Text('messaging_chat_notification_settings_text_notification_settings'.tr())),
       body: ListView(
         children: [
           SwitchListTile(
-            title: const Text('Mute Notifications'),
+            title: Text('messaging_chat_notification_settings_text_mute_notifications'.tr()),
             value: _muted,
             onChanged: (val) async {
               setState(() => _muted = val);
@@ -72,7 +73,7 @@ class _ChatNotificationSettingsScreenState
             },
           ),
           SwitchListTile(
-            title: const Text('Show Message Previews'),
+            title: Text('messaging_chat_notification_settings_message_show_message_previews'.tr()),
             value: _showPreviews,
             onChanged: (val) async {
               setState(() => _showPreviews = val);

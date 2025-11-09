@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/index.dart';
 import '../services/local_ad_service.dart';
 import '../widgets/ad_card.dart';
@@ -39,7 +40,7 @@ class _LocalAdsListScreenState extends State<LocalAdsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Browse Ads'),
+        title: Text('ads_local_ads_list_text_browse_ads'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -110,7 +111,7 @@ class _LocalAdsListScreenState extends State<LocalAdsListScreen> {
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('ads_local_ads_list_error_error_snapshoterror'.tr()),
           );
         }
 
@@ -159,7 +160,7 @@ class _LocalAdsListScreenState extends State<LocalAdsListScreen> {
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('ads_local_ads_list_error_error_snapshoterror'.tr()),
           );
         }
 
@@ -167,7 +168,7 @@ class _LocalAdsListScreenState extends State<LocalAdsListScreen> {
 
         if (ads.isEmpty) {
           return Center(
-            child: Text('No results for "${_searchController.text}"'),
+            child: Text('ads_local_ads_list_hint_no_results_for'.tr()),
           );
         }
 

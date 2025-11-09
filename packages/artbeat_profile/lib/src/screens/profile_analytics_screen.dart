@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/profile_analytics_model.dart';
 import '../services/profile_analytics_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileAnalyticsScreen extends StatefulWidget {
   const ProfileAnalyticsScreen({super.key});
@@ -55,7 +56,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Analytics'),
+        title: Text('profile_analytics_title'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -114,7 +115,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _loadAnalytics,
-            child: const Text('Refresh'),
+            child: Text('profile_analytics_refresh'.tr()),
           ),
         ],
       ),
@@ -349,7 +350,7 @@ class _ProfileAnalyticsScreenState extends State<ProfileAnalyticsScreen> {
                                   userInfo?['displayName']?.toString() ??
                                       'Unknown User',
                                 ),
-                                subtitle: const Text('Frequent viewer'),
+                                subtitle: Text('profile_analytics_viewer'.tr()),
                                 trailing: const Icon(
                                   Icons.visibility,
                                   color: Colors.grey,

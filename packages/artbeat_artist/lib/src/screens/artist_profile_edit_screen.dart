@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/subscription_service.dart' as artist_service;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -144,7 +145,10 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
+          SnackBar(
+              content: Text(
+                  'artist_artist_profile_edit_error_error_loading_profile'
+                      .tr())),
         );
       }
     } finally {
@@ -200,14 +204,20 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Artist profile saved successfully')),
+          SnackBar(
+              content: Text(
+                  'artist_artist_profile_edit_success_artist_profile_saved'
+                      .tr())),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving profile: $e')),
+          SnackBar(
+              content: Text(
+                  'artist_artist_profile_edit_error_error_saving_profile'
+                      .tr())),
         );
       }
     } finally {
@@ -296,16 +306,18 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                     ),
                     const SizedBox(height: 8),
                     SegmentedButton<core.UserType>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                           value: core.UserType.artist,
-                          label: Text('Individual Artist'),
-                          icon: Icon(Icons.person),
+                          label: Text(
+                              'artist_artist_profile_edit_text_individual_artist'
+                                  .tr()),
+                          icon: const Icon(Icons.person),
                         ),
                         ButtonSegment(
                           value: core.UserType.gallery,
-                          label: Text('Gallery'),
-                          icon: Icon(Icons.store),
+                          label: Text('artist_artist_browse_text_gallery'.tr()),
+                          icon: const Icon(Icons.store),
                         ),
                       ],
                       selected: {_userType},
@@ -331,7 +343,9 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                         Expanded(
                           child: Column(
                             children: [
-                              const Text('Profile Image'),
+                              Text(
+                                  'artist_artist_profile_edit_text_profile_image'
+                                      .tr()),
                               const SizedBox(height: 8),
                               GestureDetector(
                                 onTap: _pickProfileImage,
@@ -367,7 +381,8 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                         Expanded(
                           child: Column(
                             children: [
-                              const Text('Cover Image'),
+                              Text('artist_artist_profile_edit_text_cover_image'
+                                  .tr()),
                               const SizedBox(height: 8),
                               GestureDetector(
                                 onTap: _pickCoverImage,
@@ -463,7 +478,7 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                     const SizedBox(height: 8),
 
                     // Mediums
-                    const Text('Mediums'),
+                    Text('artist_artist_profile_edit_text_mediums'.tr()),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -501,7 +516,7 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                     const SizedBox(height: 16),
 
                     // Styles
-                    const Text('Styles'),
+                    Text('artist_artist_profile_edit_text_styles'.tr()),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,

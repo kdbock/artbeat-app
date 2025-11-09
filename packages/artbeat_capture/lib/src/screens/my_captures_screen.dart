@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
@@ -138,7 +139,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _loadMyCaptures,
-                      child: const Text('Retry'),
+                      child: Text('admin_admin_settings_text_retry'.tr()),
                     ),
                   ],
                 ),
@@ -166,7 +167,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.camera),
-                      label: const Text('Take Photo'),
+                      label: Text('capture_my_captures_text_take_photo'.tr()),
                       onPressed: () {
                         Navigator.pushNamed(context, '/capture/camera');
                       },
@@ -211,7 +212,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                           _filteredCaptures = _myCaptures;
                         });
                       },
-                      child: const Text('Clear Search'),
+                      child: Text('capture_my_captures_hint_clear_search'.tr()),
                     ),
                   ],
                 ),

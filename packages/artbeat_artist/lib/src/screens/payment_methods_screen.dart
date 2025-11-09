@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -267,7 +268,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loadPaymentMethods,
-                child: const Text('Retry'),
+                child: Text('admin_admin_settings_text_retry'.tr()),
               ),
             ],
           ),
@@ -296,7 +297,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             ElevatedButton.icon(
               onPressed: _addPaymentMethod,
               icon: const Icon(Icons.add),
-              label: const Text('Add Payment Method'),
+              label: Text('artist_payment_methods_text_add_payment_method'.tr()),
             ),
           ],
         ),
@@ -413,7 +414,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                   if (!isDefault)
                     TextButton(
                       onPressed: () => _setDefaultPaymentMethod(method.id),
-                      child: const Text('Set as Default'),
+                      child: Text('artist_payment_methods_text_set_as_default'.tr()),
                     ),
                   const SizedBox(width: 8),
                   TextButton(

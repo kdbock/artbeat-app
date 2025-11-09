@@ -39,6 +39,9 @@ dependencies:
   audioplayers: ^6.0.0
   logging: ^1.2.0
 
+  # Localization
+  easy_localization: ^3.0.7
+
   # For information on the generic Dart part of this file, see the
   # following page: https://dart.dev/tools/pub/pubspec
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -85,7 +86,7 @@ class _CreateLocalAdScreenState extends State<CreateLocalAdScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image: $e')),
+          SnackBar(content: Text('ads_create_local_ad_error_failed_to_upload'.tr())),
         );
       }
       return null;
@@ -135,14 +136,14 @@ class _CreateLocalAdScreenState extends State<CreateLocalAdScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ad posted successfully!')),
+          SnackBar(content: Text('ads_create_local_ad_success_ad_posted_successfully'.tr())),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post ad: $e')),
+          SnackBar(content: Text('ads_create_local_ad_error_failed_to_post'.tr())),
         );
       }
     } finally {
@@ -156,7 +157,7 @@ class _CreateLocalAdScreenState extends State<CreateLocalAdScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Ad'),
+        title: Text('ads_create_local_ad_text_create_ad'.tr()),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,

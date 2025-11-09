@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/message_model.dart';
@@ -96,7 +97,7 @@ class _MessageThreadViewScreenState extends State<MessageThreadViewScreen> {
       AppLogger.error('Error sending reply: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to send reply')));
+      ).showSnackBar(SnackBar(content: Text('messaging_message_thread_view_error_failed_to_send'.tr())));
     }
   }
 
@@ -137,7 +138,7 @@ class _MessageThreadViewScreenState extends State<MessageThreadViewScreen> {
 
   Widget _buildMessagesList() {
     if (_threadMessages.isEmpty) {
-      return const Center(child: Text('No messages in this thread'));
+      return Center(child: Text('messaging_message_thread_view_message_no_messages_in'.tr()));
     }
 
     return ListView.builder(

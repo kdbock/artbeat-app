@@ -40,6 +40,7 @@ dependencies:
   geoflutterfire_plus: ^0.0.3
   pedometer: ^4.0.2
   logging: ^1.2.0
+  easy_localization: ^3.0.7
 
   artbeat_capture:
     path: ../artbeat_capture

@@ -17,3 +17,5 @@ export 'curated_gallery_screen.dart';
 export 'artwork_featured_screen.dart';
 export 'artwork_recent_screen.dart';
 export 'artwork_trending_screen.dart';
+export 'upload_choice_screen.dart';
+export 'written_content_upload_screen.dart';

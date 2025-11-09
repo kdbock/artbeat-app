@@ -6,6 +6,7 @@ import 'package:artbeat_art_walk/src/services/achievement_service.dart'
     as art_walk;
 import 'package:artbeat_art_walk/src/models/achievement_model.dart'
     as art_walk_model;
+import 'package:easy_localization/easy_localization.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -176,7 +177,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
+                  child: Text('profile_achievements_close'.tr()),
                 ),
               ),
             ],
@@ -256,7 +257,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Achievements'),
+        title: Text('profile_achievements_title'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -265,7 +266,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               await _loadAchievements();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Achievements refreshed')),
+                  SnackBar(content: Text('profile_achievements_refreshed'.tr())),
                 );
               }
             },

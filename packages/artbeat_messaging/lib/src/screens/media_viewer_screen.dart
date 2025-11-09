@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -97,7 +98,7 @@ class MediaViewerScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Media saved to ${file.path}'),
+          content: Text('messaging_media_viewer_success_media_saved_to'.tr()),
           backgroundColor: Colors.green,
         ),
       );
@@ -105,8 +106,8 @@ class MediaViewerScreen extends StatelessWidget {
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to download media'),
+        SnackBar(
+          content: Text('messaging_media_viewer_error_failed_to_download'.tr()),
           backgroundColor: Colors.red,
         ),
       );

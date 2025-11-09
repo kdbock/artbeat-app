@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/event_analytics_service_phase3.dart';
 import '../models/artbeat_event.dart';
 
@@ -191,7 +191,7 @@ class _AdvancedAnalyticsDashboardScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.artistId != null ? 'My Analytics' : 'Platform Analytics',
+          widget.artistId != null ? 'event_analytics_my'.tr() : 'event_analytics_platform'.tr(),
         ),
         actions: [
           _buildPeriodSelector(),
@@ -262,7 +262,7 @@ class _AdvancedAnalyticsDashboardScreenState
           Icon(Icons.error, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
-            'Error loading analytics',
+            'event_analytics_error_loading'.tr(),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -274,7 +274,7 @@ class _AdvancedAnalyticsDashboardScreenState
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _loadAnalyticsData,
-            child: const Text('Retry'),
+            child: Text('event_analytics_retry'.tr()),
           ),
         ],
       ),
@@ -294,7 +294,7 @@ class _AdvancedAnalyticsDashboardScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Analytics Overview',
+              'event_analytics_overview'.tr(),
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
@@ -319,28 +319,28 @@ class _AdvancedAnalyticsDashboardScreenState
       childAspectRatio: 1.5,
       children: [
         _buildMetricCard(
-          'Total Events',
+          'event_analytics_total_events'.tr(),
           '${_overviewMetrics!['totalEvents']}',
           Icons.event,
           Colors.blue,
           '${_overviewMetrics!['growthRate'].toStringAsFixed(1)}%',
         ),
         _buildMetricCard(
-          'Total Views',
+          'event_analytics_total_views'.tr(),
           _formatNumber(_overviewMetrics!['totalViews']),
           Icons.visibility,
           Colors.green,
           '+12.5%',
         ),
         _buildMetricCard(
-          'Revenue',
+          'event_analytics_revenue'.tr(),
           '\$${_formatNumber(_overviewMetrics!['totalRevenue'])}',
           Icons.attach_money,
           Colors.orange,
           '+8.2%',
         ),
         _buildMetricCard(
-          'Engagement',
+          'event_analytics_engagement'.tr(),
           '${_overviewMetrics!['averageEngagement'].toStringAsFixed(1)}%',
           Icons.thumb_up,
           Colors.purple,

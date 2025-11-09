@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
@@ -110,21 +111,21 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Artwork'),
+        title: Text('artist_my_artwork_text_delete_artwork'.tr()),
         content: Text(
           'Are you sure you want to delete "${artwork.title}"? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('Delete'),
+            child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
           ),
         ],
       ),
@@ -140,19 +141,19 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
       // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                SizedBox(width: 16),
-                Text('Deleting artwork...'),
+                const SizedBox(width: 16),
+                Text('artist_my_artwork_text_deleting_artwork'.tr()),
               ],
             ),
-            duration: Duration(seconds: 30), // Long duration for deletion
+            duration: const Duration(seconds: 30), // Long duration for deletion
           ),
         );
       }
@@ -166,7 +167,7 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('"${artwork.title}" has been deleted successfully'),
+            content: Text('artist_my_artwork_success_artworktitle_has_been'.tr()),
             backgroundColor: core.ArtbeatColors.primaryGreen,
           ),
         );
@@ -182,7 +183,7 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete artwork: $e'),
+            content: Text('artist_my_artwork_error_failed_to_delete'.tr()),
             backgroundColor: core.ArtbeatColors.error,
           ),
         );
@@ -243,7 +244,7 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _refreshArtwork,
-              child: const Text('Retry'),
+              child: Text('admin_admin_settings_text_retry'.tr()),
             ),
           ],
         ),
@@ -274,7 +275,7 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
             ElevatedButton.icon(
               onPressed: _navigateToUpload,
               icon: const Icon(Icons.add_photo_alternate),
-              label: const Text('Upload Artwork'),
+              label: Text('artist_artist_dashboard_text_upload_artwork'.tr()),
             ),
           ],
         ),
@@ -300,7 +301,7 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
                   TextButton.icon(
                     onPressed: _navigateToUpload,
                     icon: const Icon(Icons.add),
-                    label: const Text('Upload'),
+                    label: Text('artist_my_artwork_text_upload'.tr()),
                   ),
                 ],
               ),
@@ -444,13 +445,13 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit, size: 18),
-                        SizedBox(width: 8),
-                        Text('Edit'),
+                        const Icon(Icons.edit, size: 18),
+                        const SizedBox(width: 8),
+                        Text('admin_modern_unified_admin_dashboard_text_edit'.tr()),
                       ],
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/logger.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Advanced analytics dashboard providing cross-package insights
 class AdvancedAnalyticsDashboard extends StatefulWidget {
@@ -350,7 +351,7 @@ class _AdvancedAnalyticsDashboardState extends State<AdvancedAnalyticsDashboard>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Advanced Analytics'),
+        title: Text('core_analytics_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -371,10 +372,10 @@ class _AdvancedAnalyticsDashboardState extends State<AdvancedAnalyticsDashboard>
               _loadAnalyticsData();
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: '1d', child: Text('Last 24 hours')),
-              const PopupMenuItem(value: '7d', child: Text('Last 7 days')),
-              const PopupMenuItem(value: '30d', child: Text('Last 30 days')),
-              const PopupMenuItem(value: '90d', child: Text('Last 90 days')),
+              PopupMenuItem(value: '1d', child: Text('core_analytics_last24h'.tr())),
+              PopupMenuItem(value: '7d', child: Text('core_analytics_last7d'.tr())),
+              PopupMenuItem(value: '30d', child: Text('core_analytics_last30d'.tr())),
+              PopupMenuItem(value: '90d', child: Text('core_analytics_last90d'.tr())),
             ],
           ),
         ],

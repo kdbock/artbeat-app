@@ -49,6 +49,7 @@ dependencies:
   audioplayers: ^6.0.0
   image_editor_plus: ^1.0.4
   file_picker: ^8.0.0+1
+  easy_localization: ^3.0.7
 
 flutter:
   uses-material-design: true

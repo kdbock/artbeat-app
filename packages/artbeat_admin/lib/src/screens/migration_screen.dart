@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/migration_service.dart';
 
 /// Screen for managing data migration to standardized moderation status
@@ -144,7 +145,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text('admin_admin_payment_text_cancel'.tr()),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -152,7 +153,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Confirm'),
+                child: Text('admin_migration_text_confirm'.tr()),
               ),
             ],
           ),
@@ -164,7 +165,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Data Migration'),
+        title: Text('admin_migration_text_data_migration'.tr()),
         backgroundColor: Colors.blue[800],
         foregroundColor: Colors.white,
         actions: [
@@ -252,8 +253,8 @@ class _MigrationScreenState extends State<MigrationScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _migrationStatus == null
-                      ? const Center(
-                          child: Text('Failed to load migration status'))
+                      ? Center(
+                          child: Text('admin_migration_error_failed_to_load'.tr()))
                       : _buildMigrationStatusList(),
             ),
 
@@ -287,7 +288,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
                     onPressed:
                         _isMigrating || _isLoading ? null : _rollbackMigration,
                     icon: const Icon(Icons.undo),
-                    label: const Text('Rollback'),
+                    label: Text('admin_migration_text_rollback'.tr()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -305,7 +306,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
                 onPressed:
                     _isMigrating || _isLoading ? null : _migrateGeoFields,
                 icon: const Icon(Icons.location_on),
-                label: const Text('Migrate Geo Fields for Captures'),
+                label: Text('admin_migration_text_migrate_geo_fields'.tr()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,

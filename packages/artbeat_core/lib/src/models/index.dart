@@ -11,3 +11,6 @@ export 'gift_campaign_model.dart';
 export 'gift_subscription_model.dart';
 export 'artwork_model.dart';
 export 'in_app_purchase_models.dart';
+export 'artwork_content_type.dart';
+export 'chapter_model.dart';
+export 'reading_analytics_model.dart';

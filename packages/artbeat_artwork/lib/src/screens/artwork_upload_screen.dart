@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -148,7 +149,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
+          SnackBar(content: Text('artwork_upload_pick_image'.tr(namedArgs: {'error': e.toString()}))),
         );
       }
     }
@@ -255,19 +256,19 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_imageFile == null && _imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image')),
+        SnackBar(content: Text('artwork_upload_no_image'.tr())),
       );
       return;
     }
     if (_medium.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a medium')),
+        SnackBar(content: Text('artwork_upload_no_medium'.tr())),
       );
       return;
     }
     if (_styles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one style')),
+        SnackBar(content: Text('artwork_upload_no_styles'.tr())),
       );
       return;
     }
@@ -333,14 +334,14 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Artwork saved successfully')),
+          SnackBar(content: Text('artwork_upload_success'.tr())),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving artwork: $e')),
+          SnackBar(content: Text('artwork_upload_error'.tr(namedArgs: {'error': e.toString()}))),
         );
       }
     } finally {

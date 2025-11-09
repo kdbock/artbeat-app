@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
@@ -227,8 +227,9 @@ class _GalleryAnalyticsDashboardScreenState
   /// Build the revenue chart
   Widget _buildRevenueChart() {
     if (_revenueData.isEmpty) {
-      return const Center(
-        child: Text('No revenue data available for selected time period'),
+      return Center(
+        child: Text(
+            'artist_gallery_analytics_dashboard_text_no_revenue_data'.tr()),
       );
     }
 
@@ -311,10 +312,12 @@ class _GalleryAnalyticsDashboardScreenState
   /// Build table of top performing artists
   Widget _buildArtistPerformanceTable() {
     if (_artistPerformance.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Text('No artist performance data available'),
+          child: Text(
+              'artist_gallery_analytics_dashboard_text_no_artist_performance'
+                  .tr()),
         ),
       );
     }
@@ -322,12 +325,23 @@ class _GalleryAnalyticsDashboardScreenState
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Artist')),
-          DataColumn(label: Text('Artwork Views')),
-          DataColumn(label: Text('Sales')),
-          DataColumn(label: Text('Revenue')),
-          DataColumn(label: Text('Commission')),
+        columns: [
+          DataColumn(
+              label:
+                  Text('artist_gallery_analytics_dashboard_text_artist'.tr())),
+          DataColumn(
+              label: Text(
+                  'artist_gallery_analytics_dashboard_text_artwork_views'
+                      .tr())),
+          DataColumn(
+              label:
+                  Text('artist_gallery_analytics_dashboard_text_sales'.tr())),
+          DataColumn(
+              label:
+                  Text('artist_gallery_analytics_dashboard_text_revenue'.tr())),
+          DataColumn(
+              label: Text(
+                  'artist_gallery_analytics_dashboard_text_commission'.tr())),
         ],
         rows: _artistPerformance
             .map((artist) => DataRow(cells: [
@@ -368,7 +382,10 @@ class _GalleryAnalyticsDashboardScreenState
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Gallery Analytics')),
+        appBar: AppBar(
+            title: Text(
+                'artist_gallery_analytics_dashboard_text_gallery_analytics'
+                    .tr())),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -376,7 +393,10 @@ class _GalleryAnalyticsDashboardScreenState
     // Show upgrade prompt for non-premium users
     if (!_isPremiumGallery) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Gallery Analytics')),
+        appBar: AppBar(
+            title: Text(
+                'artist_gallery_analytics_dashboard_text_gallery_analytics'
+                    .tr())),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -416,7 +436,9 @@ class _GalleryAnalyticsDashboardScreenState
                       vertical: 12,
                     ),
                   ),
-                  child: const Text('Upgrade to Gallery Plan'),
+                  child: Text(
+                      'artist_gallery_analytics_dashboard_text_upgrade_to_gallery'
+                          .tr()),
                 ),
               ],
             ),
@@ -468,21 +490,28 @@ class _GalleryAnalyticsDashboardScreenState
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'week',
-                child: Text('Last 7 Days'),
+                child: Text(
+                    'artist_gallery_analytics_dashboard_text_last_7_days'.tr()),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'month',
-                child: Text('Last 30 Days'),
+                child: Text(
+                    'artist_gallery_analytics_dashboard_text_last_30_days'
+                        .tr()),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'quarter',
-                child: Text('Last 90 Days'),
+                child: Text(
+                    'artist_gallery_analytics_dashboard_text_last_90_days'
+                        .tr()),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'year',
-                child: Text('Last 12 Months'),
+                child: Text(
+                    'artist_gallery_analytics_dashboard_text_last_12_months'
+                        .tr()),
               ),
             ],
           ),
@@ -602,7 +631,9 @@ class _GalleryAnalyticsDashboardScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
-                          title: const Text('Pending Commissions'),
+                          title: Text(
+                              'artist_gallery_analytics_dashboard_text_pending_commissions'
+                                  .tr()),
                           trailing: Text(
                             '\$${totalPendingCommission.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -613,7 +644,9 @@ class _GalleryAnalyticsDashboardScreenState
                         ),
                         const Divider(),
                         ListTile(
-                          title: const Text('Paid Commissions'),
+                          title: Text(
+                              'artist_gallery_analytics_dashboard_text_paid_commissions'
+                                  .tr()),
                           trailing: Text(
                             '\$${totalPaidCommission.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -624,7 +657,9 @@ class _GalleryAnalyticsDashboardScreenState
                         ),
                         const Divider(),
                         ListTile(
-                          title: const Text('Total Commissions'),
+                          title: Text(
+                              'artist_gallery_analytics_dashboard_text_total_commissions'
+                                  .tr()),
                           trailing: Text(
                             '\$${(totalPendingCommission + totalPaidCommission).toStringAsFixed(2)}',
                             style: TextStyle(
@@ -653,7 +688,9 @@ class _GalleryAnalyticsDashboardScreenState
                       );
                     },
                     icon: const Icon(Icons.download),
-                    label: const Text('Export Report'),
+                    label: Text(
+                        'artist_gallery_analytics_dashboard_text_export_report'
+                            .tr()),
                   ),
                 ),
                 const SizedBox(height: 24),

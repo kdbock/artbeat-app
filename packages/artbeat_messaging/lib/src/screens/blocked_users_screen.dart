@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/user_model.dart' as messaging;
@@ -38,7 +39,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading blocked users: $e'),
+            content: Text('messaging_blocked_users_error_error_loading_blocked'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -168,21 +169,21 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unblock User'),
+        title: Text('messaging_blocked_users_text_unblock_user'.tr()),
         content: Text(
           'Are you sure you want to unblock ${user.displayName}? They will be able to message you again.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('artwork_edit_delete_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
               await _performUnblock(user);
             },
-            child: const Text('Unblock'),
+            child: Text('messaging_blocked_users_text_unblock'.tr()),
           ),
         ],
       ),
@@ -210,7 +211,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error unblocking user: $e'),
+            content: Text('messaging_blocked_users_error_error_unblocking_user'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -226,7 +227,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('View Profile'),
+            title: Text('messaging_blocked_users_text_view_profile'.tr()),
             onTap: () {
               Navigator.pop(context);
               _viewProfile(user);
@@ -234,7 +235,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.block_outlined),
-            title: const Text('Unblock'),
+            title: Text('messaging_blocked_users_text_unblock'.tr()),
             onTap: () {
               Navigator.pop(context);
               _unblockUser(user);
@@ -242,7 +243,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.report),
-            title: const Text('Report User'),
+            title: Text('messaging_blocked_users_text_report_user'.tr()),
             onTap: () {
               Navigator.pop(context);
               _reportUser(user);
@@ -257,11 +258,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Report User'),
+        title: Text('messaging_blocked_users_text_report_user'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Report ${user.displayName} for inappropriate behavior?'),
+            Text('messaging_blocked_users_label_report_userdisplayname_for'.tr()),
             const SizedBox(height: 16),
             const TextField(
               decoration: InputDecoration(
@@ -275,7 +276,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('artwork_edit_delete_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -287,21 +288,21 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                 );
                 await chatService.reportUser(user.id, 'Blocked user report');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('User reported successfully'),
+                  SnackBar(
+                    content: Text('messaging_blocked_users_success_user_reported_successfully'.tr()),
                     backgroundColor: Colors.green,
                   ),
                 );
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Failed to report user: $e'),
+                    content: Text('messaging_blocked_users_error_failed_to_report'.tr()),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
-            child: const Text('Report'),
+            child: Text('messaging_blocked_users_text_report'.tr()),
           ),
         ],
       ),

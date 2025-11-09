@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -79,7 +80,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading art walk: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_edit_error_error_loading_art'.tr())));
       }
     } finally {
       if (mounted) {
@@ -106,7 +107,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_edit_error_error_picking_image'.tr())));
       }
     }
   }
@@ -146,7 +147,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error updating art walk: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_edit_error_error_updating_art'.tr())));
       }
     } finally {
       if (mounted) {
@@ -162,19 +163,19 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Art Walk'),
+        title: Text('art_walk_admin_art_walk_moderation_text_delete_art_walk'.tr()),
         content: const Text(
           'Are you sure you want to delete this art walk? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
           ),
         ],
       ),
@@ -190,7 +191,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Art walk deleted successfully')),
+            SnackBar(content: Text('art_walk_admin_art_walk_moderation_success_art_walk_deleted'.tr())),
           );
           Navigator.of(context).pop(true); // Return true to indicate deletion
         }
@@ -198,7 +199,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         // debugPrint('Error deleting art walk: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting art walk: $e')),
+            SnackBar(content: Text('art_walk_admin_art_walk_moderation_error_error_deleting_art'.tr())),
           );
         }
       } finally {
@@ -237,9 +238,9 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     // Check if artwork is already in the art walk
     if (_artworkIds.contains(artworkId)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This artwork is already in your art walk'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text('art_walk_art_walk_edit_text_this_artwork_is'.tr()),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -252,9 +253,9 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
 
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Artwork added to art walk successfully'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text('art_walk_art_walk_edit_success_artwork_added_to'.tr()),
+        duration: const Duration(seconds: 2),
       ),
     );
 
@@ -275,7 +276,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _artWalk == null
-            ? const Center(child: Text('Art walk not found'))
+            ? Center(child: Text('art_walk_art_walk_detail_text_art_walk_not'.tr()))
             : _buildEditForm(),
       ),
     );
@@ -351,7 +352,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         OutlinedButton.icon(
           onPressed: _pickCoverImage,
           icon: const Icon(Icons.photo_library),
-          label: const Text('Change Cover Image'),
+          label: Text('art_walk_art_walk_edit_text_change_cover_image'.tr()),
         ),
       ],
     );
@@ -516,7 +517,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
                   });
                 },
                 icon: const Icon(Icons.add),
-                label: const Text('Add Artwork'),
+                label: Text('art_walk_art_walk_edit_text_add_artwork'.tr()),
               ),
             ],
           ),
@@ -535,8 +536,8 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         ),
         const SizedBox(height: 16),
         SwitchListTile(
-          title: const Text('Public Art Walk'),
-          subtitle: const Text('Make this art walk visible to other users'),
+          title: Text('art_walk_art_walk_edit_text_public_art_walk'.tr()),
+          subtitle: Text('art_walk_art_walk_edit_text_make_this_art'.tr()),
           value: _isPublic,
           onChanged: (value) {
             setState(() {
@@ -566,7 +567,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save Changes'),
+                : Text('admin_admin_user_detail_text_save_changes'.tr()),
           ),
         ),
         const SizedBox(height: 16),
@@ -579,7 +580,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
               side: const BorderSide(color: Colors.red),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Delete Art Walk'),
+            child: Text('art_walk_admin_art_walk_moderation_text_delete_art_walk'.tr()),
           ),
         ),
       ],

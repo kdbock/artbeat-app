@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -26,7 +27,7 @@ class EnhancedCreateColors {
   static const Color cardBackground = ArtWalkDesignSystem.cardBackground;
   static const Color textPrimary = ArtWalkDesignSystem.textPrimary;
   static const Color textSecondary = ArtWalkDesignSystem.textSecondary;
-  static const Color headingDarkPurple = Color(
+  static Color headingDarkPurple = const Color(
     0xFF2D1B69,
   ); // Dark purple, almost black
 }
@@ -293,7 +294,7 @@ class _EnhancedArtWalkCreateScreenState
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading art pieces: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_create_error_error_loading_art'.tr())));
       }
     } finally {
       if (mounted) {
@@ -421,7 +422,7 @@ class _EnhancedArtWalkCreateScreenState
 
     if (_selectedArtPieces.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one art piece')),
+        SnackBar(content: Text('art_walk_enhanced_art_walk_create_text_please_select_at'.tr())),
       );
       return;
     }
@@ -460,7 +461,7 @@ class _EnhancedArtWalkCreateScreenState
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Art Walk updated successfully!')),
+            SnackBar(content: Text('art_walk_enhanced_art_walk_create_success_art_walk_updated'.tr())),
           );
           Navigator.of(context).pop();
         }
@@ -526,7 +527,7 @@ class _EnhancedArtWalkCreateScreenState
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Art Walk created successfully!')),
+            SnackBar(content: Text('art_walk_enhanced_art_walk_create_success_art_walk_created'.tr())),
           );
 
           // Navigate to review screen instead of just popping back
@@ -646,16 +647,16 @@ class _EnhancedArtWalkCreateScreenState
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Leave Art Walk Creation?'),
-            content: const Text('Your progress will be lost.'),
+            title: Text('art_walk_enhanced_art_walk_create_text_leave_art_walk'.tr()),
+            content: Text('art_walk_enhanced_art_walk_create_text_your_progress_will'.tr()),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Stay'),
+                child: Text('art_walk_enhanced_art_walk_create_text_stay'.tr()),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Leave'),
+                child: Text('art_walk_enhanced_art_walk_create_text_leave'.tr()),
               ),
             ],
           ),
@@ -1005,7 +1006,7 @@ class _EnhancedArtWalkCreateScreenState
           const Center(child: CircularProgressIndicator())
         else
           _availableArtPieces.isEmpty
-              ? const Center(child: Text('No art pieces available.'))
+              ? Center(child: Text('art_walk_enhanced_art_walk_create_text_no_art_pieces'.tr()))
               : SizedBox(
                   height: 300, // Fixed height for grid
                   child: GridView.builder(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/weekly_goal_model.dart';
 import '../services/weekly_goals_service.dart';
@@ -55,7 +56,7 @@ class _WeeklyGoalsScreenState extends State<WeeklyGoalsScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Weekly Goals'),
+        title: Text('art_walk_weekly_goals_text_weekly_goals'.tr()),
         backgroundColor: const Color(0xFF6C63FF),
         foregroundColor: Colors.white,
         elevation: 0,

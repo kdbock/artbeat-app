@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/chat_service.dart';
 import '../models/message_model.dart';
 
@@ -17,7 +18,7 @@ class _StarredMessagesScreenState extends State<StarredMessagesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Starred Messages'),
+        title: Text('messaging_starred_messages_message_starred_messages'.tr()),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -94,7 +95,7 @@ class _StarredMessagesScreenState extends State<StarredMessagesScreen> {
     // In a real implementation, you'd need to find which chat contains this message
     // For now, we'll show a placeholder
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigate to message in chat')),
+      SnackBar(content: Text('messaging_starred_messages_message_navigate_to_message'.tr())),
     );
   }
 
@@ -106,11 +107,11 @@ class _StarredMessagesScreenState extends State<StarredMessagesScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Message unstarred')));
+      ).showSnackBar(SnackBar(content: Text('messaging_starred_messages_message_message_unstarred'.tr())));
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('messaging_starred_messages_error_error_e'.tr())));
     }
   }
 }
@@ -164,23 +165,23 @@ class _StarredMessageTile extends StatelessWidget {
         trailing: PopupMenuButton(
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'unstar',
               child: Row(
                 children: [
-                  Icon(Icons.star_border),
-                  SizedBox(width: 8),
-                  Text('Remove star'),
+                  const Icon(Icons.star_border),
+                  const SizedBox(width: 8),
+                  Text('messaging_starred_messages_text_remove_star'.tr()),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'navigate',
               child: Row(
                 children: [
-                  Icon(Icons.open_in_new),
-                  SizedBox(width: 8),
-                  Text('Go to message'),
+                  const Icon(Icons.open_in_new),
+                  const SizedBox(width: 8),
+                  Text('messaging_starred_messages_message_go_to_message'.tr()),
                 ],
               ),
             ),

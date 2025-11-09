@@ -387,8 +387,19 @@ class AppRouter {
   Route<dynamic>? _handleArtworkRoutes(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.artworkUpload:
+      case AppRoutes.artworkUploadChoice:
+        return RouteUtils.createMainLayoutRoute(
+          child: const artwork.UploadChoiceScreen(),
+        );
+
+      case AppRoutes.artworkUploadVisual:
         return RouteUtils.createMainLayoutRoute(
           child: const artwork.EnhancedArtworkUploadScreen(),
+        );
+
+      case AppRoutes.artworkUploadWritten:
+        return RouteUtils.createMainLayoutRoute(
+          child: const artwork.WrittenContentUploadScreen(),
         );
 
       case AppRoutes.artworkBrowse:

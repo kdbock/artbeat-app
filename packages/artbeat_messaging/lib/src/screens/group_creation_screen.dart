@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../services/chat_service.dart';
@@ -29,7 +30,7 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Group'),
+        title: Text('messaging_chat_list_text_new_group'.tr()),
         actions: [
           if (_selectedUsers.isNotEmpty &&
               _groupNameController.text.trim().isNotEmpty)
@@ -56,13 +57,13 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to create group: ${e.toString()}'),
+                      content: Text('messaging_group_creation_error_failed_to_create'.tr()),
                       backgroundColor: theme.colorScheme.error,
                     ),
                   );
                 }
               },
-              child: const Text('Create'),
+              child: Text('core_coupon_create_button'.tr()),
             ),
         ],
       ),

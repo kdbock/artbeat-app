@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
@@ -17,7 +18,7 @@ class CaptureUploadColors {
   static const Color backgroundGradientEnd = Color(0xFFE8F5E8);
   static const Color cardBackground = Color(0xFFFFFFF8);
   static const Color textPrimary = Color(0xFFBF360C);
-  static const Color textSecondary = Color(0xFFFF5722);
+  static Color textSecondary = const Color(0xFFFF5722);
 }
 
 class CaptureUploadScreen extends StatefulWidget {
@@ -148,7 +149,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled.')),
+        SnackBar(content: Text('capture_capture_upload_text_location_services_are'.tr())),
       );
       return;
     }
@@ -158,7 +159,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied')),
+          SnackBar(content: Text('capture_capture_upload_text_location_permissions_are'.tr())),
         );
         return;
       }
@@ -186,7 +187,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
+      ).showSnackBar(SnackBar(content: Text('capture_capture_upload_error_failed_to_get'.tr())));
     }
   }
 
@@ -214,7 +215,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text('Art Captured!'),
+              Text('capture_capture_upload_text_art_captured'.tr()),
             ],
           ),
           content: Column(
@@ -290,7 +291,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                   (route) => false, // Remove all previous routes
                 );
               },
-              child: const Text('Go to Dashboard'),
+              child: Text('capture_capture_upload_text_go_to_dashboard'.tr()),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -311,7 +312,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                 });
               },
               icon: const Icon(Icons.add_location),
-              label: const Text('Create Art Walk'),
+              label: Text('art_walk_art_walk_list_text_create_art_walk'.tr()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: CaptureUploadColors.primaryDeepOrange,
                 foregroundColor: Colors.white,
@@ -337,8 +338,8 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     if (!_disclaimerAccepted) {
       core.AppLogger.warning('CaptureUpload: Disclaimer not accepted');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please accept the public art disclaimer'),
+        SnackBar(
+          content: Text('capture_capture_upload_text_please_accept_the'.tr()),
         ),
       );
       return;
@@ -505,7 +506,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                         ),
                       ],
                     )
-                  : const Text('Submit'),
+                  : Text('capture_capture_upload_text_submit'.tr()),
             ),
           ),
         ],
@@ -712,7 +713,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       onChanged: (value) {
                         setState(() => _disclaimerAccepted = value ?? false);
                       },
-                      title: const Text('Public Art Disclaimer'),
+                      title: Text('capture_capture_upload_text_public_art_disclaimer'.tr()),
                       subtitle: const Text(
                         'I confirm this is public art in a safe, accessible location. No private property, unsafe areas, nudity, or derogatory content.',
                         style: TextStyle(fontSize: 12),
@@ -730,8 +731,8 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                                 'DEBUG: GestureDetector tapped!',
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('GestureDetector was tapped!'),
+                                SnackBar(
+                                  content: Text('capture_capture_upload_button_gesturedetector_was_tapped'.tr()),
                                 ),
                               );
                               _submitCapture();

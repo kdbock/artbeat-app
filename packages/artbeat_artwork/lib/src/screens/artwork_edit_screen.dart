@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
@@ -234,18 +235,17 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Artwork'),
-        content: const Text(
-            'Are you sure you want to delete this artwork? This action cannot be undone.'),
+        title: Text('artwork_edit_delete_confirm_title'.tr()),
+        content: Text('artwork_edit_delete_confirm_message'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('artwork_edit_delete_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('artwork_edit_delete_confirm_button'.tr()),
           ),
         ],
       ),
@@ -287,14 +287,14 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const EnhancedUniversalHeader(
-          title: 'Edit Artwork',
+        appBar: EnhancedUniversalHeader(
+          title: 'artwork_edit_title'.tr(),
           showLogo: false,
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _artwork == null
-                ? const Center(child: Text('Artwork not found'))
+                ? Center(child: Text('artwork_edit_not_found'.tr()))
                 : _buildEditForm(),
       ),
     );
@@ -348,9 +348,9 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Artwork Image',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_image_label'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Container(
@@ -377,7 +377,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         OutlinedButton.icon(
           onPressed: _pickImage,
           icon: const Icon(Icons.photo_library),
-          label: const Text('Change Image'),
+          label: Text('artwork_edit_change_image'.tr()),
         ),
       ],
     );
@@ -387,20 +387,20 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Basic Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_basic_info'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _titleController,
-          decoration: const InputDecoration(
-            labelText: 'Title *',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_title_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter a title';
+              return 'artwork_edit_title_error'.tr();
             }
             return null;
           },
@@ -408,14 +408,14 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         const SizedBox(height: 16),
         TextFormField(
           controller: _descriptionController,
-          decoration: const InputDecoration(
-            labelText: 'Description *',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_description_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
           maxLines: 3,
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter a description';
+              return 'artwork_edit_description_error'.tr();
             }
             return null;
           },
@@ -428,16 +428,16 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Medium & Styles',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_medium_styles'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           initialValue: _medium.isEmpty ? null : _medium,
-          decoration: const InputDecoration(
-            labelText: 'Medium *',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_medium_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
           items: _availableMediums.map((medium) {
             return DropdownMenuItem(
@@ -452,13 +452,13 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
           },
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please select a medium';
+              return 'artwork_edit_medium_error'.tr();
             }
             return null;
           },
         ),
         const SizedBox(height: 16),
-        const Text('Styles:'),
+        Text('artwork_edit_styles_label'.tr()),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -488,50 +488,50 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Additional Details',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_additional_details'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _dimensionsController,
-          decoration: const InputDecoration(
-            labelText: 'Dimensions',
-            hintText: 'e.g., 24" x 36"',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_dimensions_label'.tr(),
+            hintText: 'artwork_edit_dimensions_hint'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _materialsController,
-          decoration: const InputDecoration(
-            labelText: 'Materials',
-            hintText: 'e.g., Canvas, Oil Paint',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_materials_label'.tr(),
+            hintText: 'artwork_edit_materials_hint'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _locationController,
-          decoration: const InputDecoration(
-            labelText: 'Location',
-            hintText: 'e.g., New York, NY',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_location_label'.tr(),
+            hintText: 'artwork_edit_location_hint'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _yearController,
-          decoration: const InputDecoration(
-            labelText: 'Year Created',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_year_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value != null && value.isNotEmpty) {
               final year = int.tryParse(value);
               if (year == null || year < 1000 || year > DateTime.now().year) {
-                return 'Please enter a valid year';
+                return 'artwork_edit_year_error'.tr();
               }
             }
             return null;
@@ -545,17 +545,17 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tags',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_tags_label'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _tagController,
-          decoration: const InputDecoration(
-            labelText: 'Tags (comma-separated)',
-            hintText: 'e.g., landscape, nature, peaceful',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'artwork_edit_tags_input'.tr(),
+            hintText: 'artwork_edit_tags_hint'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
       ],
@@ -566,13 +566,13 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Sale Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_sale_info'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         SwitchListTile(
-          title: const Text('Available for Sale'),
+          title: Text('artwork_edit_for_sale'.tr()),
           value: _isForSale,
           onChanged: (value) {
             setState(() {
@@ -584,19 +584,19 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _priceController,
-            decoration: const InputDecoration(
-              labelText: 'Price (\$)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: 'artwork_edit_price_label'.tr(),
+              border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             validator: (value) {
               if (_isForSale && (value == null || value.trim().isEmpty)) {
-                return 'Please enter a price';
+                return 'artwork_edit_price_error_required'.tr();
               }
               if (value != null && value.isNotEmpty) {
                 final price = double.tryParse(value);
                 if (price == null || price <= 0) {
-                  return 'Please enter a valid price';
+                  return 'artwork_edit_price_error_invalid'.tr();
                 }
               }
               return null;
@@ -611,14 +611,14 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Privacy Settings',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'artwork_edit_privacy'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         SwitchListTile(
-          title: const Text('Public Artwork'),
-          subtitle: const Text('Make this artwork visible to other users'),
+          title: Text('artwork_edit_public_artwork'.tr()),
+          subtitle: Text('artwork_edit_public_subtitle'.tr()),
           value: _isPublic,
           onChanged: (value) {
             setState(() {
@@ -648,7 +648,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save Changes'),
+                : Text('artwork_edit_save_button'.tr()),
           ),
         ),
         const SizedBox(height: 16),
@@ -661,7 +661,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
               side: const BorderSide(color: Colors.red),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Delete Artwork'),
+            child: Text('artwork_edit_delete_button'.tr()),
           ),
         ),
       ],

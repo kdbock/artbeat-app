@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show PaymentService, EnhancedUniversalHeader, MainLayout;
 
@@ -71,7 +72,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
         await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Refund Request Submitted'),
+            title: Text('artist_refund_request_text_refund_request_submitted'.tr()),
             content: const Text(
               'Your refund request has been submitted and will be reviewed. '
               'We\'ll contact you within 2-3 business days with the status of your request.',
@@ -79,7 +80,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
+                child: Text('common_ok'.tr()),
               ),
             ],
           ),
@@ -138,7 +139,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Payment Amount:'),
+                            Text('artist_refund_request_text_payment_amount'.tr()),
                             Text(
                               '\$${widget.amount.toStringAsFixed(2)}',
                               style:
@@ -150,7 +151,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Payment ID:'),
+                            Text('artist_refund_request_text_payment_id'.tr()),
                             Text(
                               '${widget.paymentId.substring(0, 10)}...',
                               style: const TextStyle(fontFamily: 'Monospace'),
@@ -264,7 +265,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
                     ),
                     child: _isProcessing
                         ? const CircularProgressIndicator()
-                        : const Text('Submit Refund Request'),
+                        : Text('artist_refund_request_text_submit_refund_request'.tr()),
                   ),
                 ),
 

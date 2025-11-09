@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -161,7 +162,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Capture Details'),
+        title: Text('capture_capture_detail_text_capture_details'.tr()),
         backgroundColor: core.ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
       ),
@@ -314,7 +315,7 @@ class _CaptureDetailScreenState extends State<CaptureDetailScreen> {
                   ),
                   child: _isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Save Capture'),
+                      : Text('capture_capture_detail_text_save_capture'.tr()),
                 ),
               ),
             ],

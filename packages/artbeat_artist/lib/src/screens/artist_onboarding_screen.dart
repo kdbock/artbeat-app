@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../services/artist_profile_service.dart';
 
@@ -89,7 +90,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Artist profile created successfully!')),
+          SnackBar(content: Text('artist_artist_onboarding_success_artist_profile_created'.tr())),
         );
         // Navigate to subscription comparison after onboarding
         Navigator.pushNamed(context, '/subscription/comparison');
@@ -98,7 +99,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating artist profile: $e')),
+          SnackBar(content: Text('artist_artist_onboarding_error_error_creating_artist'.tr())),
         );
       }
     } finally {

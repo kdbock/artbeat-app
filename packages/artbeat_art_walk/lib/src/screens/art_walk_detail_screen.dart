@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
@@ -123,7 +124,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_detail_error_error_etostring'.tr())));
     } finally {
       if (mounted && !_disposed) {
         setState(() => _isLoading = false);
@@ -217,7 +218,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_detail_error_error_sharing_etostring'.tr())));
       _logger.e('Error sharing: ${e.toString()}');
     }
   }
@@ -310,8 +311,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (userId == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must be logged in to complete art walks'),
+        SnackBar(
+          content: Text('art_walk_art_walk_detail_text_you_must_be'.tr()),
         ),
       );
       return;
@@ -337,7 +338,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Art walk completed! 🎉')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_art_walk_detail_text_art_walk_completed'.tr())));
 
       // If there are new achievements, show them
       if (unviewedAchievements.isNotEmpty) {
@@ -353,7 +354,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('You earned new achievements!'),
+            content: Text('art_walk_art_walk_detail_text_you_earned_new'.tr()),
             action: SnackBarAction(
               label: 'View All',
               onPressed: () {
@@ -371,7 +372,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error completing art walk: ${e.toString()}')),
+        SnackBar(content: Text('art_walk_art_walk_detail_error_error_completing_art'.tr())),
       );
     }
   }
@@ -381,8 +382,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null || _artPieces.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to start navigation. No art pieces found.'),
+        SnackBar(
+          content: Text('art_walk_art_walk_detail_text_unable_to_start'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -433,7 +434,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to start navigation: $e'),
+          content: Text('art_walk_art_walk_detail_error_failed_to_start'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -452,9 +453,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Navigation stopped'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text('art_walk_art_walk_detail_text_navigation_stopped'.tr()),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -833,7 +834,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                                       ElevatedButton.icon(
                                         onPressed: _startDetailNavigation,
                                         icon: const Icon(Icons.navigation),
-                                        label: const Text('Start Navigation'),
+                                        label: Text('art_walk_art_walk_detail_text_start_navigation'.tr()),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blue,
                                           foregroundColor: Colors.white,

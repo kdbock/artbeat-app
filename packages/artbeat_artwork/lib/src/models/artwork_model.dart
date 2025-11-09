@@ -157,6 +157,24 @@ class ArtworkModel {
   /// Notes from moderators
   final String? moderationNotes;
 
+  /// Content type: visual, written, audio, or comic
+  final ArtworkContentType contentType;
+
+  /// Whether this artwork is serialized (has chapters)
+  final bool isSerializing;
+
+  /// Total number of chapters/episodes (for serialized works)
+  final int? totalChapters;
+
+  /// Number of released chapters/episodes
+  final int? releasedChapters;
+
+  /// Reading metadata for written/audio content
+  final Map<String, dynamic>? readingMetadata;
+
+  /// Serialization configuration
+  final Map<String, dynamic>? serializationConfig;
+
   ArtworkModel({
     required this.id,
     required this.userId,
@@ -191,6 +209,12 @@ class ArtworkModel {
     this.flagged = false,
     this.flaggedAt,
     this.moderationNotes,
+    this.contentType = ArtworkContentType.visual,
+    this.isSerializing = false,
+    this.totalChapters,
+    this.releasedChapters,
+    this.readingMetadata,
+    this.serializationConfig,
   })  :
         // Create defensive copies of all lists to prevent external modification
         additionalImageUrls = List.unmodifiable(additionalImageUrls),
@@ -256,6 +280,12 @@ class ArtworkModel {
       flagged: (data['flagged'] as bool?) ?? false,
       flaggedAt: (data['flaggedAt'] as Timestamp?)?.toDate(),
       moderationNotes: data['moderationNotes'] as String?,
+      contentType: ArtworkContentType.fromString(data['contentType'] as String? ?? 'visual'),
+      isSerializing: data['isSerializing'] as bool? ?? false,
+      totalChapters: data['totalChapters'] as int?,
+      releasedChapters: data['releasedChapters'] as int?,
+      readingMetadata: data['readingMetadata'] as Map<String, dynamic>?,
+      serializationConfig: data['serializationConfig'] as Map<String, dynamic>?,
     );
   }
 
@@ -294,6 +324,12 @@ class ArtworkModel {
       'flagged': flagged,
       'flaggedAt': flaggedAt != null ? Timestamp.fromDate(flaggedAt!) : null,
       'moderationNotes': moderationNotes,
+      'contentType': contentType.value,
+      'isSerializing': isSerializing,
+      if (totalChapters != null) 'totalChapters': totalChapters,
+      if (releasedChapters != null) 'releasedChapters': releasedChapters,
+      if (readingMetadata != null) 'readingMetadata': readingMetadata,
+      if (serializationConfig != null) 'serializationConfig': serializationConfig,
     };
   }
 
@@ -332,6 +368,12 @@ class ArtworkModel {
     bool? flagged,
     DateTime? flaggedAt,
     String? moderationNotes,
+    ArtworkContentType? contentType,
+    bool? isSerializing,
+    int? totalChapters,
+    int? releasedChapters,
+    Map<String, dynamic>? readingMetadata,
+    Map<String, dynamic>? serializationConfig,
   }) {
     return ArtworkModel(
       id: id ?? this.id,
@@ -367,6 +409,12 @@ class ArtworkModel {
       flagged: flagged ?? this.flagged,
       flaggedAt: flaggedAt ?? this.flaggedAt,
       moderationNotes: moderationNotes ?? this.moderationNotes,
+      contentType: contentType ?? this.contentType,
+      isSerializing: isSerializing ?? this.isSerializing,
+      totalChapters: totalChapters ?? this.totalChapters,
+      releasedChapters: releasedChapters ?? this.releasedChapters,
+      readingMetadata: readingMetadata ?? this.readingMetadata,
+      serializationConfig: serializationConfig ?? this.serializationConfig,
     );
   }
 

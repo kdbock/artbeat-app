@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/subscription_model.dart';
@@ -6,7 +7,6 @@ import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../services/subscription_service.dart' as artist_service;
 import '../services/analytics_service.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 
 /// Screen for showing artists detailed subscription analytics
@@ -83,7 +83,10 @@ class _SubscriptionAnalyticsScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading analytics: $e')),
+          SnackBar(
+              content: Text(
+                  'artist_subscription_analytics_error_error_loading_analytics'
+                      .tr())),
         );
         setState(() {
           _isLoading = false;
@@ -271,7 +274,8 @@ class _SubscriptionAnalyticsScreenState
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('Upgrade to Pro'),
+                    child:
+                        Text('artist_event_creation_text_upgrade_to_pro'.tr()),
                   ),
                 ],
               ),
@@ -289,21 +293,27 @@ class _SubscriptionAnalyticsScreenState
               PopupMenuButton<String>(
                 onSelected: _updateDateRange,
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'last_30_days',
-                    child: Text('Last 30 Days'),
+                    child: Text(
+                        'artist_gallery_analytics_dashboard_text_last_30_days'
+                            .tr()),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'last_90_days',
-                    child: Text('Last 90 Days'),
+                    child: Text(
+                        'artist_gallery_analytics_dashboard_text_last_90_days'
+                            .tr()),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'this_year',
-                    child: Text('This Year'),
+                    child: Text(
+                        'artist_subscription_analytics_text_this_year'.tr()),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'all_time',
-                    child: Text('All Time'),
+                    child: Text(
+                        'artist_subscription_analytics_text_all_time'.tr()),
                   ),
                 ],
               ),
@@ -437,7 +447,9 @@ class _SubscriptionAnalyticsScreenState
                   onPressed: () {
                     Navigator.pushNamed(context, '/artist/subscription');
                   },
-                  child: const Text('Manage Subscription'),
+                  child: Text(
+                      'artist_subscription_analytics_text_manage_subscription'
+                          .tr()),
                 ),
               ],
             ),
@@ -593,8 +605,9 @@ class _SubscriptionAnalyticsScreenState
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 32),
-            const Center(
-              child: Text('No data available for the selected period'),
+            Center(
+              child: Text(
+                  'artist_subscription_analytics_text_no_data_available'.tr()),
             ),
             const SizedBox(height: 32),
           ],
@@ -718,8 +731,9 @@ class _SubscriptionAnalyticsScreenState
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 32),
-            const Center(
-              child: Text('No data available for the selected period'),
+            Center(
+              child: Text(
+                  'artist_subscription_analytics_text_no_data_available'.tr()),
             ),
             const SizedBox(height: 32),
           ],

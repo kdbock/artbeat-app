@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/profile_customization_model.dart';
 import '../services/profile_customization_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProfileCustomizationScreen extends StatefulWidget {
   const ProfileCustomizationScreen({super.key});
@@ -193,7 +194,7 @@ class _ProfileCustomizationScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customize Profile'),
+        title: Text('profile_customization_title'.tr()),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _saveCustomizationSettings,
@@ -451,7 +452,7 @@ class _ProfileCustomizationScreenState
         const SizedBox(height: 12),
         SwitchListTile(
           title: const Text('Show Bio'),
-          subtitle: const Text('Display your bio section on your profile'),
+          subtitle: Text('profile_customization_bio'.tr()),
           value: _showBio,
           onChanged: (value) {
             setState(() {
@@ -461,7 +462,7 @@ class _ProfileCustomizationScreenState
         ),
         SwitchListTile(
           title: const Text('Show Location'),
-          subtitle: const Text('Display your location on your profile'),
+          subtitle: Text('profile_customization_location'.tr()),
           value: _showLocation,
           onChanged: (value) {
             setState(() {
@@ -471,7 +472,7 @@ class _ProfileCustomizationScreenState
         ),
         SwitchListTile(
           title: const Text('Show Achievements'),
-          subtitle: const Text('Display your achievement badges'),
+          subtitle: Text('profile_customization_badges'.tr()),
           value: _showAchievements,
           onChanged: (value) {
             setState(() {
@@ -503,21 +504,21 @@ class _ProfileCustomizationScreenState
         ),
         const SizedBox(height: 12),
         SegmentedButton<String>(
-          segments: const [
-            ButtonSegment<String>(
+          segments: [
+            const ButtonSegment<String>(
               value: 'grid',
               label: Text('Grid'),
               icon: Icon(Icons.grid_view),
             ),
-            ButtonSegment<String>(
+            const ButtonSegment<String>(
               value: 'list',
               label: Text('List'),
               icon: Icon(Icons.view_list),
             ),
             ButtonSegment<String>(
               value: 'compact',
-              label: Text('Compact'),
-              icon: Icon(Icons.view_compact),
+              label: Text('profile_customization_compact'.tr()),
+              icon: const Icon(Icons.view_compact),
             ),
           ],
           selected: {_layoutStyle},

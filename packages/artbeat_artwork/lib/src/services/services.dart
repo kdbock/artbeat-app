@@ -13,3 +13,6 @@ export 'artwork_comment_service.dart';
 export 'advanced_artwork_analytics_service.dart';
 export 'enhanced_artwork_search_service.dart';
 export 'enhanced_moderation_service.dart';
+export 'chapter_service.dart';
+export 'schedule_service.dart';
+export 'reading_analytics_service.dart';

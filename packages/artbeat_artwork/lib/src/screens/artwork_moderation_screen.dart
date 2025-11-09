@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artwork_model.dart';
 import '../services/artwork_service.dart';
@@ -64,7 +65,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading artworks: $e')),
+        SnackBar(content: Text('moderation_error_loading'.tr(namedArgs: {'error': e.toString()}))),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -87,11 +88,11 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Artwork ${status.displayName.toLowerCase()}')),
+        SnackBar(content: Text('moderation_success_status'.tr(namedArgs: {'status': status.displayName.toLowerCase()}))),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error moderating artwork: $e')),
+        SnackBar(content: Text('moderation_error_moderating'.tr(namedArgs: {'error': e.toString()}))),
       );
     }
   }
@@ -123,12 +124,11 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                '${selectedIds.length} artworks ${status.displayName.toLowerCase()}')),
+            content: Text('moderation_success_bulk'.tr(namedArgs: {'count': selectedIds.length.toString(), 'status': status.displayName.toLowerCase()}))),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error in bulk moderation: $e')),
+        SnackBar(content: Text('moderation_error_bulk'.tr(namedArgs: {'error': e.toString()}))),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -141,17 +141,17 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Moderate "${artwork.title}"'),
+        title: Text('moderation_dialog_title'.tr(namedArgs: {'title': artwork.title})),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Choose moderation action:'),
+            Text('moderation_dialog_choose_action'.tr()),
             const SizedBox(height: 16),
             TextField(
               controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Moderation Notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'moderation_dialog_notes_label'.tr(),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
@@ -160,7 +160,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('moderation_dialog_cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -168,7 +168,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
               _moderateArtwork(artwork, ArtworkModerationStatus.approved,
                   notes: notesController.text);
             },
-            child: const Text('Approve'),
+            child: Text('moderation_dialog_approve'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -177,7 +177,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   notes: notesController.text);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Reject'),
+            child: Text('moderation_dialog_reject'.tr()),
           ),
         ],
       ),
@@ -194,17 +194,17 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Bulk Moderate $selectedCount Artworks'),
+        title: Text('moderation_bulk_dialog_title'.tr(namedArgs: {'count': selectedCount.toString()})),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Apply action to all selected artworks:'),
+            Text('moderation_bulk_dialog_message'.tr()),
             const SizedBox(height: 16),
             TextField(
               controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Moderation Notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'moderation_dialog_notes_label'.tr(),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
@@ -213,7 +213,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('moderation_dialog_cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -221,7 +221,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
               _bulkModerate(ArtworkModerationStatus.approved,
                   notes: notesController.text);
             },
-            child: const Text('Approve All'),
+            child: Text('moderation_bulk_dialog_approve_all'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -230,7 +230,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   notes: notesController.text);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Reject All'),
+            child: Text('moderation_bulk_dialog_reject_all'.tr()),
           ),
         ],
       ),
@@ -244,23 +244,23 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Artwork Moderation'),
+        title: Text('moderation_artwork_title'.tr()),
         actions: [
           if (selectedCount > 0) ...[
             IconButton(
               icon: const Icon(Icons.check_circle),
               onPressed: _showBulkModerationDialog,
-              tooltip: 'Bulk Approve',
+              tooltip: 'moderation_bulk_approve_tooltip'.tr(),
             ),
             IconButton(
               icon: const Icon(Icons.cancel),
               onPressed: () => _bulkModerate(ArtworkModerationStatus.rejected),
-              tooltip: 'Bulk Reject',
+              tooltip: 'moderation_bulk_reject_tooltip'.tr(),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Chip(
-                label: Text('$selectedCount selected'),
+                label: Text('moderation_selected_count'.tr(namedArgs: {'count': selectedCount.toString()})),
                 backgroundColor:
                     Theme.of(context).primaryColor.withValues(alpha: 0.1),
               ),
@@ -279,7 +279,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
               child: Row(
                 children: [
                   FilterChip(
-                    label: const Text('Pending'),
+                    label: Text('moderation_filter_pending'.tr()),
                     selected: _selectedFilter == 'pending',
                     onSelected: (selected) {
                       if (selected) {
@@ -290,7 +290,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: const Text('Flagged'),
+                    label: Text('moderation_filter_flagged'.tr()),
                     selected: _selectedFilter == 'flagged',
                     onSelected: (selected) {
                       if (selected) {
@@ -301,7 +301,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: const Text('Approved'),
+                    label: Text('moderation_filter_approved'.tr()),
                     selected: _selectedFilter == 'approved',
                     onSelected: (selected) {
                       if (selected) {
@@ -312,7 +312,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: const Text('Rejected'),
+                    label: Text('moderation_filter_rejected'.tr()),
                     selected: _selectedFilter == 'rejected',
                     onSelected: (selected) {
                       if (selected) {
@@ -323,7 +323,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilterChip(
-                    label: const Text('All'),
+                    label: Text('moderation_filter_all'.tr()),
                     selected: _selectedFilter == 'all',
                     onSelected: (selected) {
                       if (selected) {
@@ -342,8 +342,8 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _artworks.isEmpty
-                    ? const Center(
-                        child: Text('No artworks to moderate'),
+                    ? Center(
+                        child: Text('moderation_empty_state'.tr()),
                       )
                     : ListView.builder(
                         itemCount: _artworks.length,
@@ -372,7 +372,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   subtitle:
-                                      Text('by ${artwork.artistProfileId}'),
+                                      Text('moderation_by_artist'.tr(namedArgs: {'artist': artwork.artistProfileId})),
                                 ),
 
                                 // Artwork image
@@ -418,19 +418,19 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                                       ),
                                       if (artwork.flagged) ...[
                                         const SizedBox(height: 8),
-                                        const Row(
+                                        Row(
                                           children: [
-                                            Icon(Icons.flag,
+                                            const Icon(Icons.flag,
                                                 color: Colors.orange, size: 16),
-                                            SizedBox(width: 4),
-                                            Text('Flagged for review'),
+                                            const SizedBox(width: 4),
+                                            Text('moderation_flagged_badge'.tr()),
                                           ],
                                         ),
                                       ],
                                       if (artwork.moderationNotes != null) ...[
                                         const SizedBox(height: 8),
                                         Text(
-                                          'Notes: ${artwork.moderationNotes}',
+                                          '${'moderation_notes_label'.tr()}: ${artwork.moderationNotes}',
                                           style: const TextStyle(
                                               fontStyle: FontStyle.italic),
                                         ),
@@ -439,7 +439,6 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                                   ),
                                 ),
 
-                                // Action buttons
                                 OverflowBar(
                                   alignment: MainAxisAlignment.end,
                                   spacing: 8,
@@ -447,19 +446,19 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
                                     TextButton(
                                       onPressed: () =>
                                           _showModerationDialog(artwork),
-                                      child: const Text('Review'),
+                                      child: Text('moderation_button_review'.tr()),
                                     ),
                                     TextButton(
                                       onPressed: () => _moderateArtwork(artwork,
                                           ArtworkModerationStatus.approved),
-                                      child: const Text('Approve'),
+                                      child: Text('moderation_button_approve'.tr()),
                                     ),
                                     TextButton(
                                       onPressed: () => _moderateArtwork(artwork,
                                           ArtworkModerationStatus.rejected),
                                       style: TextButton.styleFrom(
                                           foregroundColor: Colors.red),
-                                      child: const Text('Reject'),
+                                      child: Text('moderation_button_reject'.tr()),
                                     ),
                                   ],
                                 ),
@@ -474,7 +473,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
       floatingActionButton: selectedCount > 0
           ? FloatingActionButton(
               onPressed: _showBulkModerationDialog,
-              tooltip: 'Bulk Actions',
+              tooltip: 'moderation_bulk_actions_tooltip'.tr(),
               child: const Icon(Icons.batch_prediction),
             )
           : null,

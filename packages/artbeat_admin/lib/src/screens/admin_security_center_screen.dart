@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Admin Security Center Screen
@@ -164,23 +165,33 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Real-time Monitoring'),
-                  subtitle: const Text('Monitor security events in real-time'),
+                  title: Text(
+                      'admin_admin_security_center_text_realtime_monitoring'
+                          .tr()),
+                  subtitle: Text(
+                      'admin_admin_security_center_text_monitor_security_events'
+                          .tr()),
                   value: true,
                   onChanged: (value) {},
                   activeThumbColor: const Color(0xFF8C52FF),
                 ),
                 SwitchListTile(
-                  title: const Text('Automated Threat Response'),
-                  subtitle:
-                      const Text('Automatically block suspicious activity'),
+                  title: Text(
+                      'admin_admin_security_center_text_automated_threat_response'
+                          .tr()),
+                  subtitle: Text(
+                      'admin_admin_security_center_text_automatically_block_suspicious'
+                          .tr()),
                   value: true,
                   onChanged: (value) {},
                   activeThumbColor: const Color(0xFF8C52FF),
                 ),
                 SwitchListTile(
-                  title: const Text('Email Alerts'),
-                  subtitle: const Text('Send email notifications for threats'),
+                  title: Text(
+                      'admin_admin_security_center_label_email_alerts'.tr()),
+                  subtitle: Text(
+                      'admin_admin_security_center_label_send_email_notifications'
+                          .tr()),
                   value: false,
                   onChanged: (value) {},
                   activeThumbColor: const Color(0xFF8C52FF),
@@ -225,16 +236,18 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
           child: Column(
             children: [
               ListTile(
-                title: const Text('192.168.1.0/24'),
-                subtitle: const Text('Office Network'),
+                title: Text('admin_admin_security_center_text_1921681024'.tr()),
+                subtitle: Text(
+                    'admin_admin_security_center_text_office_network'.tr()),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {},
                 ),
               ),
               ListTile(
-                title: const Text('10.0.0.0/8'),
-                subtitle: const Text('VPN Network'),
+                title: Text('admin_admin_security_center_text_100008'.tr()),
+                subtitle:
+                    Text('admin_admin_security_center_text_vpn_network'.tr()),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {},
@@ -242,7 +255,8 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.add, color: Color(0xFF8C52FF)),
-                title: const Text('Add IP Range'),
+                title:
+                    Text('admin_admin_security_center_text_add_ip_range'.tr()),
                 onTap: () => _showAddIPDialog(),
               ),
             ],
@@ -365,7 +379,6 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
 
   Widget _buildAdminUserCard(int index) {
     final users = ['John Admin', 'Sarah Security', 'Mike Manager'];
-    final roles = ['Super Admin', 'Security Admin', 'Content Admin'];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -375,13 +388,21 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
           child: Text(users[index][0]),
         ),
         title: Text(users[index]),
-        subtitle: Text('Role: ${roles[index]}'),
+        subtitle: Text('admin_admin_security_center_text_role_rolesindex'.tr()),
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit Permissions')),
-            const PopupMenuItem(
-                value: 'disable', child: Text('Disable Account')),
-            const PopupMenuItem(value: 'remove', child: Text('Remove Admin')),
+            PopupMenuItem(
+                value: 'edit',
+                child: Text(
+                    'admin_admin_security_center_text_edit_permissions'.tr())),
+            PopupMenuItem(
+                value: 'disable',
+                child: Text(
+                    'admin_admin_security_center_text_disable_account'.tr())),
+            PopupMenuItem(
+                value: 'remove',
+                child:
+                    Text('admin_admin_security_center_text_remove_admin'.tr())),
           ],
           onSelected: (value) => _handleAdminAction(value, users[index]),
         ),
@@ -428,29 +449,32 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Severity: $severity'),
+            Text('admin_admin_security_center_text_severity_severity'.tr()),
             const SizedBox(height: 8),
             Text(description),
             const SizedBox(height: 16),
-            const Text('Recommended Actions:'),
-            const Text('• Monitor the IP address'),
-            const Text('• Review access logs'),
-            const Text('• Consider blocking if pattern continues'),
+            Text('admin_admin_security_center_text_recommended_actions'.tr()),
+            Text('admin_admin_security_center_text_monitor_the_ip'.tr()),
+            Text('admin_admin_security_center_text_review_access_logs'.tr()),
+            Text('admin_admin_security_center_text_consider_blocking_if'.tr()),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('admin_admin_payment_text_close'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Threat marked as resolved')),
+                SnackBar(
+                    content: Text(
+                        'admin_admin_security_center_text_threat_marked_as'
+                            .tr())),
               );
             },
-            child: const Text('Resolve'),
+            child: Text('admin_admin_security_center_text_resolve'.tr()),
           ),
         ],
       ),
@@ -461,7 +485,7 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add IP Range'),
+        title: Text('admin_admin_security_center_text_add_ip_range'.tr()),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -482,16 +506,19 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('IP range added to whitelist')),
+                SnackBar(
+                    content: Text(
+                        'admin_admin_security_center_text_ip_range_added'
+                            .tr())),
               );
             },
-            child: const Text('Add'),
+            child: Text('admin_admin_security_center_text_add'.tr()),
           ),
         ],
       ),
@@ -523,24 +550,26 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Audit Log Details'),
+        title: Text('admin_admin_security_center_text_audit_log_details'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Log ID: LOG_${1000 + index}'),
+            Text('admin_admin_security_center_text_log_id_log1000'.tr()),
             Text(
                 'Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2, '0')}:00'),
-            Text('User: user_${index + 1}'),
-            Text('IP Address: 192.168.1.${100 + index}'),
-            const Text('User Agent: Mozilla/5.0...'),
-            const Text('Additional Details: Success'),
+            Text('admin_admin_security_center_text_user_userindex_1'.tr()),
+            Text('admin_admin_security_center_text_ip_address_1921681100'.tr()),
+            Text('admin_admin_security_center_text_user_agent_mozilla50'.tr()),
+            Text(
+                'admin_admin_security_center_success_additional_details_success'
+                    .tr()),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('admin_admin_payment_text_close'.tr()),
           ),
         ],
       ),

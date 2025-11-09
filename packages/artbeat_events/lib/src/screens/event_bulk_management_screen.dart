@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/artbeat_event.dart';
 import '../services/event_bulk_management_service.dart';
 
@@ -65,7 +65,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bulk Event Management'),
+        title: Text('event_bulk_title'.tr()),
         actions: [
           if (_selectedEventIds.isNotEmpty)
             IconButton(
@@ -94,7 +94,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           ? FloatingActionButton.extended(
               onPressed: _showBulkActionsMenu,
               icon: const Icon(Icons.settings),
-              label: Text('${_selectedEventIds.length} Selected'),
+              label: Text('event_bulk_selected_label'.tr().replaceFirst('{{count}}', '${_selectedEventIds.length}')),
             )
           : null,
     );
@@ -108,36 +108,36 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Filters',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              'event_bulk_filters'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'event_bulk_category_label'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     initialValue: _selectedCategory,
-                    items: const [
-                      DropdownMenuItem(child: Text('All Categories')),
+                    items: [
+                      DropdownMenuItem(child: Text('event_bulk_all_categories'.tr())),
                       DropdownMenuItem(
                         value: 'art-show',
-                        child: Text('Art Show'),
+                        child: Text('event_bulk_art_show'.tr()),
                       ),
                       DropdownMenuItem(
                         value: 'workshop',
-                        child: Text('Workshop'),
+                        child: Text('event_bulk_workshop'.tr()),
                       ),
                       DropdownMenuItem(
                         value: 'exhibition',
-                        child: Text('Exhibition'),
+                        child: Text('event_bulk_exhibition'.tr()),
                       ),
-                      DropdownMenuItem(value: 'sale', child: Text('Sale')),
-                      DropdownMenuItem(value: 'other', child: Text('Other')),
+                      DropdownMenuItem(value: 'sale', child: Text('event_bulk_sale'.tr())),
+                      DropdownMenuItem(value: 'other', child: Text('event_bulk_other'.tr())),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -150,27 +150,27 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Status',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: 'event_bulk_status_label'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     initialValue: _selectedStatus,
-                    items: const [
-                      DropdownMenuItem(child: Text('All Statuses')),
-                      DropdownMenuItem(value: 'active', child: Text('Active')),
+                    items: [
+                      DropdownMenuItem(child: Text('event_bulk_all_statuses'.tr())),
+                      DropdownMenuItem(value: 'active', child: Text('event_bulk_active'.tr())),
                       DropdownMenuItem(
                         value: 'inactive',
-                        child: Text('Inactive'),
+                        child: Text('event_bulk_inactive'.tr()),
                       ),
                       DropdownMenuItem(
                         value: 'cancelled',
-                        child: Text('Cancelled'),
+                        child: Text('event_bulk_cancelled'.tr()),
                       ),
                       DropdownMenuItem(
                         value: 'postponed',
-                        child: Text('Postponed'),
+                        child: Text('event_bulk_postponed'.tr()),
                       ),
-                      DropdownMenuItem(value: 'draft', child: Text('Draft')),
+                      DropdownMenuItem(value: 'draft', child: Text('event_bulk_draft'.tr())),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -192,7 +192,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
                     label: Text(
                       _startDate != null
                           ? DateFormat('MMM dd, yyyy').format(_startDate!)
-                          : 'Start Date',
+                          : 'event_bulk_start_date'.tr(),
                     ),
                   ),
                 ),
@@ -204,14 +204,14 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
                     label: Text(
                       _endDate != null
                           ? DateFormat('MMM dd, yyyy').format(_endDate!)
-                          : 'End Date',
+                          : 'event_bulk_end_date'.tr(),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _clearFilters,
-                  child: const Text('Clear'),
+                  child: Text('event_bulk_clear'.tr()),
                 ),
               ],
             ),
@@ -238,8 +238,8 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           ),
           Text(
             _selectedEventIds.isEmpty
-                ? 'Select events to perform bulk actions'
-                : '${_selectedEventIds.length} of ${_events.length} selected',
+                ? 'event_bulk_select_events'.tr()
+                : '${'event_bulk_of_selected'.tr().replaceFirst('{{count}}', '${_selectedEventIds.length}')} ${_events.length}',
             style: TextStyle(
               color: Colors.grey[700],
               fontWeight: FontWeight.w500,
@@ -249,7 +249,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           if (_selectedEventIds.isNotEmpty)
             TextButton(
               onPressed: () => setState(_selectedEventIds.clear),
-              child: const Text('Clear Selection'),
+              child: Text('event_bulk_clear_selection'.tr()),
             ),
         ],
       ),
@@ -264,7 +264,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           Icon(Icons.error, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
-            'Error loading events',
+            'event_bulk_error_loading'.tr(),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -274,7 +274,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _loadEvents, child: const Text('Retry')),
+          ElevatedButton(onPressed: _loadEvents, child: Text('event_bulk_retry'.tr())),
         ],
       ),
     );
@@ -282,17 +282,17 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
 
   Widget _buildEventsList() {
     if (_events.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.event_busy, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
-              'No events found',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'event_bulk_no_events'.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text('Try adjusting your filters or create some events.'),
+            Text('event_bulk_no_events_hint'.tr()),
           ],
         ),
       );
@@ -446,13 +446,13 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Bulk Actions (${_selectedEventIds.length} events)',
+            'event_bulk_bulk_actions'.tr().replaceFirst('{{count}}', '${_selectedEventIds.length}'),
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.edit, color: Colors.blue),
-            title: const Text('Update Status'),
+            title: Text('event_bulk_update_status'.tr()),
             onTap: () {
               Navigator.pop(context);
               _showStatusUpdateDialog();
@@ -460,7 +460,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.category, color: Colors.green),
-            title: const Text('Assign Category'),
+            title: Text('event_bulk_assign_category'.tr()),
             onTap: () {
               Navigator.pop(context);
               _showCategoryAssignDialog();
@@ -468,7 +468,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.visibility_off, color: Colors.orange),
-            title: const Text('Make Private'),
+            title: Text('event_bulk_make_private'.tr()),
             onTap: () {
               Navigator.pop(context);
               _performBulkUpdate({'isPublic': false});
@@ -476,7 +476,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.visibility, color: Colors.blue),
-            title: const Text('Make Public'),
+            title: Text('event_bulk_make_public'.tr()),
             onTap: () {
               Navigator.pop(context);
               _performBulkUpdate({'isPublic': true});
@@ -485,7 +485,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.delete, color: Colors.red),
-            title: const Text('Delete Events'),
+            title: Text('event_bulk_delete_events'.tr()),
             onTap: () {
               Navigator.pop(context);
               _confirmBulkDelete();
@@ -494,7 +494,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('event_bulk_cancel'.tr()),
           ),
         ],
       ),
@@ -505,15 +505,15 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Update Status'),
+        title: Text('event_bulk_update_status'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select the new status for selected events:'),
+            Text('event_bulk_select_status'.tr()),
             const SizedBox(height: 16),
             ...['active', 'inactive', 'cancelled', 'postponed', 'draft'].map(
               (status) => ListTile(
-                title: Text(status.toUpperCase()),
+                title: Text('event_bulk_$status'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _performBulkStatusChange(status);
@@ -530,20 +530,23 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Assign Category'),
+        title: Text('event_bulk_assign_category'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Select a category for selected events:'),
+            Text('event_bulk_select_category'.tr()),
             const SizedBox(height: 16),
             ...['art-show', 'workshop', 'exhibition', 'sale', 'other'].map(
-              (category) => ListTile(
-                title: Text(category.replaceAll('-', ' ').toUpperCase()),
-                onTap: () {
-                  Navigator.pop(context);
-                  _performBulkCategoryAssign(category);
-                },
-              ),
+              (category) {
+                final keyName = category.replaceAll('-', '_');
+                return ListTile(
+                  title: Text('event_bulk_$keyName'.tr()),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _performBulkCategoryAssign(category);
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -555,14 +558,14 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Deletion'),
+        title: Text('event_bulk_confirm_delete'.tr()),
         content: Text(
-          'Are you sure you want to delete ${_selectedEventIds.length} events? This action cannot be undone.',
+          'event_bulk_confirm_delete_message'.tr().replaceFirst('{{count}}', '${_selectedEventIds.length}'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('event_bulk_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -570,7 +573,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
               _performBulkDelete();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('event_bulk_delete'.tr()),
           ),
         ],
       ),
@@ -622,7 +625,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$operationName completed successfully'),
+            content: Text('event_bulk_success'.tr().replaceFirst('{{operation}}', operationName)),
             backgroundColor: Colors.green,
           ),
         );
@@ -637,7 +640,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error during $operationName: ${e.toString()}'),
+            content: Text('event_bulk_error'.tr().replaceAll('{{operation}}', operationName).replaceFirst('{{error}}', e.toString())),
             backgroundColor: Colors.red,
           ),
         );

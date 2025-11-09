@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart' hide SubscriptionService;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_community/artbeat_community.dart'
@@ -64,7 +65,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
         // No artist profile found
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Artist profile not found')),
+            SnackBar(content: Text('artist_artist_public_profile_text_artist_profile_not'.tr())),
           );
           Navigator.pop(context);
         }
@@ -121,7 +122,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
       // debugPrint('❌ ArtistPublicProfileScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artist profile: $e')),
+          SnackBar(content: Text('artist_artist_public_profile_error_error_loading_artist'.tr())),
         );
         setState(() {
           _isLoading = false;
@@ -135,7 +136,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
       // Prompt user to log in
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please log in to follow artists')),
+          SnackBar(content: Text('artist_artist_public_profile_text_please_log_in'.tr())),
         );
       }
       return;
@@ -154,7 +155,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     }
@@ -169,7 +170,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open $url')),
+          SnackBar(content: Text('artist_artist_public_profile_text_could_not_open'.tr())),
         );
       }
     }
@@ -550,9 +551,9 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
           SliverPadding(
             padding: const EdgeInsets.all(16.0),
             sliver: _artwork.isEmpty
-                ? const SliverToBoxAdapter(
+                ? SliverToBoxAdapter(
                     child: Center(
-                      child: Text('No artwork available'),
+                      child: Text('artist_artist_public_profile_text_no_artwork_available'.tr()),
                     ),
                   )
                 : SliverGrid(
@@ -738,8 +739,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     // Check if user is authenticated
     if (_currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to send gifts'),
+        SnackBar(
+          content: Text('artist_artist_public_profile_text_please_log_in_8'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -749,8 +750,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     // Check if user is trying to gift themselves
     if (_currentUserId == _artistProfile!.userId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You cannot send gifts to yourself'),
+        SnackBar(
+          content: Text('artist_artist_public_profile_text_you_cannot_send'.tr()),
           backgroundColor: Colors.orange,
         ),
       );

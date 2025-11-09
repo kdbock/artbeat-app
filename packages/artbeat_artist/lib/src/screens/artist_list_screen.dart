@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -95,14 +96,14 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          const Text('Failed to load artists'),
+          Text('artist_artist_list_error_failed_to_load'.tr()),
           const SizedBox(height: 8),
           Text(_error ?? 'Unknown error',
               style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadArtists,
-            child: const Text('Retry'),
+            child: Text('admin_admin_settings_text_retry'.tr()),
           ),
         ],
       ),
@@ -128,7 +129,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadArtists,
-            child: const Text('Refresh'),
+            child: Text('artist_artist_list_text_refresh'.tr()),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
@@ -517,7 +518,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                       prefixIcon: Icon(Icons.terrain),
                     ),
                     initialValue: tempDifficulty,
-                    hint: const Text('Select difficulty'),
+                    hint: Text('art_walk_art_walk_list_text_select_difficulty'.tr()),
                     items: ['Easy', 'Medium', 'Hard']
                         .map(
                           (difficulty) => DropdownMenuItem(
@@ -561,7 +562,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                       prefixIcon: Icon(Icons.sort),
                     ),
                     initialValue: tempSortBy,
-                    hint: const Text('Select sorting'),
+                    hint: Text('art_walk_art_walk_list_text_select_sorting'.tr()),
                     items:
                         [
                               'Popularity',
@@ -588,7 +589,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: onClearFilters,
-                          child: const Text('Clear All'),
+                          child: Text('art_walk_art_walk_list_text_clear_all'.tr()),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -598,7 +599,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ArtWalkColors.primaryTeal,
                           ),
-                          child: const Text('Apply Filters'),
+                          child: Text('art_walk_art_walk_list_text_apply_filters'.tr()),
                         ),
                       ),
                     ],
@@ -623,7 +624,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Search Art Walks'),
+              title: Text('art_walk_art_walk_list_hint_search_art_walks'.tr()),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -656,7 +657,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                     searchController.dispose();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Clear'),
+                  child: Text('admin_admin_settings_text_clear'.tr()),
                 ),
                 TextButton(
                   onPressed: () {
@@ -667,7 +668,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                     searchController.dispose();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Search'),
+                  child: Text('art_walk_art_walk_list_hint_search'.tr()),
                 ),
               ],
             );
@@ -848,7 +849,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text('Load More Art Walks'),
+                  : Text('art_walk_art_walk_list_text_load_more_art'.tr()),
             ),
           ),
       ],
@@ -1113,7 +1114,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _navigateToWalkDetail(walk.id),
                       icon: const Icon(Icons.explore, size: 16),
-                      label: const Text('Explore'),
+                      label: Text('art_walk_art_walk_list_text_explore'.tr()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ArtWalkColors.primaryTeal,
                         foregroundColor: Colors.white,
@@ -1189,7 +1190,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
             ElevatedButton.icon(
               onPressed: _navigateToCreateWalk,
               icon: const Icon(Icons.add),
-              label: const Text('Create Art Walk'),
+              label: Text('art_walk_art_walk_list_text_create_art_walk'.tr()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ArtWalkColors.primaryTeal,
                 foregroundColor: Colors.white,

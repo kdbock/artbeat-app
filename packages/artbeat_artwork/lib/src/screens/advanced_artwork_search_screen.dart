@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show EnhancedUniversalHeader, MainLayout, AppLogger;
 import '../models/artwork_model.dart';
@@ -128,7 +129,7 @@ class _AdvancedArtworkSearchScreenState
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error performing search')),
+        SnackBar(content: Text('advanced_search_error'.tr())),
       );
     }
   }
@@ -139,18 +140,18 @@ class _AdvancedArtworkSearchScreenState
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Save Search'),
+        title: Text('advanced_search_save_dialog_title'.tr()),
         content: TextField(
           controller: searchNameController,
-          decoration: const InputDecoration(
-            hintText: 'Enter search name',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: 'advanced_search_save_dialog_hint'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('advanced_search_save_dialog_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -174,16 +175,16 @@ class _AdvancedArtworkSearchScreenState
                   await _loadSavedSearches();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Search saved successfully')),
+                    SnackBar(content: Text('advanced_search_saved_success'.tr())),
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error saving search')),
+                    SnackBar(content: Text('advanced_search_save_error'.tr())),
                   );
                 }
               }
             },
-            child: const Text('Save'),
+            child: Text('advanced_search_save_dialog_save'.tr()),
           ),
         ],
       ),
@@ -221,7 +222,7 @@ class _AdvancedArtworkSearchScreenState
     return MainLayout(
       currentIndex: 0,
       appBar: EnhancedUniversalHeader(
-        title: 'Advanced Search',
+        title: 'advanced_search_title'.tr(),
         showLogo: false,
         showBackButton: true,
         backgroundGradient: const LinearGradient(
@@ -244,12 +245,12 @@ class _AdvancedArtworkSearchScreenState
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.white),
             onPressed: () => setState(() => _showFilters = !_showFilters),
-            tooltip: 'Toggle Filters',
+            tooltip: 'advanced_search_toggle_filters'.tr(),
           ),
           IconButton(
             icon: const Icon(Icons.save, color: Colors.white),
             onPressed: _saveCurrentSearch,
-            tooltip: 'Save Search',
+            tooltip: 'advanced_search_save_button'.tr(),
           ),
         ],
       ),
@@ -261,7 +262,7 @@ class _AdvancedArtworkSearchScreenState
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search artwork, artists, styles...',
+                hintText: 'advanced_search_hint'.tr(),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -285,8 +286,8 @@ class _AdvancedArtworkSearchScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Popular Searches',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('advanced_search_popular'.tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   Wrap(
                     spacing: 8,
                     children: _searchSuggestions.take(5).map((suggestion) {
@@ -310,8 +311,8 @@ class _AdvancedArtworkSearchScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Saved Searches',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('advanced_search_saved'.tr(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(
                     height: 40,
                     child: ListView.builder(
@@ -342,7 +343,7 @@ class _AdvancedArtworkSearchScreenState
             child: ElevatedButton.icon(
               onPressed: _performAdvancedSearch,
               icon: const Icon(Icons.search),
-              label: const Text('Search'),
+              label: Text('advanced_search_button'.tr()),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
@@ -357,8 +358,8 @@ class _AdvancedArtworkSearchScreenState
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _searchController.text.isEmpty && _savedSearches.isEmpty
-                    ? const Center(
-                        child: Text('Enter search terms or use saved searches'))
+                    ? Center(
+                        child: Text('advanced_search_empty_state'.tr()))
                     : _buildSearchResults(),
           ),
         ],
@@ -375,13 +376,13 @@ class _AdvancedArtworkSearchScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Filters',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('advanced_search_filters_title'.tr(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
 
               // Location filter
-              const Text('Location',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text('advanced_search_location'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedLocation,
@@ -397,8 +398,8 @@ class _AdvancedArtworkSearchScreenState
               const SizedBox(height: 16),
 
               // Medium filter
-              const Text('Medium',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+              Text('advanced_search_medium'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _selectedMedium,

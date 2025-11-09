@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'artwork_content_type.dart';
 
 class ArtworkModel {
   final String id;
@@ -15,6 +16,12 @@ class ArtworkModel {
   final int applauseCount;
   final int viewsCount;
   final String artistName;
+  final ArtworkContentType contentType;
+  final bool isSerializing;
+  final int? totalChapters;
+  final int? releasedChapters;
+  final Map<String, dynamic>? readingMetadata;
+  final Map<String, dynamic>? serializationConfig;
 
   ArtworkModel({
     required this.id,
@@ -31,6 +38,12 @@ class ArtworkModel {
     required this.applauseCount,
     this.viewsCount = 0,
     this.artistName = 'Unknown Artist',
+    this.contentType = ArtworkContentType.visual,
+    this.isSerializing = false,
+    this.totalChapters,
+    this.releasedChapters,
+    this.readingMetadata,
+    this.serializationConfig,
   });
 
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
@@ -50,6 +63,12 @@ class ArtworkModel {
       applauseCount: data['applauseCount'] as int? ?? 0,
       viewsCount: data['viewsCount'] as int? ?? data['viewCount'] as int? ?? 0,
       artistName: data['artistName'] as String? ?? 'Unknown Artist',
+      contentType: ArtworkContentType.fromString(data['contentType'] as String? ?? 'visual'),
+      isSerializing: data['isSerializing'] as bool? ?? false,
+      totalChapters: data['totalChapters'] as int?,
+      releasedChapters: data['releasedChapters'] as int?,
+      readingMetadata: data['readingMetadata'] as Map<String, dynamic>?,
+      serializationConfig: data['serializationConfig'] as Map<String, dynamic>?,
     );
   }
 
@@ -68,6 +87,12 @@ class ArtworkModel {
       'applauseCount': applauseCount,
       'viewsCount': viewsCount,
       'artistName': artistName,
+      'contentType': contentType.value,
+      'isSerializing': isSerializing,
+      if (totalChapters != null) 'totalChapters': totalChapters,
+      if (releasedChapters != null) 'releasedChapters': releasedChapters,
+      if (readingMetadata != null) 'readingMetadata': readingMetadata,
+      if (serializationConfig != null) 'serializationConfig': serializationConfig,
     };
   }
 

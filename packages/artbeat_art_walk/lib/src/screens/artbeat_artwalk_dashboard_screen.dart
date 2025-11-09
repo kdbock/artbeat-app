@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -435,7 +436,7 @@ class _ArtbeatArtwalkDashboardScreenState
               );
             },
             icon: const Icon(Icons.history),
-            label: const Text('View Quest History'),
+            label: Text('art_walk_artbeat_artwalk_dashboard_text_view_quest_history'.tr()),
             style: TextButton.styleFrom(
               foregroundColor: ArtWalkDashboardColors.primaryPurple,
             ),
@@ -1473,9 +1474,9 @@ class _ArtbeatArtwalkDashboardScreenState
   Future<void> _openInstantDiscovery() async {
     if (_currentPosition == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Getting your location...'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text('art_walk_art_walk_dashboard_text_getting_your_location'.tr()),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -1492,9 +1493,9 @@ class _ArtbeatArtwalkDashboardScreenState
 
       if (nearbyArt.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No art nearby. Try moving to a different location!'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text('art_walk_art_walk_dashboard_text_no_art_nearby'.tr()),
+            duration: const Duration(seconds: 3),
           ),
         );
         return;
@@ -1520,7 +1521,7 @@ class _ArtbeatArtwalkDashboardScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading nearby art: $e'),
+            content: Text('art_walk_art_walk_dashboard_error_error_loading_nearby'.tr()),
             backgroundColor: Colors.red,
           ),
         );

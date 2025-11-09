@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -66,7 +67,7 @@ class _FeaturedArtistScreenState extends State<FeaturedArtistScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading featured artists: $e')),
+          SnackBar(content: Text('artist_featured_artist_error_error_loading_featured'.tr())),
         );
         setState(() {
           _isLoading = false;

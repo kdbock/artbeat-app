@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/ad_migration_service.dart';
 
 /// Screen for migrating ads from old 'ads' collection to new 'localAds' collection
@@ -88,7 +89,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text('common_ok'.tr()),
           ),
         ],
       ),
@@ -111,7 +112,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ad Migration'),
+        title: Text('ads_ad_migration_text_ad_migration'.tr()),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -157,7 +158,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
                               Colors.blue,
                             ),
                           ] else
-                            const Text('Loading stats...'),
+                            Text('ads_ad_migration_loading_loading_stats'.tr()),
                         ],
                       ),
                     ),
@@ -215,7 +216,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
                           ? null
                           : () => _runMigration(dryRun: true),
                       icon: const Icon(Icons.preview),
-                      label: const Text('Dry Run (Preview Only)'),
+                      label: Text('ads_ad_migration_text_dry_run_preview'.tr()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         foregroundColor: Colors.white,
@@ -231,7 +232,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
                     child: ElevatedButton.icon(
                       onPressed: _isMigrating ? null : () => _runMigration(),
                       icon: const Icon(Icons.upload),
-                      label: const Text('Migrate Ads (Skip Existing)'),
+                      label: Text('ads_ad_migration_text_migrate_ads_skip'.tr()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
@@ -249,7 +250,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
                           ? null
                           : () => _showOverwriteDialog(),
                       icon: const Icon(Icons.warning),
-                      label: const Text('Migrate Ads (Overwrite Existing)'),
+                      label: Text('ads_ad_migration_text_migrate_ads_overwrite'.tr()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
@@ -259,14 +260,14 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
 
                   if (_isMigrating) ...[
                     const SizedBox(height: 24),
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            CircularProgressIndicator(),
-                            SizedBox(width: 16),
-                            Text('Migration in progress...'),
+                            const CircularProgressIndicator(),
+                            const SizedBox(width: 16),
+                            Text('ads_ad_migration_text_migration_in_progress'.tr()),
                           ],
                         ),
                       ),
@@ -368,7 +369,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('⚠️ Overwrite Warning'),
+        title: Text('ads_ad_migration_text_overwrite_warning'.tr()),
         content: const Text(
           'This will OVERWRITE any existing ads in the localAds collection that have the same ID as ads in the old collection.\n\n'
           'This action cannot be undone. Are you sure you want to continue?',
@@ -376,7 +377,7 @@ ${result.hasErrors ? '\n⚠️ Errors:\n${result.errors.take(5).join('\n')}${res
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {

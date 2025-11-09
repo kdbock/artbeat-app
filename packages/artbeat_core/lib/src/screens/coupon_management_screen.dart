@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/coupon_model.dart';
 import '../services/coupon_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Admin screen for managing promotional coupons
 class CouponManagementScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Coupon Management'),
+        title: Text('core_coupon_title'.tr()),
         actions: [
           IconButton(
             onPressed: _showCreateCouponDialog,
@@ -68,7 +69,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
                   ElevatedButton.icon(
                     onPressed: _showCreateCouponDialog,
                     icon: const Icon(Icons.add),
-                    label: const Text('Create Coupon'),
+                    label: Text('core_coupon_create'.tr()),
                   ),
                 ],
               ),
@@ -120,7 +121,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
     showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Coupon'),
+        title: Text('core_coupon_delete'.tr()),
         content: Text(
           'Are you sure you want to delete the coupon "${coupon.title}"? '
           'This action cannot be undone.',
@@ -128,7 +129,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('core_coupon_cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -138,8 +139,8 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
                 setState(() {});
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Coupon deleted successfully'),
+                    SnackBar(
+                      content: Text('core_coupon_success_deleted'.tr()),
                     ),
                   );
                 }
@@ -155,7 +156,7 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text('core_coupon_delete_button'.tr()),
           ),
         ],
       ),
@@ -292,7 +293,7 @@ class CouponCard extends StatelessWidget {
                 IconButton(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete),
-                  tooltip: 'Delete',
+                  tooltip: 'core_coupon_delete_button'.tr(),
                   color: theme.colorScheme.error,
                 ),
               ],
@@ -418,7 +419,7 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: const Text('Create Coupon'),
+      title: Text('core_coupon_create'.tr()),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -437,9 +438,9 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Description',
-                  hintText: 'Brief description of the coupon',
+                  hintText: 'core_coupon_description_hint'.tr(),
                 ),
                 maxLines: 2,
                 validator: (value) =>
@@ -528,7 +529,7 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('core_coupon_cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _createCoupon,
@@ -538,7 +539,7 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Create'),
+              : Text('core_coupon_create_button'.tr()),
         ),
       ],
     );
@@ -606,7 +607,7 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Coupon created successfully')),
+          SnackBar(content: Text('core_coupon_success_created'.tr())),
         );
       }
     } catch (e) {
@@ -736,7 +737,7 @@ class _EditCouponDialogState extends State<EditCouponDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('core_coupon_cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _updateCoupon,
@@ -796,7 +797,7 @@ class _EditCouponDialogState extends State<EditCouponDialog> {
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Coupon updated successfully')),
+          SnackBar(content: Text('core_coupon_success_updated'.tr())),
         );
       }
     } catch (e) {

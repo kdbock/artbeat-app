@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show PaymentService, SubscriptionTier, EnhancedUniversalHeader, MainLayout;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -85,7 +86,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     Center(
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text('admin_admin_payment_text_cancel'.tr()),
                       ),
                     ),
                   ],
@@ -242,13 +243,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
           await showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Subscription Successful'),
+              title: Text('artist_payment_success_subscription_successful'.tr()),
               content: Text(
                   'You\'ve successfully subscribed to the ${_getTierName(widget.tier)}!'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
+                  child: Text('common_ok'.tr()),
                 ),
               ],
             ),

@@ -65,6 +65,9 @@ class AppRoutes {
 
   // Artwork routes
   static const String artworkUpload = '/artwork/upload';
+  static const String artworkUploadChoice = '/artwork/upload/choice';
+  static const String artworkUploadVisual = '/artwork/upload/visual';
+  static const String artworkUploadWritten = '/artwork/upload/written';
   static const String artworkBrowse = '/artwork/browse';
   static const String artworkSearch = '/artwork/search';
   static const String artworkFeatured = '/artwork/featured';
@@ -271,6 +274,9 @@ class AppRoutes {
     artistPayoutRequest,
     artistPayoutAccounts,
     artworkUpload,
+    artworkUploadChoice,
+    artworkUploadVisual,
+    artworkUploadWritten,
     artworkBrowse,
     artworkSearch,
     artworkFeatured,

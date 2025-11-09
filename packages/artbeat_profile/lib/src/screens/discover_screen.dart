@@ -5,6 +5,7 @@ import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Screen for discovering users and artists on the platform
 class DiscoverScreen extends StatefulWidget {
@@ -328,9 +329,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
       // debugPrint('Error loading suggested users: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to load suggested users. You may be offline.'),
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: Text('profile_discover_offline_users'.tr()),
+          duration: const Duration(seconds: 3),
         ),
       );
     } finally {
@@ -378,9 +379,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
       // debugPrint('Error loading featured artists: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to load featured artists. You may be offline.'),
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: Text('profile_discover_offline_artists'.tr()),
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -557,7 +558,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           SizedBox(
             height: 150,
             child: _feedItems.isEmpty
-                ? const Center(child: Text('No feed items available'))
+                ? Center(child: Text('profile_discover_no_feed'.tr()))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _feedItems.length,
@@ -587,7 +588,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           SizedBox(
             height: 120,
             child: _nearbyUsers.isEmpty
-                ? const Center(child: Text('No users nearby'))
+                ? Center(child: Text('profile_discover_no_users'.tr()))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _nearbyUsers.length,
@@ -620,7 +621,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           SizedBox(
             height: 120,
             child: _nearbyArtists.isEmpty
-                ? const Center(child: Text('No artists nearby'))
+                ? Center(child: Text('profile_discover_no_artists'.tr()))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _nearbyArtists.length,
@@ -653,7 +654,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           SizedBox(
             height: 160,
             child: _nearbyArtworks.isEmpty
-                ? const Center(child: Text('No artwork nearby'))
+                ? Center(child: Text('profile_discover_no_artwork'.tr()))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _nearbyArtworks.length,
@@ -683,7 +684,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           SizedBox(
             height: 150,
             child: _nearbyEvents.isEmpty
-                ? const Center(child: Text('No events nearby'))
+                ? Center(child: Text('profile_discover_no_events'.tr()))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _nearbyEvents.length,

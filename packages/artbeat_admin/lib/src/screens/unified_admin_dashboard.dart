@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/analytics_model.dart';
 import '../models/recent_activity_model.dart';
@@ -233,11 +234,11 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          Text('Error: $_error'),
+          Text('admin_unified_admin_dashboard_error_error_error'.tr()),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _loadAllData,
-            child: const Text('Retry'),
+            child: Text('admin_admin_settings_text_retry'.tr()),
           ),
         ],
       ),
@@ -426,7 +427,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
             ),
             const SizedBox(height: 16),
             if (_recentActivities.isEmpty)
-              const Text('No recent activity')
+              Text('admin_unified_admin_dashboard_text_no_recent_activity'.tr())
             else
               ListView.separated(
                 shrinkWrap: true,
@@ -651,13 +652,13 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
                   : PopupMenuButton<String>(
                       onSelected: (value) => _handleUserAction(user, value),
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'view',
-                          child: Text('View Details'),
+                          child: Text('admin_unified_admin_dashboard_text_view_details'.tr()),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'edit',
-                          child: Text('Edit User'),
+                          child: Text('admin_unified_admin_dashboard_text_edit_user'.tr()),
                         ),
                         PopupMenuItem(
                           value: user.statusText == 'Active' ? 'ban' : 'unban',
@@ -859,8 +860,8 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
                         review.title,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      Text('By: ${review.authorName}'),
-                      Text('Type: ${review.contentType.displayName}'),
+                      Text('admin_unified_admin_dashboard_label_by_reviewauthorname'.tr()),
+                      Text('admin_unified_admin_dashboard_label_type_reviewcontenttypedisplayname'.tr()),
                       if (isReported)
                         Text(
                           'REPORTED CONTENT',
@@ -879,7 +880,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text('Approve'),
+                    child: Text('admin_modern_unified_admin_dashboard_text_approve'.tr()),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
@@ -888,7 +889,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text('Reject'),
+                    child: Text('admin_modern_unified_admin_dashboard_text_reject'.tr()),
                   ),
                 ],
               ],
@@ -912,21 +913,21 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text(content.title),
-        subtitle: Text('Type: ${content.type} • Status: ${content.status}'),
+        subtitle: Text('admin_unified_admin_dashboard_hint_type_contenttype_status'.tr()),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleContentAction(content, value),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'view',
-              child: Text('View Details'),
+              child: Text('admin_unified_admin_dashboard_text_view_details'.tr()),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'edit',
-              child: Text('Edit'),
+              child: Text('admin_modern_unified_admin_dashboard_text_edit'.tr()),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
-              child: Text('Delete'),
+              child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
             ),
           ],
         ),
@@ -1044,10 +1045,10 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
             ),
             const SizedBox(height: 12),
             if (_recentActivities.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text('No recent ad activity'),
+                  padding: const EdgeInsets.all(24),
+                  child: Text('admin_unified_admin_dashboard_text_no_recent_ad'.tr()),
                 ),
               )
             else
@@ -1127,7 +1128,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
               itemCount: 5,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text('Payout #${index + 1}'),
+                  title: Text('admin_unified_admin_dashboard_text_payout_index_1'.tr()),
                   subtitle: Text('Processed on ${DateTime.now().subtract(Duration(days: index)).toString().split(' ')[0]}'),
                   trailing: Text(
                     '\$${(100 + (index * 50)).toStringAsFixed(2)}',
@@ -1244,21 +1245,21 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
   }
 
   Widget _buildRevenueChart() {
-    return const Card(
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Revenue Trend',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SizedBox(
               height: 200,
               child: Center(
-                child: Text('Chart will be implemented with fl_chart package'),
+                child: Text('admin_unified_admin_dashboard_text_chart_will_be'.tr()),
               ),
             ),
           ],
@@ -1322,7 +1323,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     }
@@ -1350,13 +1351,13 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
       await _loadContentData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Content approved successfully')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_success_content_approved_successfully'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     }
@@ -1368,13 +1369,13 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
       await _loadContentData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Content rejected successfully')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_success_content_rejected_successfully'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     }
@@ -1395,7 +1396,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     } finally {
@@ -1421,7 +1422,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
         );
       }
     } finally {

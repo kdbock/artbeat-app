@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show SocketException;
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -981,8 +982,8 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                       ),
                       Expanded(
                         child: _nearbyCaptures.isEmpty
-                            ? const Center(
-                                child: Text('No captures found nearby'),
+                            ? Center(
+                                child: Text('art_walk_art_walk_map_text_no_captures_found'.tr()),
                               )
                             : ListView.builder(
                                 scrollDirection: Axis.horizontal,
@@ -1168,7 +1169,7 @@ class CaptureDetailBottomSheet extends StatelessWidget {
                 Center(
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
+                    child: Text('admin_admin_payment_text_close'.tr()),
                   ),
                 ),
               ],

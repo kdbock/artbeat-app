@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
@@ -122,9 +123,12 @@ class _EnhancedArtWalkExperienceScreenState
     // This prevents crashes while maintaining navigation state
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation paused while app is in background'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_text_navigation_paused_while'
+                .tr(),
+          ),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -134,10 +138,13 @@ class _EnhancedArtWalkExperienceScreenState
   void _resumeNavigationFromBackground() {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation resumed'),
+        SnackBar(
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_text_navigation_resumed'
+                .tr(),
+          ),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -254,7 +261,10 @@ class _EnhancedArtWalkExperienceScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error getting location: ${e.toString()}'),
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_error_error_getting_location'
+                  .tr(),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -280,32 +290,41 @@ class _EnhancedArtWalkExperienceScreenState
       if (userId == null) return;
 
       // Try to load existing progress
-      debugPrint('📊 _loadOrCreateProgress() - Attempting to load progress for userId=$userId, artWalkId=${widget.artWalkId}');
-      
+      debugPrint(
+        '📊 _loadOrCreateProgress() - Attempting to load progress for userId=$userId, artWalkId=${widget.artWalkId}',
+      );
+
       final existingProgress = await _progressService.getWalkProgress(
         userId,
         widget.artWalkId,
       );
 
       if (existingProgress != null) {
-        debugPrint('📊 _loadOrCreateProgress() - Found existing progress with ${existingProgress.visitedArt.length} visited pieces');
-        
+        debugPrint(
+          '📊 _loadOrCreateProgress() - Found existing progress with ${existingProgress.visitedArt.length} visited pieces',
+        );
+
         // Ensure totalArtCount matches current art walk
-        final correctedProgress = existingProgress.totalArtCount != _artPieces.length
+        final correctedProgress =
+            existingProgress.totalArtCount != _artPieces.length
             ? existingProgress.copyWith(totalArtCount: _artPieces.length)
             : existingProgress;
-        
-        debugPrint('📊 _loadOrCreateProgress() - Calling setCurrentProgress with ${correctedProgress.visitedArt.length} visited pieces');
-        
+
+        debugPrint(
+          '📊 _loadOrCreateProgress() - Calling setCurrentProgress with ${correctedProgress.visitedArt.length} visited pieces',
+        );
+
         // Set the progress service's internal current progress so that recordArtVisit and completeWalk work correctly
         _progressService.setCurrentProgress(correctedProgress);
-        
+
         setState(() {
           _currentProgress = correctedProgress;
         });
       } else {
-        debugPrint('📊 _loadOrCreateProgress() - No existing progress found, creating new walk');
-        
+        debugPrint(
+          '📊 _loadOrCreateProgress() - No existing progress found, creating new walk',
+        );
+
         // Create new progress if none exists
         final newProgress = await _progressService.startWalk(
           artWalkId: widget.artWalkId,
@@ -477,7 +496,7 @@ class _EnhancedArtWalkExperienceScreenState
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to start navigation: $e'),
+          content: Text('art_walk_art_walk_detail_error_failed_to_start'.tr()),
           backgroundColor: Colors.red,
         ),
       );
@@ -498,8 +517,10 @@ class _EnhancedArtWalkExperienceScreenState
     _createMarkersAndRoute();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Navigation stopped.'),
+      SnackBar(
+        content: Text(
+          'art_walk_enhanced_art_walk_experience_text_navigation_stopped'.tr(),
+        ),
         backgroundColor: Colors.grey,
       ),
     );
@@ -514,10 +535,13 @@ class _EnhancedArtWalkExperienceScreenState
     // Check if we're in navigation mode
     if (!_isNavigationMode || _currentRoute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation not active'),
+        SnackBar(
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_text_navigation_not_active'
+                .tr(),
+          ),
           backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -529,10 +553,13 @@ class _EnhancedArtWalkExperienceScreenState
 
     if (currentStep == null || currentSegment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No navigation step available'),
+        SnackBar(
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_text_no_navigation_step'
+                .tr(),
+          ),
           backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -545,9 +572,12 @@ class _EnhancedArtWalkExperienceScreenState
       // Go to previous step in current segment
       debugPrint('🧭 Going to previous step in current segment');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('⬅️ Showing previous navigation step'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_text_showing_previous_navigation'
+                .tr(),
+          ),
+          duration: const Duration(seconds: 2),
         ),
       );
       // Note: The navigation service would need a method to manually set step index
@@ -562,19 +592,23 @@ class _EnhancedArtWalkExperienceScreenState
       if (currentSegmentIndex > 0) {
         debugPrint('🧭 At first step, could go to previous segment');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('⬅️ At first step of this segment'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_text_at_first_step'.tr(),
+            ),
+            duration: const Duration(seconds: 2),
           ),
         );
       } else {
         // We're at the very beginning
         debugPrint('🧭 Already at the first step of the route');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Already at the beginning of the route'),
+          SnackBar(
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_text_already_at_the'.tr(),
+            ),
             backgroundColor: Colors.blue,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -675,7 +709,9 @@ class _EnhancedArtWalkExperienceScreenState
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error marking as visited: $e'),
+          content: Text(
+            'art_walk_enhanced_art_walk_experience_error_error_marking_as'.tr(),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -693,10 +729,12 @@ class _EnhancedArtWalkExperienceScreenState
           break;
         }
       }
-      
+
       if (artPiece != null && !_isArtVisited(artPiece.id)) {
-        debugPrint('📊 Auto-recording visit for art piece: ${artPiece.id} during navigation');
-        
+        debugPrint(
+          '📊 Auto-recording visit for art piece: ${artPiece.id} during navigation',
+        );
+
         // Mark it as visited using the existing visit recording
         await _markAsVisited(artPiece);
       }
@@ -724,7 +762,9 @@ class _EnhancedArtWalkExperienceScreenState
       context: context,
       barrierDismissible: true,
       builder: (context) => AlertDialog(
-        title: const Text('🎉 Walk Completed!'),
+        title: Text(
+          'art_walk_enhanced_art_walk_experience_text_walk_completed'.tr(),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -739,32 +779,59 @@ class _EnhancedArtWalkExperienceScreenState
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: 8),
-            Text('• +$completionBonus XP total'),
-            if (isPerfect) const Text('  ✓ Perfect completion bonus (+50 XP)'),
-            if (timeSpent.inHours < 2) const Text('  ✓ Speed bonus (+25 XP)'),
+            Text(
+              'art_walk_enhanced_art_walk_experience_text_completionbonus_xp_total'
+                  .tr(args: [completionBonus.toString()]),
+            ),
+            if (isPerfect)
+              Text(
+                'art_walk_enhanced_art_walk_experience_text_perfect_completion_bonus'
+                    .tr(),
+              ),
+            if (timeSpent.inHours < 2)
+              Text(
+                'art_walk_enhanced_art_walk_experience_text_speed_bonus_25'
+                    .tr(),
+              ),
             if (photosCount >= (_currentProgress?.visitedArt.length ?? 0) * 0.5)
-              const Text('  ✓ Photo documentation bonus (+30 XP)'),
+              Text(
+                'art_walk_enhanced_art_walk_experience_text_photo_documentation_bonus'
+                    .tr(),
+              ),
             const SizedBox(height: 8),
             Text(
               '• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited',
             ),
-            Text('• $photosCount photos taken'),
-            Text('• ${_formatDuration(timeSpent)} duration'),
+            Text(
+              'art_walk_enhanced_art_walk_experience_text_photoscount_photos_taken'
+                  .tr(),
+            ),
+            Text(
+              'art_walk_enhanced_art_walk_experience_text_formatdurationtimespent_duration'
+                  .tr(),
+            ),
             const SizedBox(height: 8),
-            const Text('• Achievement progress updated'),
+            Text(
+              'art_walk_enhanced_art_walk_experience_success_achievement_progress_updated'
+                  .tr(),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Review Walk'),
+            child: Text(
+              'art_walk_enhanced_art_walk_experience_text_review_walk'.tr(),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _completeWalk();
             },
-            child: const Text('Claim Rewards'),
+            child: Text(
+              'art_walk_enhanced_art_walk_experience_text_claim_rewards'.tr(),
+            ),
           ),
         ],
       ),
@@ -774,18 +841,22 @@ class _EnhancedArtWalkExperienceScreenState
   Future<void> _completeWalk() async {
     try {
       debugPrint('📊 _completeWalk() - Starting walk completion');
-      
+
       // Ensure the final art piece is marked as visited if we're in navigation mode
       if (_isNavigationMode && _currentRoute != null && _artPieces.isNotEmpty) {
-        debugPrint('📊 _completeWalk() - Recording final art piece visit for safety');
+        debugPrint(
+          '📊 _completeWalk() - Recording final art piece visit for safety',
+        );
         final lastSegment = _currentRoute?.segments.last;
         if (lastSegment != null) {
           await _recordSegmentCompletionVisit(lastSegment);
         }
       }
-      
+
       final completedProgress = await _progressService.completeWalk();
-      debugPrint('📊 _completeWalk() - Walk completed with ${completedProgress.visitedArt.length} visited pieces');
+      debugPrint(
+        '📊 _completeWalk() - Walk completed with ${completedProgress.visitedArt.length} visited pieces',
+      );
 
       // Calculate actual distance traveled
       double totalDistance = 0.0;
@@ -913,7 +984,10 @@ class _EnhancedArtWalkExperienceScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error completing walk: $e'),
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_error_error_completing_walk'
+                  .tr(),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -1187,7 +1261,10 @@ class _EnhancedArtWalkExperienceScreenState
                           showDialog<void>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('How to Use'),
+                              title: Text(
+                                'art_walk_enhanced_art_walk_experience_text_how_to_use'
+                                    .tr(),
+                              ),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1195,18 +1272,27 @@ class _EnhancedArtWalkExperienceScreenState
                                   const Text(
                                     '• Tap "Start Navigation" for turn-by-turn directions',
                                   ),
-                                  const Text('• Follow the blue route line'),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_follow_the_blue'
+                                        .tr(),
+                                  ),
                                   const Text(
                                     '• Tap markers to view art details',
                                   ),
                                   const Text(
                                     '• Mark art as visited when you reach it',
                                   ),
-                                  const Text('• Green markers = visited'),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_green_markers_visited'
+                                        .tr(),
+                                  ),
                                   const Text(
                                     '• Orange marker = next destination',
                                   ),
-                                  const Text('• Red markers = not yet visited'),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_red_markers_not'
+                                        .tr(),
+                                  ),
                                   if (_isNavigationMode) ...[
                                     const SizedBox(height: 8),
                                     const Text(
@@ -1227,7 +1313,10 @@ class _EnhancedArtWalkExperienceScreenState
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Got it'),
+                                  child: Text(
+                                    'art_walk_enhanced_art_walk_experience_text_got_it'
+                                        .tr(),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1239,55 +1328,76 @@ class _EnhancedArtWalkExperienceScreenState
                         onSelected: _handleMenuAction,
                         itemBuilder: (context) => [
                           if (_currentProgress?.status == WalkStatus.inProgress)
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'pause',
                               child: Row(
                                 children: [
-                                  Icon(Icons.pause),
-                                  SizedBox(width: 8),
-                                  Text('Pause Walk'),
+                                  const Icon(Icons.pause),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_pause_walk'
+                                        .tr(),
+                                  ),
                                 ],
                               ),
                             ),
                           if (_currentProgress?.status == WalkStatus.paused)
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'resume',
                               child: Row(
                                 children: [
-                                  Icon(Icons.play_arrow),
-                                  SizedBox(width: 8),
-                                  Text('Resume Walk'),
+                                  const Icon(Icons.play_arrow),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_resume_walk'
+                                        .tr(),
+                                  ),
                                 ],
                               ),
                             ),
                           if (_currentProgress?.canComplete == true)
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'complete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.check_circle, color: Colors.green),
-                                  SizedBox(width: 8),
-                                  Text('Complete Walk'),
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'art_walk_enhanced_art_walk_experience_text_complete_walk'
+                                        .tr(),
+                                  ),
                                 ],
                               ),
                             ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'progress',
                             child: Row(
                               children: [
-                                Icon(Icons.analytics),
-                                SizedBox(width: 8),
-                                Text('View Progress'),
+                                const Icon(Icons.analytics),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'art_walk_enhanced_art_walk_experience_text_view_progress'
+                                      .tr(),
+                                ),
                               ],
                             ),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'abandon',
                             child: Row(
                               children: [
-                                Icon(Icons.exit_to_app, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Abandon Walk'),
+                                const Icon(
+                                  Icons.exit_to_app,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'art_walk_enhanced_art_walk_experience_text_abandon_walk'
+                                      .tr(),
+                                ),
                               ],
                             ),
                           ),
@@ -1336,7 +1446,8 @@ class _EnhancedArtWalkExperienceScreenState
                   right: 16,
                   child: EnhancedProgressVisualization(
                     visitedCount: _currentProgress?.visitedArt.length ?? 0,
-                    totalCount: _currentProgress?.totalArtCount ?? _artPieces.length,
+                    totalCount:
+                        _currentProgress?.totalArtCount ?? _artPieces.length,
                     progressPercentage:
                         _currentProgress?.progressPercentage ?? 0.0,
                     isNavigationMode: _isNavigationMode,
@@ -1367,11 +1478,13 @@ class _EnhancedArtWalkExperienceScreenState
                           );
                           try {
                             // Before advancing, record a visit to the current segment's destination
-                            final currentSegment = _navigationService.currentSegment;
-                            if (currentSegment != null && _currentPosition != null) {
+                            final currentSegment =
+                                _navigationService.currentSegment;
+                            if (currentSegment != null &&
+                                _currentPosition != null) {
                               _recordSegmentCompletionVisit(currentSegment);
                             }
-                            
+
                             _navigationService.nextStep();
                             debugPrint(
                               '🧭 Experience Screen: Next step called successfully',
@@ -1382,7 +1495,10 @@ class _EnhancedArtWalkExperienceScreenState
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error advancing navigation: $e'),
+                                content: Text(
+                                  'art_walk_enhanced_art_walk_experience_error_error_advancing_navigation'
+                                      .tr(),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -1400,7 +1516,10 @@ class _EnhancedArtWalkExperienceScreenState
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error with previous step: $e'),
+                                content: Text(
+                                  'art_walk_enhanced_art_walk_experience_error_error_with_previous'
+                                      .tr(),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -1421,7 +1540,10 @@ class _EnhancedArtWalkExperienceScreenState
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error stopping navigation: $e'),
+                                content: Text(
+                                  'art_walk_enhanced_art_walk_experience_error_error_stopping_navigation'
+                                      .tr(),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -1442,7 +1564,10 @@ class _EnhancedArtWalkExperienceScreenState
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error completing walk: $e'),
+                                content: Text(
+                                  'art_walk_enhanced_art_walk_experience_error_error_completing_walk'
+                                      .tr(),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -1527,7 +1652,10 @@ class _EnhancedArtWalkExperienceScreenState
                                   _stopNavigation();
                                 },
                                 icon: const Icon(Icons.stop),
-                                label: const Text('Stop Navigation'),
+                                label: Text(
+                                  'art_walk_enhanced_art_walk_experience_text_stop_navigation'
+                                      .tr(),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
@@ -1659,18 +1787,20 @@ class _EnhancedArtWalkExperienceScreenState
       final shouldExit = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Leave Walk?'),
+          title: Text(
+            'art_walk_enhanced_art_walk_experience_text_leave_walk'.tr(),
+          ),
           content: const Text(
             'Your progress will be saved and you can resume this walk later.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Stay'),
+              child: Text('art_walk_enhanced_art_walk_create_text_stay'.tr()),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Leave'),
+              child: Text('art_walk_enhanced_art_walk_create_text_leave'.tr()),
             ),
           ],
         ),
@@ -1713,10 +1843,12 @@ class _EnhancedArtWalkExperienceScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Walk paused. You can resume anytime!'),
+          SnackBar(
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_text_walk_paused_you'.tr(),
+            ),
             backgroundColor: Colors.orange,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -1724,7 +1856,10 @@ class _EnhancedArtWalkExperienceScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error pausing walk: $e'),
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_error_error_pausing_walk'
+                  .tr(),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -1757,7 +1892,10 @@ class _EnhancedArtWalkExperienceScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error resuming walk: $e'),
+            content: Text(
+              'art_walk_enhanced_art_walk_experience_error_error_resuming_walk'
+                  .tr(),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -1782,7 +1920,9 @@ class _EnhancedArtWalkExperienceScreenState
     final shouldComplete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Complete Walk Early?'),
+        title: Text(
+          'art_walk_enhanced_art_walk_experience_text_complete_walk_early'.tr(),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1796,19 +1936,27 @@ class _EnhancedArtWalkExperienceScreenState
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const Text('• You won\'t get the perfect completion bonus'),
-            const Text('• You can still claim other rewards'),
+            Text(
+              'art_walk_enhanced_art_walk_experience_text_you_can_still'.tr(),
+            ),
             const SizedBox(height: 8),
-            const Text('Would you like to finish now or continue exploring?'),
+            Text(
+              'art_walk_enhanced_art_walk_experience_text_would_you_like'.tr(),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Keep Exploring'),
+            child: Text(
+              'art_walk_enhanced_art_walk_experience_text_keep_exploring'.tr(),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Complete Now'),
+            child: Text(
+              'art_walk_enhanced_art_walk_experience_text_complete_now'.tr(),
+            ),
           ),
         ],
       ),
@@ -1835,7 +1983,9 @@ class _EnhancedArtWalkExperienceScreenState
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Walk Progress'),
+        title: Text(
+          'art_walk_enhanced_art_walk_experience_text_walk_progress'.tr(),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1877,7 +2027,7 @@ class _EnhancedArtWalkExperienceScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text('admin_admin_payment_text_close'.tr()),
           ),
         ],
       ),
@@ -1905,14 +2055,16 @@ class _EnhancedArtWalkExperienceScreenState
     final shouldAbandon = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Abandon Walk?'),
+        title: Text(
+          'art_walk_enhanced_art_walk_experience_text_abandon_walk_76'.tr(),
+        ),
         content: const Text(
           'Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -1920,7 +2072,9 @@ class _EnhancedArtWalkExperienceScreenState
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Abandon'),
+            child: Text(
+              'art_walk_enhanced_art_walk_experience_text_abandon'.tr(),
+            ),
           ),
         ],
       ),
@@ -1937,7 +2091,10 @@ class _EnhancedArtWalkExperienceScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error abandoning walk: $e'),
+              content: Text(
+                'art_walk_enhanced_art_walk_experience_error_error_abandoning_walk'
+                    .tr(),
+              ),
               backgroundColor: Colors.red,
             ),
           );

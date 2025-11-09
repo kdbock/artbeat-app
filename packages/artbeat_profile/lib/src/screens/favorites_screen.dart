@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:easy_localization/easy_localization.dart';
 
 class FavoritesScreen extends StatefulWidget {
   final String userId;
@@ -119,7 +120,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 Navigator.pushNamed(context, '/community');
               },
               icon: const Icon(Icons.explore),
-              label: const Text('Discover Content'),
+              label: Text('profile_favorite_discover'.tr()),
               style: ElevatedButton.styleFrom(
                 backgroundColor: core.ArtbeatColors.primaryPurple,
                 foregroundColor: Colors.white,
@@ -271,7 +272,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Remove Like'),
-        content: const Text('Are you sure you want to unlike this content?'),
+        content: Text('profile_favorite_confirm_unlike'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),

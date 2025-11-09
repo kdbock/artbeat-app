@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show MainLayout, AppLogger, StripePaymentService;
 import '../models/artwork_model.dart';
@@ -59,7 +60,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
       if (artwork == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Artwork not found')),
+            SnackBar(content: Text('artwork_detail_not_found'.tr())),
           );
           Navigator.pop(context);
         }
@@ -81,7 +82,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
     final user = _auth.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to purchase')),
+        SnackBar(content: Text('artwork_purchase_login_required'.tr())),
       );
       return;
     }
@@ -116,7 +117,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Purchase successful! Transaction: $transactionId'),
+            content: Text('artwork_purchase_success'.tr(namedArgs: {'id': transactionId})),
             backgroundColor: Colors.green,
           ),
         );
@@ -136,7 +137,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Purchase failed: ${e.toString()}'),
+            content: Text('artwork_purchase_failed'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: Colors.red,
           ),
         );
@@ -149,7 +150,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
     return MainLayout(
       currentIndex: 0,
       appBar: AppBar(
-        title: const Text('Purchase Artwork'),
+        title: Text('artwork_purchase_title'.tr()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -171,11 +172,11 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error: $_error'),
+            Text('error_generic'.tr()),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Back'),
+              child: Text('common_back'.tr()),
             ),
           ],
         ),
@@ -183,7 +184,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
     }
 
     if (_artwork == null) {
-      return const Center(child: Text('Artwork not found'));
+      return Center(child: Text('artwork_detail_not_found'.tr()));
     }
 
     return SingleChildScrollView(
@@ -235,9 +236,9 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           const SizedBox(height: 32),
 
           // Order summary
-          const Text(
-            'Order Summary',
-            style: TextStyle(
+          Text(
+            'artwork_purchase_order_summary'.tr(),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -246,7 +247,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Price:'),
+              Text('${'artwork_price_label'.tr()}:'),
               Text(
                 '\$${_artwork!.price?.toStringAsFixed(2) ?? '0.00'}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -257,7 +258,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Platform Fee (15%):'),
+              Text('${'artwork_purchase_platform_fee'.tr()}:'),
               Text(
                 '\$${((_artwork!.price ?? 0) * 0.15).toStringAsFixed(2)}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -268,9 +269,9 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Total:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Text(
+                '${'artwork_purchase_total'.tr()}:',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
                 '\$${((_artwork!.price ?? 0) * 1.15).toStringAsFixed(2)}',
@@ -284,9 +285,9 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
           const SizedBox(height: 32),
 
           // Payment form
-          const Text(
-            'Payment Information',
-            style: TextStyle(
+          Text(
+            'artwork_purchase_payment_info'.tr(),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -298,30 +299,30 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
               children: [
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Cardholder Name',
+                    labelText: 'artwork_purchase_cardholder_name'.tr(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (value) =>
-                      value?.isEmpty ?? true ? 'Name required' : null,
+                      value?.isEmpty ?? true ? 'error_name_required'.tr() : null,
                   onChanged: (value) => _cardholderName = value,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Card Number',
+                    labelText: 'artwork_purchase_card_number'.tr(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     prefixIcon: const Icon(Icons.credit_card),
-                    hintText: '1234 5678 9012 3456',
+                    hintText: 'artwork_purchase_card_hint'.tr(),
                   ),
                   keyboardType: TextInputType.number,
                   maxLength: 19,
                   validator: (value) =>
-                      value?.isEmpty ?? true ? 'Card number required' : null,
+                      value?.isEmpty ?? true ? 'error_card_number_required'.tr() : null,
                   onChanged: (value) => _cardNumber = value,
                 ),
                 const SizedBox(height: 16),
@@ -330,16 +331,16 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
                     Expanded(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          labelText: 'Expiry Date',
+                          labelText: 'artwork_purchase_expiry'.tr(),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          hintText: 'MM/YY',
+                          hintText: 'artwork_purchase_expiry_hint'.tr(),
                         ),
                         keyboardType: TextInputType.number,
                         maxLength: 5,
                         validator: (value) =>
-                            value?.isEmpty ?? true ? 'Expiry required' : null,
+                            value?.isEmpty ?? true ? 'error_expiry_required'.tr() : null,
                         onChanged: (value) => _expiryDate = value,
                       ),
                     ),
@@ -347,17 +348,17 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
                     Expanded(
                       child: TextFormField(
                         decoration: InputDecoration(
-                          labelText: 'CVV',
+                          labelText: 'artwork_purchase_cvv'.tr(),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          hintText: '123',
+                          hintText: 'artwork_purchase_cvv_hint'.tr(),
                         ),
                         keyboardType: TextInputType.number,
                         maxLength: 4,
                         obscureText: true,
                         validator: (value) =>
-                            value?.isEmpty ?? true ? 'CVV required' : null,
+                            value?.isEmpty ?? true ? 'error_cvv_required'.tr() : null,
                         onChanged: (value) => _cvv = value,
                       ),
                     ),
@@ -383,7 +384,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
                     )
                   : const Icon(Icons.shopping_cart),
               label: Text(
-                _isProcessing ? 'Processing...' : 'Complete Purchase',
+                _isProcessing ? 'artwork_purchase_processing'.tr() : 'artwork_purchase_complete'.tr(),
               ),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -406,7 +407,7 @@ class _ArtworkPurchaseScreenState extends State<ArtworkPurchaseScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Your payment is secure and encrypted',
+                    'artwork_purchase_secure_notice'.tr(),
                     style: TextStyle(color: Colors.blue[700]),
                   ),
                 ),

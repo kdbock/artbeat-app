@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
@@ -86,7 +87,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_my_art_walks_error_error_loading_data'.tr())));
       }
     }
   }
@@ -124,7 +125,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Art Walks'),
+        title: Text('art_walk_enhanced_my_art_walks_text_my_art_walks'.tr()),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
@@ -292,7 +293,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             onPressed: () =>
                 Navigator.pushNamed(context, ArtWalkRoutes.enhancedCreate),
             icon: const Icon(Icons.add),
-            label: const Text('Create Walk'),
+            label: Text('art_walk_create'.tr()),
           ),
         ),
       ],
@@ -398,7 +399,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
   Widget _buildNotLoggedInView() {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Art Walks')),
+      appBar: AppBar(title: Text('art_walk_enhanced_my_art_walks_text_my_art_walks'.tr())),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -418,7 +419,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/login'),
-              child: const Text('Log In'),
+              child: Text('art_walk_enhanced_my_art_walks_text_log_in'.tr()),
             ),
           ],
         ),
@@ -438,7 +439,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error resuming walk: $e')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_resuming_walk'.tr())));
     }
   }
 
@@ -449,7 +450,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error pausing walk: $e')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_pausing_walk'.tr())));
     }
   }
 
@@ -457,18 +458,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Abandon Walk?'),
+        title: Text('art_walk_enhanced_art_walk_experience_text_abandon_walk_76'.tr()),
         content: const Text(
           'Are you sure you want to abandon this walk? Your progress will be lost.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Abandon'),
+            child: Text('art_walk_enhanced_art_walk_experience_text_abandon'.tr()),
           ),
         ],
       ),
@@ -481,7 +482,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       } catch (e) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error abandoning walk: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_abandoning_walk'.tr())));
       }
     }
   }
@@ -530,7 +531,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Failed to save review: $e'),
+                  content: Text('art_walk_enhanced_my_art_walks_error_failed_to_save'.tr()),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -553,18 +554,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Walk?'),
+        title: Text('art_walk_enhanced_my_art_walks_text_delete_walk'.tr()),
         content: Text(
           'Are you sure you want to delete "${walk.title}"? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('admin_admin_payment_text_cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
           ),
         ],
       ),
@@ -577,7 +578,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       } catch (e) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error deleting walk: $e')));
+        ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_my_art_walks_error_error_deleting_walk'.tr())));
       }
     }
   }
@@ -593,7 +594,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error unsaving walk: $e')));
+      ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_my_art_walks_error_error_unsaving_walk'.tr())));
     }
   }
 
@@ -706,12 +707,12 @@ class _WalkReviewDialogState extends State<WalkReviewDialog> {
                   Text(
                     '• ${widget.progress.visitedArt.length} art pieces visited',
                   ),
-                  Text('• ${widget.progress.totalPointsEarned} points earned'),
+                  Text('art_walk_enhanced_my_art_walks_text_widgetprogresstotalpointsearned_points_earned'.tr()),
                   Text(
                     '• Completed in ${_formatDuration(widget.progress.timeSpent)}',
                   ),
                   if (widget.progress.progressPercentage >= 1.0)
-                    const Text('• Perfect walk - all art found!'),
+                    Text('art_walk_enhanced_my_art_walks_text_perfect_walk_all'.tr()),
                 ],
               ),
             ),
@@ -721,7 +722,7 @@ class _WalkReviewDialogState extends State<WalkReviewDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('admin_admin_payment_text_cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: _isSubmitting || _rating == 0.0 ? null : _submitReview,
@@ -731,7 +732,7 @@ class _WalkReviewDialogState extends State<WalkReviewDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Submit Review'),
+              : Text('art_walk_enhanced_my_art_walks_text_submit_review'.tr()),
         ),
       ],
     );
@@ -751,7 +752,7 @@ class _WalkReviewDialogState extends State<WalkReviewDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error submitting review: $e'),
+            content: Text('art_walk_enhanced_my_art_walks_error_error_submitting_review'.tr()),
             backgroundColor: Colors.red,
           ),
         );

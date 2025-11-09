@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../models/message_model.dart';
 import '../services/chat_service.dart';
@@ -35,7 +36,7 @@ class _ChatSearchScreenState extends State<ChatSearchScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No messages found.'));
+            return Center(child: Text('messaging_chat_search_message_no_messages_found'.tr()));
           }
           final filtered = snapshot.data!
               .where(
@@ -43,7 +44,7 @@ class _ChatSearchScreenState extends State<ChatSearchScreen> {
               )
               .toList();
           if (filtered.isEmpty) {
-            return const Center(child: Text('No results.'));
+            return Center(child: Text('messaging_chat_search_text_no_results'.tr()));
           }
           return ListView.builder(
             itemCount: filtered.length,

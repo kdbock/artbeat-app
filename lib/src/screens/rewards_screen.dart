@@ -214,7 +214,7 @@ class _RewardsScreenState extends State<RewardsScreen>
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 120,
+            height: 130,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: unviewedBadges.length,
@@ -237,42 +237,50 @@ class _RewardsScreenState extends State<RewardsScreen>
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        badge['icon'] as String,
-                        style: const TextStyle(fontSize: 32),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        badge['name'] as String,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          badge['icon'] as String,
+                          style: const TextStyle(fontSize: 28),
                         ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ArtbeatColors.primaryGreen,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'NEW',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 6),
+                        Flexible(
+                          child: Text(
+                            badge['name'] as String,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    ],
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ArtbeatColors.primaryGreen,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'NEW',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
