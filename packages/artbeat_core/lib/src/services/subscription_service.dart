@@ -499,7 +499,7 @@ class SubscriptionService extends ChangeNotifier {
       }
 
       // Update user profile with new subscription tier
-      await _updateUserSubscriptionTier(tier);
+      await updateUserSubscriptionTier(tier);
 
       return {
         'success': true,
@@ -627,7 +627,7 @@ class SubscriptionService extends ChangeNotifier {
   }
 
   /// Helper method to update user's subscription tier
-  Future<void> _updateUserSubscriptionTier(SubscriptionTier tier) async {
+  Future<void> updateUserSubscriptionTier(SubscriptionTier tier) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
@@ -640,6 +640,7 @@ class SubscriptionService extends ChangeNotifier {
           .get();
 
       if (artistQuery.docs.isNotEmpty) {
+        // Update existing profile
         await _firestore
             .collection('artistProfiles')
             .doc(artistQuery.docs.first.id)
@@ -647,6 +648,38 @@ class SubscriptionService extends ChangeNotifier {
               'subscriptionTier': tier.apiName,
               'updatedAt': FieldValue.serverTimestamp(),
             });
+        AppLogger.info(
+          'Updated existing artist profile subscription tier to ${tier.apiName}',
+        );
+      } else {
+        // Create minimal artist profile if none exists
+        // This handles cases where subscription purchase happens without prior onboarding
+        AppLogger.warning(
+          'No artist profile found for user ${user.uid} during subscription update. Creating minimal profile.',
+        );
+
+        final docRef = _firestore.collection('artistProfiles').doc();
+        await docRef.set({
+          'userId': user.uid,
+          'displayName': user.displayName ?? 'Artist',
+          'bio': 'Artist profile created via subscription purchase',
+          'userType': 'artist',
+          'location': '',
+          'mediums': <String>[],
+          'styles': <String>[],
+          'socialLinks': <String, String>{},
+          'profileImageUrl': null,
+          'coverImageUrl': null,
+          'isVerified': false,
+          'isFeatured': false,
+          'followerCount': 0,
+          'subscriptionTier': tier.apiName,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        AppLogger.info(
+          'Created new artist profile for user ${user.uid} with subscription tier ${tier.apiName}',
+        );
       }
     } catch (e) {
       AppLogger.error('Error updating user subscription tier: $e');
@@ -686,10 +719,13 @@ class SubscriptionService extends ChangeNotifier {
       final customerId = await paymentService.getOrCreateCustomerId();
 
       // Create or update subscription
-      await paymentService.createSubscription(customerId: customerId, tier: tier);
+      await paymentService.createSubscription(
+        customerId: customerId,
+        tier: tier,
+      );
 
       // Update the user's tier in Firestore
-      await _updateUserSubscriptionTier(tier);
+      await updateUserSubscriptionTier(tier);
 
       AppLogger.info(
         'Successfully upgraded subscription to ${tier.displayName}',

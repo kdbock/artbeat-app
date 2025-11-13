@@ -277,19 +277,31 @@ class SettingsService extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
-      final doc = await _firestore
-          .collection('userSettings')
-          .doc(userId)
-          .collection('privacy')
-          .doc('preferences')
-          .get();
+      try {
+        final doc = await _firestore
+            .collection('userSettings')
+            .doc(userId)
+            .collection('privacy')
+            .doc('preferences')
+            .get()
+            .timeout(const Duration(seconds: 10));
 
-      if (!doc.exists) {
-        // Return default settings if they don't exist
-        return PrivacySettingsModel.defaultSettings(userId);
+        if (!doc.exists) {
+          AppLogger.info('No privacy settings found for user $userId - creating defaults');
+          return PrivacySettingsModel.defaultSettings(userId);
+        }
+
+        return PrivacySettingsModel.fromFirestore(doc.data()!);
+      } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') {
+          AppLogger.warning('Permission denied accessing privacy settings - returning defaults');
+          return PrivacySettingsModel.defaultSettings(userId);
+        } else if (e.code == 'unavailable' || e.code == 'deadline-exceeded') {
+          AppLogger.warning('Firestore unavailable or timeout - returning defaults');
+          return PrivacySettingsModel.defaultSettings(userId);
+        }
+        rethrow;
       }
-
-      return PrivacySettingsModel.fromFirestore(doc.data()!);
     } catch (e) {
       AppLogger.error('Error getting privacy settings: $e');
       rethrow;

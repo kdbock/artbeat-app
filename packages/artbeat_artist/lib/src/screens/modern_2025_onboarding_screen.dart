@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'artist_profile_edit_screen.dart';
+import '../services/artist_profile_service.dart';
 
 /// Modern 2025 onboarding with AI-driven personalization and micro-interactions
 class Modern2025OnboardingScreen extends StatefulWidget {
@@ -320,8 +322,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                     itemCount: _artistInterests.length,
                     itemBuilder: (context, index) {
                       final interest = _artistInterests[index];
-                      final isSelected =
-                          _selectedInterests.contains(interest);
+                      final isSelected = _selectedInterests.contains(interest);
 
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
@@ -536,9 +537,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Theme.of(context)
-                              .primaryColor
-                              .withValues(alpha: 0.1),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           Colors.purple.shade50,
                         ],
                       ),
@@ -612,8 +611,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                   // Plan selection
                   const Text(
                     'Choose a plan',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
 
@@ -637,8 +635,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
 
                   // Selected plan features (non-scrollable list inside scroll view)
                   Column(
-                    children:
-                        (recommendedPlan['features'] as List).map((f) {
+                    children: (recommendedPlan['features'] as List).map((f) {
                       final feature = f as String;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -662,8 +659,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                               child: Text(
                                 feature,
                                 style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500),
+                                    fontSize: 16, fontWeight: FontWeight.w500),
                               ),
                             ),
                           ],
@@ -771,24 +767,62 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
   }
 
   Future<void> _completeOnboarding() async {
-    final tier = _selectedPlanName != null ? _tierForPlanName(_selectedPlanName!) : null;
-    
+    final tier =
+        _selectedPlanName != null ? _tierForPlanName(_selectedPlanName!) : null;
+
     if (tier == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('artist_modern_2025_onboarding_text_please_select_a'.tr())),
+          SnackBar(
+              content: Text(
+                  'artist_modern_2025_onboarding_text_please_select_a'.tr())),
         );
       }
       return;
     }
 
-    // For free tier, just update the subscription and continue
-    if (tier == SubscriptionTier.free) {
-      setState(() => _isProcessingPlan = true);
-      try {
+    setState(() => _isProcessingPlan = true);
+
+    try {
+      // First, create artist profile and update user type
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final artistProfileService = ArtistProfileService();
+      final userService = UserService();
+
+      // Create artist profile with basic info
+      await artistProfileService.createArtistProfile(
+        userId: currentUser.uid,
+        displayName: currentUser.displayName ?? 'Artist',
+        bio: '',
+        userType: UserType.artist,
+        subscriptionTier: tier,
+        mediums: _selectedInterests
+            .where((interest) => [
+                  'Oil Paint',
+                  'Acrylic',
+                  'Watercolor',
+                  'Digital',
+                  'Photography',
+                  'Sculpture',
+                  'Mixed Media'
+                ].contains(interest))
+            .toList(),
+        styles: [],
+      );
+
+      // Update user type in core user model
+      await userService.updateUserProfileWithMap({
+        'userType': UserType.artist.name,
+      });
+
+      // Then handle subscription
+      if (tier == SubscriptionTier.free) {
         final result = await SubscriptionService()
             .changeTierWithValidation(tier, validateOnly: false);
-        setState(() => _isProcessingPlan = false);
 
         if ((result['isValid'] as bool? ?? false) == false) {
           final msg = result['message'] ?? 'Failed to set free plan';
@@ -798,29 +832,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           }
           return;
         }
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('artist_modern_2025_onboarding_title_welcome_setting_up'.tr())),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute<void>(
-              builder: (context) => const ArtistProfileEditScreen(),
-            ),
-          );
-        }
-      } catch (e) {
-        setState(() => _isProcessingPlan = false);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('art_walk_art_walk_detail_error_error_etostring'.tr())),
-          );
-        }
-      }
-    } else {
-      // For paid tiers, navigate to payment screen
-      if (mounted) {
+      } else {
+        // For paid tiers, navigate to payment screen
         final purchaseSuccess = await Navigator.push<bool>(
           context,
           MaterialPageRoute<bool>(
@@ -828,19 +841,35 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           ),
         );
 
-        if (purchaseSuccess == true && mounted) {
-          // Payment successful, continue to profile setup
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('artist_modern_2025_onboarding_title_welcome_setting_up'.tr())),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute<void>(
-              builder: (context) => const ArtistProfileEditScreen(),
-            ),
-          );
+        if (purchaseSuccess != true) {
+          // Payment failed or cancelled
+          return;
         }
-        // If purchaseSuccess is null or false, user cancelled - stay on this screen
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'artist_modern_2025_onboarding_title_welcome_setting_up'
+                      .tr())),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => const ArtistProfileEditScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error completing artist onboarding: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessingPlan = false);
       }
     }
   }

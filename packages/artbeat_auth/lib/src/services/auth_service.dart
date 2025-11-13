@@ -269,6 +269,16 @@ class AuthService {
         '✅ Google Sign-In and Firebase authentication successful: ${userCredential.user?.uid}',
       );
 
+      // Update Firebase user's displayName with Google profile name
+      if (userCredential.user != null && googleUser.displayName != null) {
+        try {
+          await userCredential.user!.updateDisplayName(googleUser.displayName);
+          AppLogger.info('✅ Display name set from Google profile: ${googleUser.displayName}');
+        } catch (e) {
+          AppLogger.warning('⚠️ Could not update display name: $e');
+        }
+      }
+
       // Create user document if this is first sign-in
       await _createSocialUserDocument(userCredential.user!);
 
@@ -452,6 +462,21 @@ class AuthService {
 
       AppLogger.auth('✅ Apple Sign-In successful: ${userCredential.user?.uid}');
 
+      // Update Firebase user's displayName with Apple profile name
+      try {
+        if (userCredential.user != null && appleCredential != null) {
+          final firstName = appleCredential.givenName ?? '';
+          final lastName = appleCredential.familyName ?? '';
+          final displayName = '$firstName $lastName'.trim();
+          if (displayName.isNotEmpty) {
+            await userCredential.user?.updateDisplayName(displayName);
+            AppLogger.info('✅ Display name set from Apple profile: $displayName');
+          }
+        }
+      } catch (e) {
+        AppLogger.warning('⚠️ Could not update display name: $e');
+      }
+
       // Create user document if this is first sign-in
       try {
         await _createSocialUserDocument(
@@ -539,9 +564,13 @@ class AuthService {
           displayName = 'User'; // Fallback
         }
 
+        // Generate username from display name and email
+        final username = _generateUsername(displayName, user.email ?? '');
+
         await _firestore.collection('users').doc(user.uid).set({
           'id': user.uid,
           'fullName': displayName,
+          'username': username,
           'email': user.email ?? '',
           'zipCode': '', // Will be collected later
           'createdAt': FieldValue.serverTimestamp(),
@@ -558,7 +587,7 @@ class AuthService {
           'isVerified': false,
         }, SetOptions(merge: true));
 
-        AppLogger.info('✅ Social user document created for ${user.uid}');
+        AppLogger.info('✅ Social user document created for ${user.uid} with username: $username');
       }
     } catch (e) {
       AppLogger.error('❌ Failed to create social user document: $e');
@@ -575,5 +604,33 @@ class AuthService {
       length,
       (_) => charset[random.nextInt(charset.length)],
     ).join();
+  }
+
+  /// Generate a username from display name or email
+  String _generateUsername(String displayName, String email) {
+    final cleanDisplayName = displayName.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]'),
+      '',
+    );
+    String username = cleanDisplayName.length > 15
+        ? cleanDisplayName.substring(0, 15)
+        : cleanDisplayName;
+
+    if (username.length < 3) {
+      final emailPrefix = email.split('@')[0];
+      final cleanEmailPrefix = emailPrefix.toLowerCase().replaceAll(
+        RegExp(r'[^a-z0-9]'),
+        '',
+      );
+      username = cleanEmailPrefix.length > 15
+          ? cleanEmailPrefix.substring(0, 15)
+          : cleanEmailPrefix;
+    }
+
+    if (username.length < 3) {
+      username = 'user${DateTime.now().millisecondsSinceEpoch % 10000}';
+    }
+
+    return username;
   }
 }

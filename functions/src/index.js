@@ -3,6 +3,8 @@ const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 const { defineSecret } = require("firebase-functions/params");
 const cors = require("cors")({ origin: true });
+const https = require("https");
+const crypto = require("crypto");
 
 // Set global options for all functions
 setGlobalOptions({ maxInstances: 10 });
@@ -1675,3 +1677,195 @@ exports.requestRefund = onRequest(
     });
   }
 );
+
+/**
+ * Validate Apple IAP receipt
+ * Handles both production and sandbox environments
+ */
+exports.validateAppleReceipt = onRequest(
+  { secrets: [stripeSecretKey] },
+  (request, response) => {
+    cors(request, response, async () => {
+      try {
+        const { receiptData, userId, productId } = request.body;
+
+        if (!receiptData || !userId || !productId) {
+          return response.status(400).send({
+            error: "Missing required fields: receiptData, userId, productId",
+          });
+        }
+
+        console.log(
+          `🍎 Validating Apple receipt for user ${userId}, product ${productId}`
+        );
+
+        // First try production validation
+        let validationResult = await validateReceiptWithApple(
+          receiptData,
+          false
+        );
+
+        // If production validation fails with sandbox receipt error, try sandbox
+        if (validationResult.error && validationResult.error === "21007") {
+          console.log(
+            "🔄 Production validation failed with sandbox receipt error, trying sandbox..."
+          );
+          validationResult = await validateReceiptWithApple(receiptData, true);
+        }
+
+        if (validationResult.error) {
+          console.error(
+            "❌ Receipt validation failed:",
+            validationResult.error
+          );
+          return response.status(400).send({
+            error: "Receipt validation failed",
+            details: validationResult.error,
+          });
+        }
+
+        // Check if the receipt is for the correct product
+        const receiptInfo = validationResult.receipt;
+        const validPurchase = receiptInfo.in_app.find(
+          (purchase) =>
+            purchase.product_id === productId && purchase.transaction_id
+        );
+
+        if (!validPurchase) {
+          console.error(
+            "❌ Receipt does not contain valid purchase for product:",
+            productId
+          );
+          return response.status(400).send({
+            error: "Receipt does not contain valid purchase for this product",
+          });
+        }
+
+        // Store validation result in Firestore for audit trail
+        await admin
+          .firestore()
+          .collection("iapValidations")
+          .add({
+            userId,
+            productId,
+            transactionId: validPurchase.transaction_id,
+            purchaseDate: new Date(parseInt(validPurchase.purchase_date_ms)),
+            environment: validationResult.environment,
+            validatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+        console.log(`✅ Apple receipt validated successfully for ${productId}`);
+        response.status(200).send({
+          success: true,
+          transactionId: validPurchase.transaction_id,
+          productId: validPurchase.product_id,
+          purchaseDate: validPurchase.purchase_date_ms,
+          environment: validationResult.environment,
+        });
+      } catch (error) {
+        console.error("Error validating Apple receipt:", error);
+        response.status(500).send({ error: error.message });
+      }
+    });
+  }
+);
+
+/**
+ * Validate receipt with Apple's servers
+ * @param {string} receiptData - Base64 encoded receipt data
+ * @param {boolean} isSandbox - Whether to use sandbox environment
+ * @returns {Promise<Object>} Validation result
+ */
+async function validateReceiptWithApple(receiptData, isSandbox = false) {
+  const url = isSandbox
+    ? "https://sandbox.itunes.apple.com/verifyReceipt"
+    : "https://buy.itunes.apple.com/verifyReceipt";
+
+  const password = process.env.APPLE_SHARED_SECRET || ""; // You'll need to set this
+
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify({
+      "receipt-data": receiptData,
+      password: password,
+      "exclude-old-transactions": true,
+    });
+
+    const options = {
+      hostname: isSandbox ? "sandbox.itunes.apple.com" : "buy.itunes.apple.com",
+      port: 443,
+      path: "/verifyReceipt",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(postData),
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = "";
+
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          const result = JSON.parse(data);
+
+          if (result.status === 0) {
+            // Success
+            resolve({
+              receipt: result.receipt,
+              environment: isSandbox ? "sandbox" : "production",
+            });
+          } else {
+            // Apple error codes
+            resolve({
+              error: result.status.toString(),
+              message: getAppleErrorMessage(result.status),
+            });
+          }
+        } catch (parseError) {
+          reject(new Error("Failed to parse Apple response"));
+        }
+      });
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    req.write(postData);
+    req.end();
+  });
+}
+
+/**
+ * Get human-readable error message for Apple status codes
+ * @param {number} statusCode - Apple status code
+ * @returns {string} Error message
+ */
+function getAppleErrorMessage(statusCode) {
+  const errorMessages = {
+    21000: "The App Store could not read the JSON object you provided.",
+    21002: "The data in the receipt-data property was malformed or missing.",
+    21003: "The receipt could not be authenticated.",
+    21004:
+      "The shared secret you provided does not match the shared secret on file.",
+    21005: "The receipt server is not currently available.",
+    21007:
+      "This receipt is from the test environment, but it was sent to the production environment for verification.",
+    21008:
+      "This receipt is from the production environment, but it was sent to the test environment for verification.",
+    21010:
+      "This receipt could not be authorized. Treat this the same as if a purchase was never made.",
+    21100: "Internal data access error.",
+    21101: "Internal data access error.",
+    21102: "Internal data access error.",
+    21103: "Internal data access error.",
+    21104: "Internal data access error.",
+    21105: "Internal data access error.",
+  };
+
+  return errorMessages[statusCode] || `Unknown error code: ${statusCode}`;
+}

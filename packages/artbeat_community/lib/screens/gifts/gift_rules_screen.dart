@@ -60,7 +60,7 @@ class GiftRulesScreen extends StatelessWidget {
               'Report any suspicious gift activity',
             ]),
             _buildSection('Processing & Security', [
-              'All transactions are processed securely through Apple Pay / Google Play',
+              'All transactions are processed securely through Apple Pay',
               'Gift history is permanently recorded',
               'Suspicious activity is automatically flagged',
               'Gifts are non-refundable per App Store guidelines',

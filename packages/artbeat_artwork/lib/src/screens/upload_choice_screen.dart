@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, EnhancedUniversalHeader, MainLayout;
+import 'audio_content_upload_screen.dart';
+import 'video_content_upload_screen.dart';
 
 class UploadChoiceScreen extends StatelessWidget {
   const UploadChoiceScreen({super.key});
@@ -49,10 +51,11 @@ class UploadChoiceScreen extends StatelessWidget {
                     description: 'upload_choice_audio_desc'.tr(),
                     color: const Color(0xFFFF6B9D),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('upload_choice_audio_coming_soon'.tr())),
+                      Navigator.of(context).push<AudioContentUploadScreen>(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const AudioContentUploadScreen(),
+                        ),
                       );
                     },
                   ),
@@ -63,10 +66,11 @@ class UploadChoiceScreen extends StatelessWidget {
                     description: 'upload_choice_video_desc'.tr(),
                     color: const Color(0xFFFFA500),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('upload_choice_video_coming_soon'.tr())),
+                      Navigator.of(context).push<VideoContentUploadScreen>(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const VideoContentUploadScreen(),
+                        ),
                       );
                     },
                   ),

@@ -105,6 +105,19 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         artwork = updatedArtwork;
       }
 
+      // Check content type and route to appropriate detail screen
+      if (artwork.contentType == ArtworkContentType.audio) {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute<dynamic>(
+              builder: (context) =>
+                  AudioContentDetailScreen(artworkId: widget.artworkId),
+            ),
+          );
+        }
+        return;
+      }
+
       if (mounted) {
         setState(() {
           _artwork = artwork;
@@ -118,7 +131,9 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('artwork_error_loading'.tr(namedArgs: {'error': e.toString()}))),
+          SnackBar(
+              content: Text('artwork_error_loading'
+                  .tr(namedArgs: {'error': e.toString()}))),
         );
         setState(() {
           _isLoading = false;
@@ -238,7 +253,8 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('artwork_share_facebook_coming'.tr())),
+                            content:
+                                Text('artwork_share_facebook_coming'.tr())),
                       );
                       await _trackShare('facebook');
                     },
@@ -251,7 +267,8 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('artwork_share_instagram_coming'.tr())),
+                            content:
+                                Text('artwork_share_instagram_coming'.tr())),
                       );
                       await _trackShare('instagram');
                     },
@@ -413,7 +430,8 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('artwork_deleted_success'.tr(namedArgs: {'title': _artwork!.title})),
+            content: Text('artwork_deleted_success'
+                .tr(namedArgs: {'title': _artwork!.title})),
             backgroundColor: ArtbeatColors.primaryGreen,
           ),
         );
@@ -428,7 +446,8 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('artwork_delete_failed'.tr(namedArgs: {'error': e.toString()})),
+            content: Text(
+                'artwork_delete_failed'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -494,7 +513,8 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       children: [
                         const Icon(Icons.delete, size: 18, color: Colors.red),
                         const SizedBox(width: 8),
-                        Text('common_delete'.tr(), style: const TextStyle(color: Colors.red)),
+                        Text('common_delete'.tr(),
+                            style: const TextStyle(color: Colors.red)),
                       ],
                     ),
                   ),

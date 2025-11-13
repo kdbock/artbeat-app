@@ -18,6 +18,13 @@ import 'package:artbeat_artwork/artbeat_artwork.dart'
 // Rich text editing imports
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+enum WrittenContentUploadStep {
+  content,
+  basicInfo,
+  details,
+  review,
+}
+
 class WrittenContentUploadScreen extends StatefulWidget {
   final String? contentId;
 
@@ -35,12 +42,19 @@ class _WrittenContentUploadScreenState
     extends State<WrittenContentUploadScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Wizard state
+  WrittenContentUploadStep _currentStep = WrittenContentUploadStep.content;
+  int _currentStepIndex = 0;
+
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
   late final TextEditingController _priceController;
   late final TextEditingController _tagController;
   late final TextEditingController _authorNoteController;
   late final TextEditingController _chaptersController;
+  late final TextEditingController _volumeController;
+  late final TextEditingController _chapterController;
+  late final TextEditingController _seriesController;
 
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
@@ -52,7 +66,6 @@ class _WrittenContentUploadScreenState
   File? _coverImageFile;
   bool _isForSale = false;
   bool _isSerialized = false;
-  bool _isSaving = false;
   int _artworkCount = 0;
   SubscriptionTier? _tierLevel;
   final List<String> _genres = [];
@@ -66,11 +79,10 @@ class _WrittenContentUploadScreenState
   String _contentText = '';
   bool _useFileUpload = true; // true for file upload, false for text input
   bool _useRichText = false; // true for rich text editor, false for plain text
-  List<Map<String, dynamic>> _chapters = []; // For serialized content
+  final List<Map<String, dynamic>> _chapters = []; // For serialized content
 
   // Rich text editor (markdown-based)
   final TextEditingController _richTextController = TextEditingController();
-  bool _showPreview = false;
 
   // Validation
   int _wordCount = 0;
@@ -117,6 +129,9 @@ class _WrittenContentUploadScreenState
     _tagController = TextEditingController();
     _authorNoteController = TextEditingController();
     _chaptersController = TextEditingController(text: '1');
+    _volumeController = TextEditingController();
+    _chapterController = TextEditingController();
+    _seriesController = TextEditingController();
 
     // Initialize rich text controller
     _richTextController.addListener(_onRichTextChanged);
@@ -180,7 +195,7 @@ class _WrittenContentUploadScreenState
   // Content management methods
   Future<void> _selectContentFile() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['txt', 'md', 'pdf'],
         allowMultiple: false,
@@ -209,7 +224,7 @@ class _WrittenContentUploadScreenState
     if (_contentFile == null) return;
 
     try {
-      String content = await _contentFile!.readAsString();
+      final String content = await _contentFile!.readAsString();
       await _validateAndProcessContent(content);
     } catch (e) {
       AppLogger.error('Error processing content file: $e');
@@ -342,67 +357,6 @@ class _WrittenContentUploadScreenState
     controller.selection = TextSelection.collapsed(offset: newCursorPos);
   }
 
-  void _togglePreview() {
-    setState(() {
-      _showPreview = !_showPreview;
-    });
-  }
-
-  Future<void> _splitContentIntoChapters() async {
-    if (!_isSerialized || _contentText.isEmpty) return;
-
-    final content = _contentText;
-    final chapterMarkers =
-        RegExp(r'#{1,2}\s+Chapter\s+\d+', caseSensitive: false);
-    final matches = chapterMarkers.allMatches(content);
-
-    if (matches.isEmpty) {
-      // No chapter markers found, split by paragraphs or create single chapter
-      _chapters = [
-        {
-          'number': 1,
-          'title': 'Chapter 1',
-          'content': content,
-          'wordCount': _wordCount,
-          'readingTime': _estimatedReadingTime,
-        }
-      ];
-    } else {
-      // Split by chapter markers
-      final List<Map<String, dynamic>> chapters = [];
-
-      for (int i = 0; i < matches.length; i++) {
-        final match = matches.elementAt(i);
-        final nextMatch =
-            i < matches.length - 1 ? matches.elementAt(i + 1) : null;
-
-        final chapterStart = match.start;
-        final chapterEnd = nextMatch?.start ?? content.length;
-
-        final chapterContent =
-            content.substring(chapterStart, chapterEnd).trim();
-        final chapterTitle = match.group(0) ?? 'Chapter ${i + 1}';
-
-        final words =
-            chapterContent.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
-        final wordCount = words.length;
-        final readingTime = (wordCount / 200).ceil();
-
-        chapters.add({
-          'number': i + 1,
-          'title': chapterTitle,
-          'content': chapterContent,
-          'wordCount': wordCount,
-          'readingTime': readingTime,
-        });
-      }
-
-      _chapters = chapters;
-    }
-
-    setState(() {});
-  }
-
   Future<void> _selectCoverImage() async {
     try {
       final picker = ImagePicker();
@@ -453,8 +407,6 @@ class _WrittenContentUploadScreenState
       return;
     }
 
-    setState(() => _isSaving = true);
-
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('Not authenticated');
@@ -493,6 +445,15 @@ class _WrittenContentUploadScreenState
               : null,
           'contentHash': _generateContentHash(_contentText),
           'authorNote': _authorNoteController.text,
+          'volumeNumber': _volumeController.text.isNotEmpty
+              ? int.tryParse(_volumeController.text)
+              : null,
+          'chapterNumber': _chapterController.text.isNotEmpty
+              ? int.tryParse(_chapterController.text)
+              : null,
+          'seriesNumber': _seriesController.text.isNotEmpty
+              ? int.tryParse(_seriesController.text)
+              : null,
         };
 
         await _firestore
@@ -535,9 +496,7 @@ class _WrittenContentUploadScreenState
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) {}
     }
   }
 
@@ -571,597 +530,857 @@ class _WrittenContentUploadScreenState
           showLogo: false,
           showBackButton: true,
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
+        body: Column(
+          children: [
+            if (!_canUpload)
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'written_content_upload_limit'.tr(),
+                  style: TextStyle(color: Colors.orange[800]),
+                ),
+              ),
+            Expanded(
+              child: Stepper(
+                currentStep: _currentStepIndex,
+                onStepContinue: _onStepContinue,
+                onStepCancel: _onStepCancel,
+                onStepTapped: _onStepTapped,
+                controlsBuilder: _buildStepperControls,
+                steps: [
+                  Step(
+                    title: Text('written_content_upload_step_content'.tr()),
+                    subtitle:
+                        Text('written_content_upload_step_content_desc'.tr()),
+                    content: _buildContentStep(),
+                    isActive: _currentStepIndex >= 0,
+                    state: _getStepState(0),
+                  ),
+                  Step(
+                    title: Text('written_content_upload_step_basic_info'.tr()),
+                    subtitle: Text(
+                        'written_content_upload_step_basic_info_desc'.tr()),
+                    content: _buildBasicInfoStep(),
+                    isActive: _currentStepIndex >= 1,
+                    state: _getStepState(1),
+                  ),
+                  Step(
+                    title: Text('written_content_upload_step_details'.tr()),
+                    subtitle:
+                        Text('written_content_upload_step_details_desc'.tr()),
+                    content: _buildDetailsStep(),
+                    isActive: _currentStepIndex >= 2,
+                    state: _getStepState(2),
+                  ),
+                  Step(
+                    title: Text('written_content_upload_step_review'.tr()),
+                    subtitle:
+                        Text('written_content_upload_step_review_desc'.tr()),
+                    content: _buildReviewStep(),
+                    isActive: _currentStepIndex >= 3,
+                    state: _getStepState(3),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  StepState _getStepState(int stepIndex) {
+    if (stepIndex < _currentStepIndex) {
+      return StepState.complete;
+    } else if (stepIndex == _currentStepIndex) {
+      return StepState.editing;
+    } else {
+      return StepState.indexed;
+    }
+  }
+
+  Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Row(
+        children: [
+          if (_currentStepIndex > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: details.onStepCancel,
+                child: Text('written_content_upload_back'.tr()),
+              ),
+            ),
+          if (_currentStepIndex > 0) const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _currentStepIndex == 3
+                  ? _uploadContent
+                  : details.onStepContinue,
+              child: Text(_currentStepIndex == 3
+                  ? 'written_content_upload_button'.tr()
+                  : 'written_content_upload_continue'.tr()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateWordCount() {
+    final text = _useRichText ? _richTextController.text : _contentText;
+    final words = text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .length;
+    setState(() {
+      _wordCount = words;
+      _estimatedReadingTime = (words / 200).ceil(); // Average reading speed
+    });
+  }
+
+  void _onStepContinue() {
+    if (_currentStepIndex < 3) {
+      if (_validateCurrentStep()) {
+        setState(() {
+          _currentStepIndex += 1;
+          _currentStep = WrittenContentUploadStep.values[_currentStepIndex];
+        });
+      }
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStepIndex > 0) {
+      setState(() {
+        _currentStepIndex -= 1;
+        _currentStep = WrittenContentUploadStep.values[_currentStepIndex];
+      });
+    }
+  }
+
+  void _onStepTapped(int stepIndex) {
+    if (stepIndex <= _currentStepIndex) {
+      setState(() {
+        _currentStepIndex = stepIndex;
+        _currentStep = WrittenContentUploadStep.values[stepIndex];
+      });
+    }
+  }
+
+  bool _validateCurrentStep() {
+    switch (_currentStep) {
+      case WrittenContentUploadStep.content:
+        return (_useFileUpload && _contentFile != null) ||
+            (!_useFileUpload &&
+                (_contentText.isNotEmpty ||
+                    _richTextController.text.isNotEmpty));
+      case WrittenContentUploadStep.basicInfo:
+        return _titleController.text.isNotEmpty &&
+            _descriptionController.text.isNotEmpty &&
+            _coverImageFile != null;
+      case WrittenContentUploadStep.details:
+        return _genres.isNotEmpty;
+      case WrittenContentUploadStep.review:
+        return true;
+    }
+  }
+
+  Widget _buildContentStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'written_content_upload_content_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'written_content_upload_content_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Content type
+        Text(
+          'written_content_upload_content_type_label'.tr(),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: _contentType,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            labelText: 'written_content_upload_content_type_label'.tr(),
+            labelStyle: const TextStyle(color: Colors.black87),
+          ),
+          style: const TextStyle(color: Colors.black87),
+          items: _contentTypes.map((type) {
+            return DropdownMenuItem(
+              value: type,
+              child: Text(type),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _contentType = value ?? 'Book';
+            });
+          },
+        ),
+        const SizedBox(height: 24),
+
+        // Content input mode toggle
+        Text(
+          'written_content_upload_content_section'.tr(),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _toggleContentInputMode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _useFileUpload ? ArtbeatColors.primaryGreen : Colors.grey,
+                ),
+                child: Text('written_content_upload_file_mode'.tr()),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _toggleContentInputMode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: !_useFileUpload
+                      ? ArtbeatColors.primaryGreen
+                      : Colors.grey,
+                ),
+                child: Text('written_content_upload_text_mode'.tr()),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Content input area
+        if (_useFileUpload) ...[
+          GestureDetector(
+            onTap: _selectContentFile,
+            child: Container(
+              height: 120,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _contentFile != null
+                      ? ArtbeatColors.primaryGreen
+                      : Colors.grey,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _contentFile != null
+                          ? Icons.file_present
+                          : Icons.file_upload,
+                      size: 32,
+                      color: _contentFile != null
+                          ? ArtbeatColors.primaryGreen
+                          : Colors.grey,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _contentFile != null
+                          ? _contentFile!.path.split('/').last
+                          : 'written_content_upload_select_file'.tr(),
+                      style: TextStyle(
+                        color: _contentFile != null
+                            ? ArtbeatColors.primaryGreen
+                            : Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ] else ...[
+          // Rich text toggle
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: _toggleRichTextMode,
+              icon: Icon(_useRichText ? Icons.text_fields : Icons.format_bold),
+              label: Text(_useRichText
+                  ? 'written_content_upload_plain_text_mode'.tr()
+                  : 'written_content_upload_rich_text_mode'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _useRichText
+                    ? ArtbeatColors.primaryGreen
+                    : Colors.grey[300],
+                foregroundColor: _useRichText ? Colors.white : Colors.black,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_useRichText) ...[
+            // Rich text editor
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  // Formatting toolbar
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.format_bold),
+                          onPressed: () =>
+                              _insertMarkdownFormatting('**', '**'),
+                          tooltip: 'Bold',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.format_italic),
+                          onPressed: () => _insertMarkdownFormatting('*', '*'),
+                          tooltip: 'Italic',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.title),
+                          onPressed: () => _insertMarkdownFormatting('# ', ''),
+                          tooltip: 'Header',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.link),
+                          onPressed: () =>
+                              _insertMarkdownFormatting('[', '](url)'),
+                          tooltip: 'Link',
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Editor area
+                  Expanded(
+                    child: TextField(
+                      controller: _richTextController,
+                      maxLines: null,
+                      expands: true,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.all(12),
+                        hintText: 'Start writing your content...',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            TextFormField(
+              initialValue: _contentText,
+              maxLines: 8,
+              decoration: InputDecoration(
+                labelText: 'written_content_upload_content_label'.tr(),
+                border: const OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+              onChanged: (value) {
+                _contentText = value;
+                _updateWordCount();
+              },
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBasicInfoStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'written_content_upload_basic_info_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'written_content_upload_basic_info_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Cover image
+        Text(
+          'written_content_upload_cover_image_label'.tr(),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _selectCoverImage,
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _coverImageFile != null
+                    ? ArtbeatColors.primaryGreen
+                    : Colors.grey,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: _coverImageFile != null
+                ? Image.file(
+                    _coverImageFile!,
+                    fit: BoxFit.cover,
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: _coverImageFile != null
+                              ? ArtbeatColors.primaryGreen
+                              : Colors.grey,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'written_content_upload_cover_image_hint'.tr(),
+                          style: TextStyle(
+                            color: _coverImageFile != null
+                                ? ArtbeatColors.primaryGreen
+                                : Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Title
+        TextFormField(
+          controller: _titleController,
+          decoration: InputDecoration(
+            labelText: 'written_content_upload_title_label'.tr(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          validator: (value) {
+            if (value?.isEmpty ?? true) {
+              return 'written_content_upload_title_required'.tr();
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Description
+        TextFormField(
+          controller: _descriptionController,
+          decoration: InputDecoration(
+            labelText: 'written_content_upload_description_label'.tr(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          maxLines: 4,
+          validator: (value) {
+            if (value?.isEmpty ?? true) {
+              return 'written_content_upload_description_required'.tr();
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'written_content_upload_details_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'written_content_upload_details_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Volume/Chapter/Series identifiers
+        Text(
+          'written_content_upload_identifiers_label'.tr(),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _volumeController,
+                decoration: InputDecoration(
+                  labelText: 'written_content_upload_volume_label'.tr(),
+                  hintText: 'written_content_upload_volume_hint'.tr(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _chapterController,
+                decoration: InputDecoration(
+                  labelText: 'written_content_upload_chapter_label'.tr(),
+                  hintText: 'written_content_upload_chapter_hint'.tr(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _seriesController,
+                decoration: InputDecoration(
+                  labelText: 'written_content_upload_series_label'.tr(),
+                  hintText: 'written_content_upload_series_hint'.tr(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Author note
+        TextFormField(
+          controller: _authorNoteController,
+          decoration: InputDecoration(
+            labelText: 'written_content_upload_author_note_label'.tr(),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          maxLines: 3,
+        ),
+        const SizedBox(height: 24),
+
+        // Genres
+        Text(
+          'written_content_upload_genres_label'.tr(),
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: _availableGenres.map((genre) {
+            final isSelected = _genres.contains(genre);
+            return FilterChip(
+              label: Text(genre),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _genres.add(genre);
+                  } else {
+                    _genres.remove(genre);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 24),
+
+        // Serialized content
+        CheckboxListTile(
+          title: Text('written_content_upload_serialized_checkbox'.tr()),
+          subtitle: Text('written_content_upload_serialized_hint'.tr()),
+          value: _isSerialized,
+          onChanged: (value) {
+            setState(() {
+              _isSerialized = value ?? false;
+            });
+          },
+        ),
+        if (_isSerialized) ...[
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _chaptersController,
+            decoration: InputDecoration(
+              labelText: 'written_content_upload_chapters_label'.tr(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              setState(() {
+                _totalChaptersPlanned = int.tryParse(value) ?? 1;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'written_content_upload_schedule_label'.tr(),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _releaseSchedule,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              labelText: 'written_content_upload_schedule_label'.tr(),
+              labelStyle: const TextStyle(color: Colors.black87),
+            ),
+            style: const TextStyle(color: Colors.black87),
+            items: _releaseSchedules.map((schedule) {
+              return DropdownMenuItem(
+                value: schedule,
+                child: Text(schedule.replaceAll('_', ' ').toUpperCase()),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _releaseSchedule = value ?? 'immediate';
+              });
+            },
+          ),
+        ],
+        const SizedBox(height: 24),
+
+        // For sale
+        CheckboxListTile(
+          title: Text('written_content_upload_for_sale_checkbox'.tr()),
+          value: _isForSale,
+          onChanged: (value) {
+            setState(() {
+              _isForSale = value ?? false;
+            });
+          },
+        ),
+        if (_isForSale) ...[
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _priceController,
+            decoration: InputDecoration(
+              labelText: 'written_content_upload_price_label'.tr(),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              prefixText: '\$ ',
+            ),
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (_isForSale && (value?.isEmpty ?? true)) {
+                return 'written_content_upload_price_required'.tr();
+              }
+              return null;
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildReviewStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'written_content_upload_review_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'written_content_upload_review_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Content preview
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!_canUpload)
+                Text(
+                  'written_content_upload_content_preview'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (_useFileUpload && _contentFile != null) ...[
+                  Text('File: ${_contentFile!.path.split('/').last}'),
+                ] else if (_useRichText &&
+                    _richTextController.text.isNotEmpty) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
+                    height: 150,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.1),
-                      border: Border.all(color: Colors.orange),
+                      border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      'written_content_upload_limit'.tr(),
-                      style: TextStyle(color: Colors.orange[800]),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(8),
+                      child: MarkdownBody(
+                        data: _richTextController.text,
+                        styleSheet: MarkdownStyleSheet(
+                          p: const TextStyle(fontSize: 14),
+                          h1: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          h2: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ),
-                Text(
-                  'written_content_upload_content_type_label'.tr(),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _contentType,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
+                ] else if (_contentText.isNotEmpty) ...[
+                  Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    labelText: 'written_content_upload_content_type_label'.tr(),
-                    labelStyle: const TextStyle(color: Colors.black87),
-                  ),
-                  style: const TextStyle(color: Colors.black87),
-                  items: _contentTypes.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _contentType = value ?? 'Book';
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'written_content_upload_content_section'.tr(),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                // Content input mode toggle
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _toggleContentInputMode,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _useFileUpload
-                              ? ArtbeatColors.primaryGreen
-                              : Colors.grey,
-                        ),
-                        child: Text('written_content_upload_file_mode'.tr()),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _toggleContentInputMode,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: !_useFileUpload
-                              ? ArtbeatColors.primaryGreen
-                              : Colors.grey,
-                        ),
-                        child: Text('written_content_upload_text_mode'.tr()),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Rich text toggle (only show when in text mode)
-                if (!_useFileUpload) ...[
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: _toggleRichTextMode,
-                      icon: Icon(
-                          _useRichText ? Icons.text_fields : Icons.format_bold),
-                      label: Text(_useRichText
-                          ? 'written_content_upload_plain_text_mode'.tr()
-                          : 'written_content_upload_rich_text_mode'.tr()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _useRichText
-                            ? ArtbeatColors.primaryGreen
-                            : Colors.grey[300],
-                        foregroundColor:
-                            _useRichText ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                // Content input area
-                if (_useFileUpload) ...[
-                  GestureDetector(
-                    onTap: _selectContentFile,
-                    child: Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _contentFile != null
-                              ? ArtbeatColors.primaryGreen
-                              : Colors.grey,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _contentFile != null
-                                  ? Icons.file_present
-                                  : Icons.file_upload,
-                              size: 32,
-                              color: _contentFile != null
-                                  ? ArtbeatColors.primaryGreen
-                                  : Colors.grey,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _contentFile != null
-                                  ? _contentFile!.path.split('/').last
-                                  : 'written_content_upload_select_file'.tr(),
-                              style: TextStyle(
-                                color: _contentFile != null
-                                    ? ArtbeatColors.primaryGreen
-                                    : Colors.grey,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(_contentText),
                     ),
                   ),
                 ] else ...[
-                  if (_useRichText) ...[
-                    // Rich text editor (markdown-based)
-                    Column(
-                      children: [
-                        // Formatting toolbar
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(8),
-                              topRight: Radius.circular(8),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.format_bold),
-                                onPressed: () =>
-                                    _insertMarkdownFormatting('**', '**'),
-                                tooltip: 'Bold',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.format_italic),
-                                onPressed: () =>
-                                    _insertMarkdownFormatting('*', '*'),
-                                tooltip: 'Italic',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.title),
-                                onPressed: () =>
-                                    _insertMarkdownFormatting('# ', ''),
-                                tooltip: 'Header',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.link),
-                                onPressed: () =>
-                                    _insertMarkdownFormatting('[', '](url)'),
-                                tooltip: 'Link',
-                              ),
-                              Spacer(),
-                              IconButton(
-                                icon: Icon(
-                                    _showPreview ? Icons.edit : Icons.preview),
-                                onPressed: _togglePreview,
-                                tooltip: _showPreview ? 'Edit' : 'Preview',
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Editor/Preview area
-                        Container(
-                          height: 300,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(8),
-                              bottomRight: Radius.circular(8),
-                            ),
-                          ),
-                          child: _showPreview
-                              ? SingleChildScrollView(
-                                  padding: const EdgeInsets.all(16),
-                                  child: MarkdownBody(
-                                    data: _richTextController.text,
-                                    styleSheet: MarkdownStyleSheet(
-                                      p: const TextStyle(fontSize: 16),
-                                      h1: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold),
-                                      h2: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
-                                      h3: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                      strong: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      em: const TextStyle(
-                                          fontStyle: FontStyle.italic),
-                                    ),
-                                  ),
-                                )
-                              : TextField(
-                                  controller: _richTextController,
-                                  maxLines: null,
-                                  expands: true,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.all(16),
-                                    border: InputBorder.none,
-                                    hintText:
-                                        'Start writing your story... Use markdown for formatting',
-                                  ),
-                                ),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    // Plain text editor
-                    TextFormField(
-                      initialValue: _contentText,
-                      onChanged: (value) {
-                        _contentText = value;
-                        _validateAndProcessContent(value);
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'written_content_upload_content_label'.tr(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        hintText: 'written_content_upload_content_hint'.tr(),
-                      ),
-                      maxLines: 10,
-                      validator: (value) {
-                        if ((value?.isEmpty ?? true) && !_useFileUpload) {
-                          return 'written_content_upload_content_required'.tr();
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
+                  const Text('No content provided'),
                 ],
-                const SizedBox(height: 16),
-                // Content validation info
-                if (_contentText.isNotEmpty || _contentFile != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _isValidContent
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.red.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: _isValidContent ? Colors.green : Colors.red,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isValidContent
-                              ? 'written_content_upload_validation_passed'.tr()
-                              : 'written_content_upload_validation_failed'.tr(),
-                          style: TextStyle(
-                            color: _isValidContent ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'written_content_upload_stats'.tr(args: [
-                            _wordCount.toString(),
-                            _estimatedReadingTime.toString()
-                          ]),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            final content =
-                                _useFileUpload ? _contentText : _contentText;
-                            if (content.isNotEmpty) {
-                              showDialog<void>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text(
-                                      'written_content_upload_preview_title'
-                                          .tr()),
-                                  content: SizedBox(
-                                    width: double.maxFinite,
-                                    height: 400,
-                                    child: SingleChildScrollView(
-                                      child: Text(
-                                        content,
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Text('close'.tr()),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.preview),
-                          label: Text('written_content_upload_preview'.tr()),
-                        ),
-                      ),
-                      if (_isSerialized) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _splitContentIntoChapters,
-                            icon: const Icon(Icons.call_split),
-                            label: Text(
-                                'written_content_upload_split_chapters'.tr()),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-                const SizedBox(height: 24),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _selectCoverImage,
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: ArtbeatColors.primaryGreen,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: _coverImageFile != null
-                        ? Image.file(
-                            _coverImageFile!,
-                            fit: BoxFit.cover,
-                          )
-                        : Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.image_outlined,
-                                  size: 48,
-                                  color: ArtbeatColors.primaryGreen,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'written_content_upload_cover_image_hint'
-                                      .tr(),
-                                  style: const TextStyle(
-                                    color: ArtbeatColors.primaryGreen,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'written_content_upload_title_label'.tr(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'written_content_upload_title_required'.tr();
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'written_content_upload_description_label'.tr(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  maxLines: 4,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'written_content_upload_description_required'.tr();
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _authorNoteController,
-                  decoration: InputDecoration(
-                    labelText: 'written_content_upload_author_note_label'.tr(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'written_content_upload_genres_label'.tr(),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: _availableGenres.map((genre) {
-                    final isSelected = _genres.contains(genre);
-                    return FilterChip(
-                      label: Text(genre),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _genres.add(genre);
-                          } else {
-                            _genres.remove(genre);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
-                CheckboxListTile(
-                  title:
-                      Text('written_content_upload_serialized_checkbox'.tr()),
-                  subtitle: Text('written_content_upload_serialized_hint'.tr()),
-                  value: _isSerialized,
-                  onChanged: (value) {
-                    setState(() {
-                      _isSerialized = value ?? false;
-                    });
-                  },
-                ),
-                if (_isSerialized) ...[
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _chaptersController,
-                    decoration: InputDecoration(
-                      labelText: 'written_content_upload_chapters_label'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      setState(() {
-                        _totalChaptersPlanned = int.tryParse(value) ?? 1;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'written_content_upload_schedule_label'.tr(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: _releaseSchedule,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      labelText: 'written_content_upload_schedule_label'.tr(),
-                      labelStyle: const TextStyle(color: Colors.black87),
-                    ),
-                    style: const TextStyle(color: Colors.black87),
-                    items: _releaseSchedules.map((schedule) {
-                      return DropdownMenuItem(
-                        value: schedule,
-                        child:
-                            Text(schedule.replaceAll('_', ' ').toUpperCase()),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _releaseSchedule = value ?? 'immediate';
-                      });
-                    },
-                  ),
-                ],
-                const SizedBox(height: 24),
-                CheckboxListTile(
-                  title: Text('written_content_upload_for_sale_checkbox'.tr()),
-                  value: _isForSale,
-                  onChanged: (value) {
-                    setState(() {
-                      _isForSale = value ?? false;
-                    });
-                  },
-                ),
-                if (_isForSale) ...[
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: 'written_content_upload_price_label'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      prefixText: '\$ ',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (_isForSale && (value?.isEmpty ?? true)) {
-                        return 'written_content_upload_price_required'.tr();
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving || !_canUpload ? null : _uploadContent,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ArtbeatColors.primaryGreen,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text('written_content_upload_button'.tr()),
-                  ),
-                ),
-                const SizedBox(height: 24),
               ],
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 16),
+
+        // Basic info summary
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'written_content_upload_basic_info_summary'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (_coverImageFile != null) ...[
+                  Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Image.file(_coverImageFile!, fit: BoxFit.cover),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                Text('Title: ${_titleController.text}'),
+                Text('Description: ${_descriptionController.text}'),
+                Text('Type: $_contentType'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Details summary
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'written_content_upload_details_summary'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                if (_volumeController.text.isNotEmpty ||
+                    _chapterController.text.isNotEmpty ||
+                    _seriesController.text.isNotEmpty) ...[
+                  Text(
+                      'Volume: ${_volumeController.text}, Chapter: ${_chapterController.text}, Series: ${_seriesController.text}'),
+                  const SizedBox(height: 8),
+                ],
+                if (_authorNoteController.text.isNotEmpty) ...[
+                  Text('Author Note: ${_authorNoteController.text}'),
+                  const SizedBox(height: 8),
+                ],
+                Text('Genres: ${_genres.join(", ")}'),
+                if (_isSerialized) ...[
+                  Text('Chapters: ${_chaptersController.text}'),
+                  Text(
+                      'Schedule: ${_releaseSchedule.replaceAll('_', ' ').toUpperCase()}'),
+                ],
+                if (_isForSale) ...[
+                  Text('Price: \$${_priceController.text}'),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1173,6 +1392,9 @@ class _WrittenContentUploadScreenState
     _tagController.dispose();
     _authorNoteController.dispose();
     _chaptersController.dispose();
+    _volumeController.dispose();
+    _chapterController.dispose();
+    _seriesController.dispose();
     super.dispose();
   }
 }

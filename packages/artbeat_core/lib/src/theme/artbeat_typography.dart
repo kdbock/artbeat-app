@@ -69,6 +69,13 @@ class ArtbeatTypography {
       fontFamily: _fontFamily,
       color: ArtbeatColors.textSecondary,
     ),
+    bodySmall: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.normal,
+      letterSpacing: 0.4,
+      fontFamily: _fontFamily,
+      color: ArtbeatColors.textSecondary,
+    ),
     labelLarge: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w500,

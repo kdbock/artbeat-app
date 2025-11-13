@@ -171,6 +171,12 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
+  /// Refreshes the current user data from the server
+  Future<void> refreshUserData() async {
+    await _loadCurrentUser();
+    notifyListeners();
+  }
+
   // Getters
   bool get isInitializing => _isInitializing;
   bool get isLoadingEvents => _isLoadingEvents;

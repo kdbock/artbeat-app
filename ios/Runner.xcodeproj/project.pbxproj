@@ -518,6 +518,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wordnerd.artbeat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_MODULE_INTERFACE = NO;
@@ -708,6 +709,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wordnerd.artbeat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_MODULE_INTERFACE = NO;
@@ -736,6 +738,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wordnerd.artbeat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_MODULE_INTERFACE = NO;

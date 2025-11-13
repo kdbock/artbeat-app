@@ -1,14 +1,176 @@
 # ArtBeat App - English Text on All Screens
-*Generated on: 2025-11-08 18:33:44*
+*Generated on: 2025-11-12 19:26:18*
 
 ## Summary
-- **Total Screen Files Analyzed**: 226
-- **Files with English Text**: 200
-- **Total English Text Strings Found**: 4817
+- **Total Screen Files Analyzed**: 236
+- **Files with English Text**: 211
+- **Total English Text Strings Found**: 5024
 
 ## By Package
 
-### artbeat_admin (9 files, 396 texts)
+### artbeat_admin (10 files, 439 texts)
+
+#### packages/artbeat_admin/lib/src/screens/admin_artwork_management_screen.dart (43 texts)
+1. **Line 52**: "Error loading artwork: $e"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error loading artwork: $e')),         );    ...`
+2. **Line 72**: "Error loading details: $e"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error loading details: $e')),         );    ...`
+3. **Line 89**: "Artwork status updated to $newStatus"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Artwork status updated to $newStatus')),    ...`
+4. **Line 97**: "Error: $e"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error: $e')),         );       }     }   }  ...`
+5. **Line 110**: "Artwork deleted"
+   *Context*: `).showSnackBar(           const SnackBar(content: Text('Artwork deleted')),         );         await...`
+6. **Line 132**: "Comment deleted"
+   *Context*: `).showSnackBar(           const SnackBar(content: Text('Comment deleted')),         );       }     }...`
+7. **Line 148**: "Artwork Management"
+   *Context*: `ffold(       appBar: AppBar(         title: const Text('Artwork Management'),         elevation: 0, ...`
+8. **Line 215**: "No artwork found"
+   *Context*: `s.isEmpty                   ? const Center(child: Text('No artwork found'))                   : List...`
+9. **Line 266**: "Select artwork to view details"
+   *Context*: `tails == null) {       return const Center(child: Text('Select artwork to view details'));     }    ...`
+10. **Line 332**: "Created: ${artwork.createdAt.toString().split("
+   *Context*: `const SizedBox(height: 8),                 Text(                   'Created: ${artwork.createdAt.toS...`
+11. **Line 369**: "Analytics"
+   *Context*: `nt.start,           children: [             const Text(               'Analytics',               sty...`
+12. **Line 430**: "No reports"
+   *Context*: `dding: const EdgeInsets.all(16),           child: Text(             'No reports',             style:...`
+13. **Line 447**: "Reports"
+   *Context*: `,               children: [                 const Text(                   'Reports',                ...`
+14. **Line 454**: "${reports.length} total"
+   *Context*: `),                 ),                 Text(                   '${reports.length} total',            ...`
+15. **Line 479**: "Reported by: ${(report["
+   *Context*: `const SizedBox(height: 4),                       Text(                         'Reported by: ${(repo...`
+16. **Line 501**: "Edit Content"
+   *Context*: `nt.start,           children: [             const Text(               'Edit Content',               ...`
+17. **Line 512**: "Title"
+   *Context*: `on: const InputDecoration(                 label: Text('Title'),                 border: OutlineInpu...`
+18. **Line 521**: "Description"
+   *Context*: `on: const InputDecoration(                 label: Text('Description'),                 border: Outli...`
+19. **Line 528**: "Tags: ${artwork.tags?.join("
+   *Context*: `const SizedBox(height: 12),             Text(               'Tags: ${artwork.tags?.join(", ") ?? "No...`
+20. **Line 543**: "No comments"
+   *Context*: `dding: const EdgeInsets.all(16),           child: Text(             'No comments',             style...`
+21. **Line 560**: "Comments"
+   *Context*: `,               children: [                 const Text(                   'Comments',               ...`
+22. **Line 567**: "${comments.length} total"
+   *Context*: `),                 ),                 Text(                   '${comments.length} total',           ...`
+23. **Line 596**: "Delete"
+   *Context*: `lete',                               child: const Text('Delete'),                               onTa...`
+24. **Line 630**: "Actions"
+   *Context*: `nt.start,           children: [             const Text(               'Actions',               style...`
+25. **Line 643**: "Approve"
+   *Context*: `on(Icons.check),                     label: const Text('Approve'),                     style: Elevat...`
+26. **Line 655**: "Reject"
+   *Context*: `on(Icons.block),                     label: const Text('Reject'),                     style: Elevate...`
+27. **Line 670**: "Flag"
+   *Context*: `con(Icons.flag),                     label: const Text('Flag'),                     style: ElevatedB...`
+28. **Line 702**: "Reject Artwork"
+   *Context*: `r: (context) => AlertDialog(         title: const Text('Reject Artwork'),         content: TextField...`
+29. **Line 711**: "Cancel"
+   *Context*: `Navigator.pop(context),             child: const Text('Cancel'),           ),           ElevatedButt...`
+30. **Line 730**: "Delete Artwork"
+   *Context*: `r: (context) => AlertDialog(         title: const Text('Delete Artwork'),         content: TextField...`
+31. **Line 759**: "Delete Comment"
+   *Context*: `r: (context) => AlertDialog(         title: const Text('Delete Comment'),         content: TextField...`
+32. **Line 178**: "Search artwork..."
+   *Context*: `decoration: InputDecoration(                   hintText: 'Search artwork...',                   pref...`
+33. **Line 705**: "Reason for rejection"
+   *Context*: `ller,           decoration: const InputDecoration(hintText: 'Reason for rejection'),           maxLi...`
+34. **Line 733**: "Reason for deletion"
+   *Context*: `ller,           decoration: const InputDecoration(hintText: 'Reason for deletion'),           maxLin...`
+35. **Line 475**: "No reason provided"
+   *Context*: `(report['reason'] as String?) ?? 'No reason provided',                         style: const TextStyl...`
+36. **Line 648**: "Approved by admin"
+   *Context*: `_updateArtworkStatus('approved', reason: 'Approved by admin'),                   ),                 ...`
+37. **Line 675**: "Flagged by admin"
+   *Context*: `_updateArtworkStatus('flagged', reason: 'Flagged by admin'),                   ),                 ),...`
+38. **Line 52**: ")),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadArtworkDetails(artwork_pkg.ArtworkModel artwork) async {
+    try {
+      final details = await _service.getArtworkReportDetails(artwork.id);
+      setState(() {
+        _selectedArtwork = artwork;
+        _selectedArtworkDetails = details;
+        _titleController.text = artwork.title;
+        _descriptionController.text = artwork.description;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error loading artwork: $e')),         );       }  ...`
+39. **Line 72**: ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateArtworkStatus(String newStatus, {String? reason}) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.updateArtworkStatus(
+        _selectedArtwork!.id,
+        newStatus,
+        reason: reason,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error loading details: $e')),         );       }  ...`
+40. **Line 97**: ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteArtwork(String reason) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.deleteArtwork(_selectedArtwork!.id, reason: reason);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error: $e')),         );       }     }   }    Futu...`
+41. **Line 118**: ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteComment(String commentId, String reason) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.deleteComment(_selectedArtwork!.id, commentId, reason: reason);
+      await _loadArtworkDetails(_selectedArtwork!);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error: $e')),         );       }     }   }    Futu...`
+42. **Line 138**: ")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error: $e')),         );       }     }   }    @ove...`
+43. **Line 224**: "${artwork.description.substring(0, 50)}..."
+   *Context*: `withValues(alpha: 0.1),                           title: Text(artwork.title),                       ...`
 
 #### packages/artbeat_admin/lib/src/screens/admin_login_screen.dart (15 texts)
 1. **Line 97**: "Email"
@@ -223,25 +385,25 @@
    *Context*: `ildren: [         // Active Threats         const Text(           'Active Threats',           style:...`
 4. **Line 153**: "Detection Settings"
    *Context*: `// Threat Detection Settings         const Text(           'Detection Settings',           style: Te...`
-5. **Line 202**: "Admin Access Control"
+5. **Line 212**: "Admin Access Control"
    *Context*: `ren: [         // Admin Permissions         const Text(           'Admin Access Control',           ...`
-6. **Line 216**: "IP Whitelist"
+6. **Line 226**: "IP Whitelist"
    *Context*: `ight: 24),          // IP Whitelist         const Text(           'IP Whitelist',           style: T...`
-7. **Line 341**: "2024-12-${(index + 1).toString().padLeft(2,"
+7. **Line 354**: "2024-12-${(index + 1).toString().padLeft(2,"
    *Context*: `events[index % events.length]),         subtitle: Text(             '2024-12-${(index + 1).toString(...`
-8. **Line 413**: "User: ${users[index % users.length]} | IP: 192.168.1.${100 + index}"
+8. **Line 434**: "User: ${users[index % users.length]} | IP: 192.168.1.${100 + index}"
    *Context*: `tions[index % actions.length]),         subtitle: Text(             'User: ${users[index % users.len...`
-9. **Line 416**: "${10 + index}:${(index * 3).toString().padLeft(2,"
+9. **Line 437**: "${10 + index}:${(index * 3).toString().padLeft(2,"
    *Context*: `1.${100 + index}'),         trailing:             Text('${10 + index}:${(index * 3).toString().padLe...`
-10. **Line 532**: "Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2,"
+10. **Line 559**: "Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2,"
    *Context*: `ty_center_text_log_id_log1000'.tr()),             Text(                 'Timestamp: 2024-12-24 ${10 ...`
-11. **Line 267**: "Search logs..."
+11. **Line 280**: "Search logs..."
    *Context*: `ation: const InputDecoration(                     hintText: 'Search logs...',                     pr...`
-12. **Line 477**: "Office Network"
+12. **Line 501**: "Office Network"
    *Context*: `labelText: 'Description',                 hintText: 'Office Network',               ),             )...`
-13. **Line 470**: "IP Address/Range"
+13. **Line 494**: "IP Address/Range"
    *Context*: `decoration: InputDecoration(                 labelText: 'IP Address/Range',                 hintText...`
-14. **Line 476**: "Description"
+14. **Line 500**: "Description"
    *Context*: `decoration: InputDecoration(                 labelText: 'Description',                 hintText: 'Of...`
 15. **Line 17**: "Security Overview"
    *Context*: `enterScreen> {   final List<String> _tabs = [     'Security Overview',     'Threat Detection',     '...`
@@ -263,39 +425,39 @@
    *Context*: `d,         ),         _buildThreatCard(           'Unusual Data Access Pattern',           'User acc...`
 24. **Line 146**: "User accessing large amounts of user data"
    *Context*: `'Unusual Data Access Pattern',           'User accessing large amounts of user data',           'Med...`
-25. **Line 277**: "Data Access"
+25. **Line 290**: "Data Access"
    *Context*: `e: 'All',                 items: ['All', 'Login', 'Data Access', 'Settings Change']                 ...`
-26. **Line 277**: "Settings Change"
+26. **Line 290**: "Settings Change"
    *Context*: `items: ['All', 'Login', 'Data Access', 'Settings Change']                     .map((e) => DropdownMe...`
-27. **Line 329**: "Failed login attempt blocked"
+27. **Line 342**: "Failed login attempt blocked"
    *Context*: `EventCard(int index) {     final events = [       'Failed login attempt blocked',       'New admin u...`
-28. **Line 330**: "New admin user added"
+28. **Line 343**: "New admin user added"
    *Context*: `s = [       'Failed login attempt blocked',       'New admin user added',       'Suspicious data acc...`
-29. **Line 331**: "Suspicious data access detected"
+29. **Line 344**: "Suspicious data access detected"
    *Context*: `mpt blocked',       'New admin user added',       'Suspicious data access detected',       'Password...`
-30. **Line 332**: "Password policy updated"
+30. **Line 345**: "Password policy updated"
    *Context*: `',       'Suspicious data access detected',       'Password policy updated',       'Security scan co...`
-31. **Line 333**: "Security scan completed"
+31. **Line 346**: "Security scan completed"
    *Context*: `detected',       'Password policy updated',       'Security scan completed',     ];      return Card...`
-32. **Line 368**: "Sarah Security"
+32. **Line 381**: "Sarah Security"
    *Context*: `ard(int index) {     final users = ['John Admin', 'Sarah Security', 'Mike Manager'];      return Car...`
-33. **Line 368**: "Mike Manager"
+33. **Line 381**: "Mike Manager"
    *Context*: `final users = ['John Admin', 'Sarah Security', 'Mike Manager'];      return Card(       margin: cons...`
-34. **Line 395**: "Data Export"
+34. **Line 416**: "Data Export"
    *Context*: `{     final actions = [       'User Login',       'Data Export',       'Settings Change',       'Use...`
-35. **Line 397**: "User Created"
+35. **Line 418**: "User Created"
    *Context*: `'Data Export',       'Settings Change',       'User Created',       'Content Deleted'     ];     fin...`
-36. **Line 398**: "Content Deleted"
+36. **Line 419**: "Content Deleted"
    *Context*: `'Settings Change',       'User Created',       'Content Deleted'     ];     final users = [       'j...`
-37. **Line 505**: "Edit permissions for $user"
+37. **Line 532**: "Edit permissions for $user"
    *Context*: `ch (value) {       case 'edit':         message = 'Edit permissions for $user';         break;      ...`
-38. **Line 508**: "Disabled account for $user"
+38. **Line 535**: "Disabled account for $user"
    *Context*: `break;       case 'disable':         message = 'Disabled account for $user';         break;       ca...`
-39. **Line 511**: "Removed admin privileges for $user"
+39. **Line 538**: "Removed admin privileges for $user"
    *Context*: `break;       case 'remove':         message = 'Removed admin privileges for $user';         break;  ...`
-40. **Line 514**: "Unknown action"
+40. **Line 541**: "Unknown action"
    *Context*: `;         break;       default:         message = 'Unknown action';     }      ScaffoldMessenger.of(...`
-41. **Line 350**: "John Admin"
+41. **Line 363**: "John Admin"
    *Context*: `);   }    Widget _buildThreatCard(       String title, String description, String severity, Color co...`
 
 #### packages/artbeat_admin/lib/src/screens/admin_settings_screen.dart (37 texts)
@@ -619,75 +781,75 @@
    *Context*: `const SizedBox(height: 8),                   Text(                     'No recent activity',        ...`
 7. **Line 951**: "System Health"
    *Context*: `const Expanded(                 child: Text(                   'System Health',                   st...`
-8. **Line 1069**: "User Management"
+8. **Line 1074**: "User Management"
    *Context*: `SizedBox(width: 12),                       const Text(                         'User Management',   ...`
-9. **Line 1265**: "$label ($count)"
+9. **Line 1270**: "$label ($count)"
    *Context*: `te.withValues(alpha: 0.2)),       ),       child: Text(         '$label ($count)',         style: co...`
-10. **Line 1403**: "Joined ${_formatDate(user.createdAt)}"
+10. **Line 1408**: "Joined ${_formatDate(user.createdAt)}"
    *Context*: `Expanded(                       child: Text(                         'Joined ${_formatDate(user.crea...`
-11. **Line 1511**: "Content Moderation"
+11. **Line 1516**: "Content Moderation"
    *Context*: `SizedBox(width: 12),                       const Text(                         'Content Moderation',...`
-12. **Line 1663**: "Pending Reviews"
+12. **Line 1668**: "Pending Reviews"
    *Context*: `children: [                     const Text(                       'Pending Reviews',                ...`
-13. **Line 1694**: "Recent Content"
+13. **Line 1699**: "Recent Content"
    *Context*: `children: [                   const Text(                     'Recent Content',                     ...`
-14. **Line 1886**: "By ${review.authorName}"
+14. **Line 1891**: "By ${review.authorName}"
    *Context*: `),           const SizedBox(height: 8),           Text(             'By ${review.authorName}',      ...`
-15. **Line 2000**: "By ${content.authorName}"
+15. **Line 2005**: "By ${content.authorName}"
    *Context*: `Expanded(                       child: Text(                         'By ${content.authorName}',    ...`
-16. **Line 2045**: "View Details"
+16. **Line 2050**: "View Details"
    *Context*: `view',                 child:                     Text('View Details', style: TextStyle(color: Color...`
-17. **Line 2050**: "Edit Content"
+17. **Line 2055**: "Edit Content"
    *Context*: `edit',                 child:                     Text('Edit Content', style: TextStyle(color: Color...`
-18. **Line 2054**: "Delete Content"
+18. **Line 2059**: "Delete Content"
    *Context*: `value: 'delete',                 child: Text('Delete Content',                     style: TextStyle(...`
-19. **Line 2309**: "Media"
+19. **Line 2314**: "Media"
    *Context*: `true)) ...[                         const Text(                           'Media',                  ...`
-20. **Line 2380**: "Description"
+20. **Line 2385**: "Description"
    *Context*: `on.isNotEmpty) ...[                         const Text(                           'Description',    ...`
-21. **Line 2424**: "Tags"
+21. **Line 2429**: "Tags"
    *Context*: `zedBox(height: 24),                         const Text(                           'Tags',           ...`
-22. **Line 2476**: "Review cleared successfully"
+22. **Line 2481**: "Review cleared successfully"
    *Context*: `content: const Text(                                             'Review cleared successfully'),    ...`
-23. **Line 2612**: "$label: $value"
+23. **Line 2617**: "$label: $value"
    *Context*: `te.withValues(alpha: 0.2)),       ),       child: Text(         '$label: $value',         style: con...`
-24. **Line 2675**: "Title"
+24. **Line 2680**: "Title"
    *Context*: `// Title field                 const Text(                   'Title',                   style: TextS...`
-25. **Line 2752**: "Status"
+25. **Line 2757**: "Status"
    *Context*: `// Status dropdown                 const Text(                   'Status',                   style: ...`
-26. **Line 2806**: "Cancel"
+26. **Line 2811**: "Cancel"
    *Context*: `avigator.pop(context),               child: const Text(                 'Cancel',                 st...`
-27. **Line 2865**: "Are you sure you want to delete this ${content.type}?"
+27. **Line 2870**: "Are you sure you want to delete this ${content.type}?"
    *Context*: `lignment.start,           children: [             Text(               'Are you sure you want to dele...`
-28. **Line 2890**: "by ${content.authorName}"
+28. **Line 2895**: "by ${content.authorName}"
    *Context*: `const SizedBox(height: 4),                   Text(                     'by ${content.authorName}',  ...`
-29. **Line 2901**: "This action cannot be undone."
+29. **Line 2906**: "This action cannot be undone."
    *Context*: `const SizedBox(height: 16),             const Text(               'This action cannot be undone.',  ...`
-30. **Line 3096**: "Financial Analytics"
+30. **Line 3101**: "Financial Analytics"
    *Context*: `SizedBox(width: 12),                       const Text(                         'Financial Analytics'...`
-31. **Line 3193**: "Revenue Breakdown"
+31. **Line 3198**: "Revenue Breakdown"
    *Context*: `children: [                   const Text(                     'Revenue Breakdown',                  ...`
-32. **Line 3243**: "Recent Transactions"
+32. **Line 3248**: "Recent Transactions"
    *Context*: `children: [                   const Text(                     'Recent Transactions',                ...`
-33. **Line 3265**: "Financial Insights"
+33. **Line 3270**: "Financial Insights"
    *Context*: `children: [                   const Text(                     'Financial Insights',                 ...`
-34. **Line 3413**: "Revenue Chart"
+34. **Line 3418**: "Revenue Chart"
    *Context*: `,           const SizedBox(height: 16),           Text(             'Revenue Chart',             sty...`
-35. **Line 3422**: "Chart visualization will be implemented\nwith real Firebase data using fl_chart"
+35. **Line 3427**: "Chart visualization will be implemented\nwith real Firebase data using fl_chart"
    *Context*: `),           const SizedBox(height: 8),           Text(             'Chart visualization will be imp...`
-36. **Line 3445**: "$percentage%"
+36. **Line 3450**: "$percentage%"
    *Context*: `child: Column(         children: [           Text(             '$percentage%',             style: Te...`
-37. **Line 3480**: "No Recent Transactions"
+37. **Line 3485**: "No Recent Transactions"
    *Context*: `const SizedBox(height: 16),             Text(               'No Recent Transactions',               ...`
-38. **Line 3489**: "Transaction data will appear here once payments are processed."
+38. **Line 3494**: "Transaction data will appear here once payments are processed."
    *Context*: `const SizedBox(height: 8),             Text(               'Transaction data will appear here once p...`
-39. **Line 1138**: "Search users by name, email, or username..."
+39. **Line 1143**: "Search users by name, email, or username..."
    *Context*: `ecoration: InputDecoration(                       hintText: 'Search users by name, email, or usernam...`
-40. **Line 1594**: "Search content by title, author, or description..."
+40. **Line 1599**: "Search content by title, author, or description..."
    *Context*: `ecoration: InputDecoration(                       hintText:                           'Search conten...`
-41. **Line 2687**: "Enter title"
+41. **Line 2692**: "Enter title"
    *Context*: `decoration: InputDecoration(                     hintText: 'Enter title',                     hintSt...`
-42. **Line 2726**: "Enter description"
+42. **Line 2731**: "Enter description"
    *Context*: `decoration: InputDecoration(                     hintText: 'Enter description',                     ...`
 43. **Line 252**: "Refresh Data"
    *Context*: `onPressed: _loadAllData,             tooltip: 'Refresh Data',           ),         ),       ],     )...`
@@ -723,55 +885,58 @@
    *Context*: `_buildModernHealthIndicator(                   'API Services', true, Icons.api_rounded),            ...`
 59. **Line 973**: "File Storage"
    *Context*: `_buildModernHealthIndicator(                   'File Storage', true, Icons.cloud_rounded),          ...`
-60. **Line 1098**: "Verified Users"
+60. **Line 1103**: "Verified Users"
    *Context*: `_buildUserStatCard(                             'Verified Users',                             _users...`
-61. **Line 1104**: "Featured Users"
+61. **Line 1109**: "Featured Users"
    *Context*: `_buildUserStatCard(                             'Featured Users',                             _users...`
-62. **Line 1110**: "Suspended Users"
+62. **Line 1115**: "Suspended Users"
    *Context*: `_buildUserStatCard(                             'Suspended Users',                             _user...`
-63. **Line 2146**: "Failed to trigger capture approval rewards: $e"
+63. **Line 2151**: "Failed to trigger capture approval rewards: $e"
    *Context*: `}       }     } catch (e) {       AppLogger.error('Failed to trigger capture approval rewards: $e');...`
-64. **Line 2160**: "Rejected by admin"
+64. **Line 2165**: "Rejected by admin"
    *Context*: `rejectContent(review.contentId,           reason: 'Rejected by admin');        // Refresh the conten...`
-65. **Line 3119**: "Total Revenue"
+65. **Line 3124**: "Total Revenue"
    *Context*: `uildFinancialKPICard(                             'Total Revenue',                             _anal...`
-66. **Line 3135**: "Monthly Recurring"
+66. **Line 3140**: "Monthly Recurring"
    *Context*: `uildFinancialKPICard(                             'Monthly Recurring',                             _...`
-67. **Line 3152**: "Total Transactions"
+67. **Line 3157**: "Total Transactions"
    *Context*: `uildFinancialKPICard(                             'Total Transactions',                             ...`
-68. **Line 3165**: "Avg Transaction"
+68. **Line 3170**: "Avg Transaction"
    *Context*: `uildFinancialKPICard(                             'Avg Transaction',                             _an...`
-69. **Line 3173**: "Per transaction"
+69. **Line 3178**: "Per transaction"
    *Context*: `Metrics != null                                 ? 'Per transaction'                                 ...`
-70. **Line 3208**: "Advertisements"
+70. **Line 3213**: "Advertisements"
    *Context*: `buildRevenueSourceCard(                           'Advertisements',                           _reven...`
-71. **Line 3216**: "Subscriptions"
+71. **Line 3221**: "Subscriptions"
    *Context*: `buildRevenueSourceCard(                           'Subscriptions',                           _revenu...`
-72. **Line 3224**: "Artwork Sales"
+72. **Line 3229**: "Artwork Sales"
    *Context*: `buildRevenueSourceCard(                           'Artwork Sales',                           _revenu...`
-73. **Line 3275**: "Revenue Growth"
+73. **Line 3280**: "Revenue Growth"
    *Context*: `_buildFinancialInsightCard(                     'Revenue Growth',                     _analytics?.fi...`
-74. **Line 3277**: "Revenue ${_analytics!.financialMetrics.revenueGrowth >= 0 ?"
+74. **Line 3282**: "Revenue ${_analytics!.financialMetrics.revenueGrowth >= 0 ?"
    *Context*: `inancialMetrics != null                         ? 'Revenue ${_analytics!.financialMetrics.revenueGro...`
-75. **Line 3278**: "Revenue growth data will appear here"
+75. **Line 3283**: "Revenue growth data will appear here"
    *Context*: `ompared to last period'                         : 'Revenue growth data will appear here',           ...`
-76. **Line 3287**: "Transaction Volume"
+76. **Line 3292**: "Transaction Volume"
    *Context*: `_buildFinancialInsightCard(                     'Transaction Volume',                     _analytics...`
-77. **Line 3290**: "Transaction data will appear here"
+77. **Line 3295**: "Transaction data will appear here"
    *Context*: `transactions processed'                         : 'Transaction data will appear here',              ...`
-78. **Line 3296**: "Average Revenue"
+78. **Line 3301**: "Average Revenue"
    *Context*: `_buildFinancialInsightCard(                     'Average Revenue',                     _analytics?.f...`
-79. **Line 3298**: "Average revenue per transaction: ${_formatCurrency(_analytics!.financialMetrics.averageRevenuePerUser)}"
+79. **Line 3303**: "Average revenue per transaction: ${_formatCurrency(_analytics!.financialMetrics.averageRevenuePerUser)}"
    *Context*: `inancialMetrics != null                         ? 'Average revenue per transaction: ${_formatCurrenc...`
-80. **Line 3299**: "Average revenue data will appear here"
+80. **Line 3304**: "Average revenue data will appear here"
    *Context*: `verageRevenuePerUser)}'                         : 'Average revenue data will appear here',          ...`
 81. **Line 66**: "All"
    *Context*: `// State   bool _isLoading = true;   String? _error;    // Search controllers for future use   final...`
-82. **Line 1022**: ",
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+82. **Line 1024**: ",
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -815,8 +980,8 @@
                       ),
                       const SizedBox(width: 12),
                       const Text("
-   *Context*: `ild: Text(               isHealthy ? 'Healthy' : 'Error',               style: TextStyle(           ...`
-83. **Line 1595**: ",
+   *Context*: `d: Text(                 isHealthy ? 'Healthy' : 'Error',                 style: TextStyle(         ...`
+83. **Line 1600**: ",
                       hintStyle:
                           TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                       prefixIcon: Icon(Icons.search_rounded,
@@ -1124,33 +1289,33 @@
 ### artbeat_art_walk (18 files, 550 texts)
 
 #### packages/artbeat_art_walk/lib/src/screens/admin_art_walk_moderation_screen.dart (14 texts)
-1. **Line 87**: "Are you sure you want to permanently delete"
-   *Context*: `n_text_delete_art_walk'.tr()),           content: Text(             'Are you sure you want to perman...`
-2. **Line 130**: "Clear ${walk.reportCount} report(s) from"
-   *Context*: `ion_text_clear_reports'.tr()),           content: Text(             'Clear ${walk.reportCount} repor...`
-3. **Line 250**: "$label:"
+1. **Line 93**: "Are you sure you want to permanently delete"
+   *Context*: `e_art_walk'.tr(),           ),           content: Text(             'Are you sure you want to perman...`
+2. **Line 150**: "Clear ${walk.reportCount} report(s) from"
+   *Context*: `ar_reports'.tr(),           ),           content: Text(             'Clear ${walk.reportCount} repor...`
+3. **Line 282**: "$label:"
    *Context*: `edBox(             width: 120,             child: Text(               '$label:',               style...`
-4. **Line 424**: "${walk.artworkIds.length} artworks • ${walk.viewCount} views"
+4. **Line 462**: "${walk.artworkIds.length} artworks • ${walk.viewCount} views"
    *Context*: `edBox(height: 4),                                 Text(                                   '${walk.ar...`
-5. **Line 442**: "Clear Reports"
+5. **Line 480**: "Clear Reports"
    *Context*: `),                                     tooltip: 'Clear Reports',                                    ...`
-6. **Line 450**: "Delete"
+6. **Line 488**: "Delete"
    *Context*: `),                                   tooltip: 'Delete',                                   onPressed:...`
 7. **Line 35**: "Stack trace: $stackTrace"
    *Context*: `: Error in initState: $e');       AppLogger.error('Stack trace: $stackTrace');       rethrow;     } ...`
-8. **Line 197**: "Description"
+8. **Line 229**: "Description"
    *Context*: `],                 _buildDetailRow('Description', walk.description),                 _buildDetailR...`
-9. **Line 328**: "No reported art walks"
+9. **Line 366**: "No reported art walks"
    *Context*: `Tab == 'reported'                               ? 'No reported art walks'                           ...`
-10. **Line 329**: "No art walks found"
+10. **Line 367**: "No art walks found"
    *Context*: `ported art walks'                               : 'No art walks found',                           st...`
 11. **Line 34**: "❌ AdminArtWalkModerationScreen: Error in initState: $e"
    *Context*: `();     } catch (e, stackTrace) {       AppLogger.error('❌ AdminArtWalkModerationScreen: Error in in...`
 12. **Line 68**: "❌ AdminArtWalkModerationScreen: Error loading art walks: $e"
    *Context*: `}     } catch (e, stackTrace) {       AppLogger.error(         '❌ AdminArtWalkModerationScreen: Erro...`
-13. **Line 360**: "${walk.description.substring(0, 60)}..."
+13. **Line 398**: "${walk.description.substring(0, 60)}..."
    *Context*: `xFit.cover,                                       errorBuilder:                                     ...`
-14. **Line 88**: "? This action cannot be undone."
+14. **Line 94**: "? This action cannot be undone."
    *Context*: `e you sure you want to permanently delete "${walk.title}"? This action cannot be undone.',          ...`
 
 #### packages/artbeat_art_walk/lib/src/screens/art_walk_celebration_screen.dart (16 texts)
@@ -2487,87 +2652,87 @@
    *Context*: `e! 🎨';     if (progress < 40)       return 'Great title! Now describe your artistic journey ✍️';    ...`
 
 #### packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart (53 texts)
-1. **Line 179**: "Location not available. Please enable location services for navigation."
+1. **Line 185**: "Location not available. Please enable location services for navigation."
    *Context*: `r(           const SnackBar(             content: Text(               'Location not available. Pleas...`
-2. **Line 197**: "Location services are disabled. Please enable them in settings."
+2. **Line 203**: "Location services are disabled. Please enable them in settings."
    *Context*: `const SnackBar(               content: Text(                 'Location services are disabled. Please...`
-3. **Line 215**: "Location permission denied. Navigation features will be limited."
+3. **Line 221**: "Location permission denied. Navigation features will be limited."
    *Context*: `const SnackBar(                 content: Text(                   'Location permission denied. Naviga...`
-4. **Line 231**: "Location permission permanently denied. Please enable in app settings."
+4. **Line 237**: "Location permission permanently denied. Please enable in app settings."
    *Context*: `const SnackBar(               content: Text(                 'Location permission permanently denied...`
-5. **Line 410**: "Unable to start navigation. Check your location settings."
+5. **Line 428**: "Unable to start navigation. Check your location settings."
    *Context*: `ckBar(         const SnackBar(           content: Text(             'Unable to start navigation. Che...`
-6. **Line 468**: "Navigation started! Follow the turn-by-turn instructions."
+6. **Line 486**: "Navigation started! Follow the turn-by-turn instructions."
    *Context*: `ckBar(         const SnackBar(           content: Text(             'Navigation started! Follow the ...`
-7. **Line 667**: "${art.title} marked as visited! +10 XP"
+7. **Line 700**: "${art.title} marked as visited! +10 XP"
    *Context*: `howSnackBar(         SnackBar(           content: Text('${art.title} marked as visited! +10 XP'),   ...`
-8. **Line 733**: "Congratulations! You\"
+8. **Line 772**: "Congratulations! You\"
    *Context*: `nt.start,           children: [             const Text(               'Congratulations! You\'ve comp...`
-9. **Line 738**: "Rewards earned:"
+9. **Line 777**: "Rewards earned:"
    *Context*: `const SizedBox(height: 16),             const Text(               'Rewards earned:',               s...`
-10. **Line 749**: "• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited"
+10. **Line 802**: "• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited"
    *Context*: `const SizedBox(height: 8),             Text(               '• ${_currentProgress?.visitedArt.length ...`
-11. **Line 1196**: "• Tap"
+11. **Line 1272**: "• Tap"
    *Context*: `ildren: [                                   const Text(                                     '• Tap "...`
-12. **Line 1200**: "• Tap markers to view art details"
-   *Context*: `e'.tr()),                                   const Text(                                     '• Tap m...`
-13. **Line 1203**: "• Mark art as visited when you reach it"
+12. **Line 1279**: "• Tap markers to view art details"
+   *Context*: `),                                   const Text(                                     '• Tap markers ...`
+13. **Line 1282**: "• Mark art as visited when you reach it"
    *Context*: `),                                   const Text(                                     '• Mark art as ...`
-14. **Line 1207**: "• Orange marker = next destination"
-   *Context*: `d'.tr()),                                   const Text(                                     '• Orang...`
-15. **Line 1213**: "Navigation Mode:"
+14. **Line 1289**: "• Orange marker = next destination"
+   *Context*: `),                                   const Text(                                     '• Orange marke...`
+15. **Line 1298**: "Navigation Mode:"
    *Context*: `ht: 8),                                     const Text(                                       'Navig...`
-16. **Line 1219**: "• Follow turn-by-turn instructions"
+16. **Line 1304**: "• Follow turn-by-turn instructions"
    *Context*: `),                                     const Text(                                       '• Follow t...`
-17. **Line 1222**: "• Tap expand/collapse button to adjust navigation view"
+17. **Line 1307**: "• Tap expand/collapse button to adjust navigation view"
    *Context*: `),                                     const Text(                                       '• Tap expa...`
-18. **Line 1626**: "Enhanced Art Walk"
+18. **Line 1753**: "Enhanced Art Walk"
    *Context*: `const SizedBox(height: 16),             Text(               'Enhanced Art Walk',               style...`
-19. **Line 1635**: "Interactive map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
+19. **Line 1762**: "Interactive map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
    *Context*: `const SizedBox(height: 8),             Text(               'Interactive map features are optimized f...`
-20. **Line 1664**: "Your progress will be saved and you can resume this walk later."
-   *Context*: `_text_leave_walk'.tr()),           content: const Text(             'Your progress will be saved and...`
-21. **Line 1751**: "Walk resumed. Let\"
+20. **Line 1793**: "Your progress will be saved and you can resume this walk later."
+   *Context*: `walk'.tr(),           ),           content: const Text(             'Your progress will be saved and...`
+21. **Line 1885**: "Walk resumed. Let\"
    *Context*: `r(           const SnackBar(             content: Text('Walk resumed. Let\'s continue!'),           ...`
-22. **Line 1774**: "You need to visit at least 80% of art pieces to complete early."
+22. **Line 1911**: "You need to visit at least 80% of art pieces to complete early."
    *Context*: `ckBar(         const SnackBar(           content: Text(             'You need to visit at least 80% ...`
-23. **Line 1791**: "You\"
+23. **Line 1930**: "You\"
    *Context*: `lignment.start,           children: [             Text(               'You\'ve visited ${_currentPro...`
-24. **Line 1795**: "Completing early means:"
+24. **Line 1934**: "Completing early means:"
    *Context*: `const SizedBox(height: 8),             const Text(               'Completing early means:',         ...`
-25. **Line 1799**: "• You won\"
+25. **Line 1938**: "• You won\"
    *Context*: `ontWeight.bold),             ),             const Text('• You won\'t get the perfect completion bonu...`
-26. **Line 1844**: "$percentage% Complete"
+26. **Line 1993**: "$percentage% Complete"
    *Context*: `lignment.start,           children: [             Text(               '$percentage% Complete',      ...`
-27. **Line 1910**: "Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered."
-   *Context*: `xt_abandon_walk_76'.tr()),         content: const Text(           'Are you sure you want to abandon ...`
-28. **Line 1563**: "Center on my location"
+27. **Line 2061**: "Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered."
+   *Context*: `_walk_76'.tr(),         ),         content: const Text(           'Are you sure you want to abandon ...`
+28. **Line 1690**: "Center on my location"
    *Context*: `foregroundColor: Colors.white,                   tooltip: 'Center on my location',                  ...`
-29. **Line 274**: "Error loading art pieces: $e"
+29. **Line 283**: "Error loading art pieces: $e"
    *Context*: `;       });     } catch (e) {       // debugPrint('Error loading art pieces: $e');     }   }    Futu...`
-30. **Line 321**: "Error loading progress: $e"
+30. **Line 339**: "Error loading progress: $e"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading progress: $e');     }   }    void _cre...`
-31. **Line 341**: "Your Location"
+31. **Line 359**: "Your Location"
    *Context*: `e),           infoWindow: const InfoWindow(title: 'Your Location'),         ),       );       polyli...`
-32. **Line 368**: "Tap for details"
+32. **Line 386**: "Tap for details"
    *Context*: `',             snippet: isVisited ? 'Visited ✓' : 'Tap for details',           ),           onTap: (...`
-33. **Line 885**: "Anonymous Walker"
+33. **Line 955**: "Anonymous Walker"
    *Context*: `er.uid,             userName: user.displayName ?? 'Anonymous Walker',             userAvatar: user.p...`
-34. **Line 901**: "Failed to post walk completed activity: $e"
+34. **Line 971**: "Failed to post walk completed activity: $e"
    *Context*: `letion if social posting fails         debugPrint('Failed to post walk completed activity: $e');    ...`
-35. **Line 991**: "Error calculating personal bests: $e"
+35. **Line 1064**: "Error calculating personal bests: $e"
    *Context*: `return bests;     } catch (e) {       debugPrint('Error calculating personal bests: $e');       retu...`
-36. **Line 1004**: "First Walk Completed! 🎉"
+36. **Line 1077**: "First Walk Completed! 🎉"
    *Context*: `if (totalWalksCompleted == 1) milestones.add('First Walk Completed! 🎉');     if (totalWalksCompleted...`
-37. **Line 1043**: "Error getting total walks completed: $e"
+37. **Line 1116**: "Error getting total walks completed: $e"
    *Context*: `as int? ?? 0;     } catch (e) {       debugPrint('Error getting total walks completed: $e');       r...`
-38. **Line 1063**: "Error getting total distance: $e"
+38. **Line 1136**: "Error getting total distance: $e"
    *Context*: `uble() ?? 0.0;     } catch (e) {       debugPrint('Error getting total distance: $e');       return ...`
-39. **Line 1197**: "Start Navigation"
+39. **Line 1273**: "Start Navigation"
    *Context*: `Text(                                     '• Tap "Start Navigation" for turn-by-turn directions',...`
-40. **Line 1509**: "Starting..."
+40. **Line 1633**: "Starting..."
    *Context*: `avigation                                       ? 'Starting...'                                     ...`
-41. **Line 274**: ");
+41. **Line 283**: ");
     }
   }
 
@@ -2579,7 +2744,7 @@
       // Try to load existing progress
       debugPrint("
    *Context*: `});     } catch (e) {       // debugPrint('Error loading art pieces: $e');     }   }    Future<void>...`
-42. **Line 321**: ");
+42. **Line 339**: ");
     }
   }
 
@@ -2595,10 +2760,10 @@
         Marker(
           markerId: const MarkerId("
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading progress: $e');     }   }    void _cre...`
-43. **Line 705**: ");
+43. **Line 742**: ");
       // Don"
    *Context*: `e);       }     } catch (e) {       debugPrint('📊 Error auto-recording segment completion visit: $e'...`
-44. **Line 706**: "t blocked
+44. **Line 743**: "t blocked
     }
   }
 
@@ -2622,7 +2787,7 @@
       builder: (context) => AlertDialog(
         title: Text("
    *Context*: `$e');       // Don't throw - just silently handle errors so navigation isn't blocked     }   }    vo...`
-45. **Line 991**: ");
+45. **Line 1064**: ");
       return {};
     }
   }
@@ -2637,7 +2802,7 @@
     // Walk count milestones
     if (totalWalksCompleted == 1) milestones.add("
    *Context*: `return bests;     } catch (e) {       debugPrint('Error calculating personal bests: $e');       retu...`
-46. **Line 1043**: ");
+46. **Line 1116**: ");
       return 0;
     }
   }
@@ -2651,7 +2816,7 @@
       final userDoc = await FirebaseFirestore.instance
           .collection("
    *Context*: `as int? ?? 0;     } catch (e) {       debugPrint('Error getting total walks completed: $e');       r...`
-47. **Line 1063**: ");
+47. **Line 1136**: ");
       return 0.0;
     }
   }
@@ -2659,15 +2824,15 @@
   String _getDistanceToArt(PublicArtModel art) {
     if (_currentPosition == null) return"
    *Context*: `ble() ?? 0.0;     } catch (e) {       debugPrint('Error getting total distance: $e');       return 0...`
-48. **Line 1382**: ",
+48. **Line 1494**: ",
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text("
    *Context*: `'🧭 Experience Screen: Error calling next step: $e',                             );                  ...`
-49. **Line 367**: "${i + 1}. ${art.title}"
+49. **Line 385**: "${i + 1}. ${art.title}"
    *Context*: `),           infoWindow: InfoWindow(             title: '${i + 1}. ${art.title}',             snippe...`
-50. **Line 667**: "),
+50. **Line 700**: "),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
         ),
@@ -2681,11 +2846,11 @@
         SnackBar(
           content: Text("
    *Context*: `SnackBar(           content: Text('${art.title} marked as visited! +10 XP'),           backgroundCol...`
-51. **Line 889**: "- visited ${completedProgress.visitedArt.length} art pieces!"
+51. **Line 959**: "- visited ${completedProgress.visitedArt.length} art pieces!"
    *Context*: `age:                 'Completed "${widget.artWalk.title}" - visited ${completedProgress.visitedArt.l...`
-52. **Line 892**: ": widget.artWalk.title,"
+52. **Line 962**: ": widget.artWalk.title,"
    *Context*: `ition,             metadata: {               'walkTitle': widget.artWalk.title,               'artPi...`
-53. **Line 1648**: "${widget.artWalk.title} ($visited/$total)"
+53. **Line 1775**: "${widget.artWalk.title} ($visited/$total)"
    *Context*: `EW UX IMPROVEMENT METHODS ==========    /// Build title with progress for app bar   String _buildTit...`
 
 #### packages/artbeat_art_walk/lib/src/screens/enhanced_my_art_walks_screen.dart (32 texts)
@@ -3051,37 +3216,37 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 ### artbeat_artist (25 files, 593 texts)
 
 #### packages/artbeat_artist/lib/src/screens/analytics_dashboard_screen.dart (16 texts)
-1. **Line 229**: "Overview"
+1. **Line 230**: "Overview"
    *Context*: `nt.start,       children: <Widget>[         const Text(           'Overview',           style: TextS...`
-2. **Line 314**: "Profile Visitors"
+2. **Line 315**: "Profile Visitors"
    *Context*: `,           children: <Widget>[             const Text(               'Profile Visitors',           ...`
-3. **Line 376**: "Top Locations"
+3. **Line 378**: "Top Locations"
    *Context*: `,           children: <Widget>[             const Text(               'Top Locations',              ...`
-4. **Line 417**: "Top Performing Artwork"
+4. **Line 419**: "Top Performing Artwork"
    *Context*: `nt.start,       children: <Widget>[         const Text(           'Top Performing Artwork',         ...`
-5. **Line 546**: "Top Referral Sources"
+5. **Line 550**: "Top Referral Sources"
    *Context*: `,           children: <Widget>[             const Text(               'Top Referral Sources',       ...`
-6. **Line 611**: "Upgrade to PRO for Advanced Analytics"
+6. **Line 615**: "Upgrade to PRO for Advanced Analytics"
    *Context*: `,           children: <Widget>[             const Text(               'Upgrade to PRO for Advanced A...`
-7. **Line 619**: "Get access to location breakdown, top artwork performance, referral sources, and more detailed insights."
+7. **Line 623**: "Get access to location breakdown, top artwork performance, referral sources, and more detailed insights."
    *Context*: `const SizedBox(height: 8),             const Text(               'Get access to location breakdown, ...`
-8. **Line 131**: "Analytics Dashboard"
+8. **Line 132**: "Analytics Dashboard"
    *Context*: `Bar: core.EnhancedUniversalHeader(         title: 'Analytics Dashboard',         showLogo: false,   ...`
-9. **Line 236**: "Profile Views"
+9. **Line 237**: "Profile Views"
    *Context*: `children: <Widget>[             _buildMetricCard('Profile Views', profileViews, Icons.visibility),  ...`
-10. **Line 237**: "Artwork Views"
+10. **Line 238**: "Artwork Views"
    *Context*: `, Icons.visibility),             _buildMetricCard('Artwork Views', artworkViews, Icons.image),      ...`
-11. **Line 244**: "Lead Clicks"
+11. **Line 245**: "Lead Clicks"
    *Context*: `es, Icons.favorite),             _buildMetricCard('Lead Clicks', leadClicks, Icons.link),           ...`
-12. **Line 445**: "Unknown Artwork"
+12. **Line 448**: "Unknown Artwork"
    *Context*: `artistProfileId: '',                     title: 'Unknown Artwork',                     description: ...`
-13. **Line 497**: "Not for Sale"
+13. **Line 500**: "Not for Sale"
    *Context*: `ed(2) ?? '0.00'}'                               : 'Not for Sale',                           style: T...`
-14. **Line 581**: "Direct Traffic"
+14. **Line 585**: "Direct Traffic"
    *Context*: `owerCase()) {       case 'direct':         return 'Direct Traffic';       case 'google':       case ...`
-15. **Line 597**: "Twitter / X"
+15. **Line 601**: "Twitter / X"
    *Context*: `'twitter.com':       case 'x.com':         return 'Twitter / X';       default:         return sourc...`
-16. **Line 486**: "\$${artwork.price?.toStringAsFixed(2) ??"
+16. **Line 489**: "\$${artwork.price?.toStringAsFixed(2) ??"
    *Context*: `Text(                           artwork.title,                           maxLines: 1,               ...`
 
 #### packages/artbeat_artist/lib/src/screens/artist_approved_ads_screen.dart (12 texts)
@@ -3457,35 +3622,35 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `pty ?? true) {                             return 'Please enter your bio';                          ...`
 
 #### packages/artbeat_artist/lib/src/screens/artist_profile_edit_screen.dart (28 texts)
-1. **Line 291**: "Account Type"
+1. **Line 300**: "Account Type"
    *Context*: `Account type selection                     const Text(                       'Account Type',        ...`
-2. **Line 322**: "Profile Images"
+2. **Line 333**: "Profile Images"
    *Context*: `// Profile images                     const Text(                       'Profile Images',           ...`
-3. **Line 409**: "Basic Information"
+3. **Line 423**: "Basic Information"
    *Context*: `// Basic info                     const Text(                       'Basic Information',            ...`
-4. **Line 457**: "Art Information"
+4. **Line 471**: "Art Information"
    *Context*: `// Art information                     const Text(                       'Art Information',         ...`
-5. **Line 493**: "Please select at least one medium"
+5. **Line 507**: "Please select at least one medium"
    *Context*: `sets.only(top: 8),                         child: Text(                           'Please select at ...`
-6. **Line 531**: "Please select at least one style"
+6. **Line 545**: "Please select at least one style"
    *Context*: `sets.only(top: 8),                         child: Text(                           'Please select at ...`
-7. **Line 543**: "Online Presence"
+7. **Line 557**: "Online Presence"
    *Context*: `// Online presence                     const Text(                       'Online Presence',         ...`
-8. **Line 420**: "Display Name"
+8. **Line 434**: "Display Name"
    *Context*: `n: const InputDecoration(                         labelText: 'Display Name',                        ...`
-9. **Line 435**: "Bio"
+9. **Line 449**: "Bio"
    *Context*: `n: const InputDecoration(                         labelText: 'Bio',                         border: ...`
-10. **Line 450**: "Location"
+10. **Line 464**: "Location"
    *Context*: `n: const InputDecoration(                         labelText: 'Location',                         bor...`
-11. **Line 554**: "Website"
+11. **Line 568**: "Website"
    *Context*: `n: const InputDecoration(                         labelText: 'Website',                         bord...`
-12. **Line 563**: "Instagram"
+12. **Line 577**: "Instagram"
    *Context*: `n: const InputDecoration(                         labelText: 'Instagram',                         bo...`
-13. **Line 572**: "Facebook"
+13. **Line 586**: "Facebook"
    *Context*: `n: const InputDecoration(                         labelText: 'Facebook',                         bor...`
-14. **Line 581**: "Twitter"
+14. **Line 595**: "Twitter"
    *Context*: `n: const InputDecoration(                         labelText: 'Twitter',                         bord...`
-15. **Line 590**: "Etsy Shop"
+15. **Line 604**: "Etsy Shop"
    *Context*: `n: const InputDecoration(                         labelText: 'Etsy Shop',                         bo...`
 16. **Line 59**: "Mixed Media"
    *Context*: `'Charcoal',     'Pastel',     'Digital',     'Mixed Media',     'Sculpture',     'Photography',     ...`
@@ -3501,17 +3666,17 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `'Pop Art',     'Surrealism',     'Cubism',     'Contemporary',     'Folk Art',     'Street Art',    ...`
 22. **Line 81**: "Illustration"
    *Context*: `temporary',     'Folk Art',     'Street Art',     'Illustration',     'Fantasy',     'Portrait'   ];...`
-23. **Line 226**: "User not authenticated"
+23. **Line 235**: "User not authenticated"
    *Context*: `ser?.uid;     if (userId == null) throw Exception('User not authenticated');      // debugPrint('🎨 U...`
-24. **Line 275**: "Create Artist Profile"
+24. **Line 284**: "Create Artist Profile"
    *Context*: `title: _artistProfile == null             ? 'Create Artist Profile'             : 'Edit Artist Profi...`
-25. **Line 276**: "Edit Artist Profile"
+25. **Line 285**: "Edit Artist Profile"
    *Context*: `? 'Create Artist Profile'             : 'Edit Artist Profile',         showBackButton: true,        ...`
-26. **Line 425**: "Please enter a display name"
+26. **Line 439**: "Please enter a display name"
    *Context*: `value.isEmpty) {                           return 'Please enter a display name';                    ...`
-27. **Line 441**: "Please enter a bio"
+27. **Line 455**: "Please enter a bio"
    *Context*: `value.isEmpty) {                           return 'Please enter a bio';                         }...`
-28. **Line 615**: "Save Changes"
+28. **Line 629**: "Save Changes"
    *Context*: `Profile'                                       : 'Save Changes',                                   s...`
 
 #### packages/artbeat_artist/lib/src/screens/artist_public_profile_screen.dart (17 texts)
@@ -3791,25 +3956,25 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `style: Theme.of(context).textTheme.titleMedium?.copyWith(                           fontWeight: Font...`
 
 #### packages/artbeat_artist/lib/src/screens/event_creation_screen.dart (27 texts)
-1. **Line 319**: "Event Creation"
+1. **Line 325**: "Event Creation"
    *Context*: `const SizedBox(height: 24),                 const Text(                   'Event Creation',         ...`
-2. **Line 427**: "Add Cover Image"
+2. **Line 433**: "Add Cover Image"
    *Context*: `edBox(height: 8),                                 Text(                                   'Add Cover...`
-3. **Line 464**: "Start Date"
+3. **Line 470**: "Start Date"
    *Context*: `children: [                         const Text(                           'Start Date',             ...`
-4. **Line 500**: "End Date"
+4. **Line 506**: "End Date"
    *Context*: `children: [                         const Text(                           'End Date',               ...`
-5. **Line 543**: "Start Time"
+5. **Line 549**: "Start Time"
    *Context*: `children: [                         const Text(                           'Start Time',             ...`
-6. **Line 578**: "End Time"
+6. **Line 584**: "End Time"
    *Context*: `children: [                         const Text(                           'End Time',               ...`
-7. **Line 653**: "Allow others to see and register for this event"
+7. **Line 659**: "Allow others to see and register for this event"
    *Context*: `lic_event'.tr()),                 subtitle: const Text(                     'Allow others to see and...`
-8. **Line 444**: "Event Title"
+8. **Line 450**: "Event Title"
    *Context*: `oration: const InputDecoration(                   labelText: 'Event Title',                   border...`
-9. **Line 617**: "Location"
+9. **Line 623**: "Location"
    *Context*: `oration: const InputDecoration(                   labelText: 'Location',                   border: O...`
-10. **Line 634**: "Description"
+10. **Line 640**: "Description"
    *Context*: `oration: const InputDecoration(                   labelText: 'Description',                   border...`
 11. **Line 83**: "Error checking subscription status: ${e.toString()}"
    *Context*: `(e) {       setState(() {         _errorMessage = 'Error checking subscription status: ${e.toString(...`
@@ -3817,25 +3982,25 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `_auth.currentUser?.uid) {         throw Exception('Permission denied');       }        _titleControl...`
 13. **Line 124**: "Error loading event: ${e.toString()}"
    *Context*: `(e) {       setState(() {         _errorMessage = 'Error loading event: ${e.toString()}';         _i...`
-14. **Line 215**: "Please fill in all required fields correctly."
+14. **Line 217**: "Please fill in all required fields correctly."
    *Context*: `ssage       setState(() {         _errorMessage = 'Please fill in all required fields correctly.';  ...`
-15. **Line 245**: "End time cannot be before start time"
+15. **Line 247**: "End time cannot be before start time"
    *Context*: `sBefore(startDateTime)) {         throw Exception('End time cannot be before start time');       }  ...`
-16. **Line 281**: "Error saving event: ${e.toString()}"
+16. **Line 286**: "Error saving event: ${e.toString()}"
    *Context*: `(e) {       setState(() {         _errorMessage = 'Error saving event: ${e.toString()}';         _is...`
-17. **Line 329**: "Event creation is available with Artist Pro or Gallery Plan."
+17. **Line 335**: "Event creation is available with Artist Pro or Gallery Plan."
    *Context*: `_errorMessage ??                       'Event creation is available with Artist Pro or Gallery Plan....`
-18. **Line 358**: "Create Event"
+18. **Line 364**: "Create Event"
    *Context*: `alHeader(         title: widget.eventId == null ? 'Create Event' : 'Edit Event',         showBackBut...`
-19. **Line 449**: "Please enter an event title"
+19. **Line 455**: "Please enter an event title"
    *Context*: `ll || value.isEmpty) {                     return 'Please enter an event title';                   }...`
-20. **Line 486**: "MMM d, yyyy"
+20. **Line 492**: "MMM d, yyyy"
    *Context*: `,                                 Text(DateFormat('MMM d, yyyy')                                    ...`
-21. **Line 622**: "Please enter a location"
+21. **Line 628**: "Please enter a location"
    *Context*: `ll || value.isEmpty) {                     return 'Please enter a location';                   }    ...`
-22. **Line 642**: "Please enter a description"
+22. **Line 648**: "Please enter a description"
    *Context*: `ll || value.isEmpty) {                     return 'Please enter a description';                   } ...`
-23. **Line 686**: "Update Event"
+23. **Line 692**: "Update Event"
    *Context*: `? 'Create Event'                               : 'Update Event',                         ),         ...`
 24. **Line 42**: "s subscription allows event creation
   Future<void> _checkSubscriptionStatus() async {
@@ -3881,7 +4046,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `e) {       setState(() {         _errorMessage = 'Error checking subscription status: ${e.toString()...`
 26. **Line 104**: "t have endDate, we"
    *Context*: `w Exception('Permission denied');       }        _titleController.text = eventModel.title;       _de...`
-27. **Line 449**: ";
+27. **Line 455**: ";
                   }
                   return null;
                 },
@@ -3924,29 +4089,29 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `const SizedBox(height: 20),                 const Text(                   'More Featured Artists',  ...`
 
 #### packages/artbeat_artist/lib/src/screens/gallery_analytics_dashboard_screen.dart (38 texts)
-1. **Line 357**: "\$${(artist["
+1. **Line 371**: "\$${(artist["
    *Context*: `tist['sales'] ?? 0))),                   DataCell(Text(                       '\$${(artist['revenue'...`
-2. **Line 392**: "Gallery Analytics Dashboard"
+2. **Line 412**: "Gallery Analytics Dashboard"
    *Context*: `const SizedBox(height: 24),                 const Text(                   'Gallery Analytics Dashboa...`
-3. **Line 507**: "Showing data for: ${_selectedTimeRange =="
+3. **Line 536**: "Showing data for: ${_selectedTimeRange =="
    *Context*: `0),                   ),                   child: Text(                     'Showing data for: ${_se...`
-4. **Line 519**: "Performance Overview"
+4. **Line 548**: "Performance Overview"
    *Context*: `// Overview metrics                 const Text(                   'Performance Overview',           ...`
-5. **Line 554**: "Revenue Trend"
+5. **Line 583**: "Revenue Trend"
    *Context*: `// Revenue chart                 const Text(                   'Revenue Trend',                   st...`
-6. **Line 570**: "Artist Performance"
+6. **Line 599**: "Artist Performance"
    *Context*: `// Artist performance                 const Text(                   'Artist Performance',           ...`
-7. **Line 589**: "Commission Summary"
+7. **Line 618**: "Commission Summary"
    *Context*: `// Commission summary                 const Text(                   'Commission Summary',           ...`
-8. **Line 606**: "\$${totalPendingCommission.toStringAsFixed(2)}"
-   *Context*: `sions'.tr()),                           trailing: Text(                             '\$${totalPendin...`
-9. **Line 617**: "\$${totalPaidCommission.toStringAsFixed(2)}"
-   *Context*: `sions'.tr()),                           trailing: Text(                             '\$${totalPaidCo...`
-10. **Line 628**: "\$${(totalPendingCommission + totalPaidCommission).toStringAsFixed(2)}"
-   *Context*: `sions'.tr()),                           trailing: Text(                             '\$${(totalPendi...`
-11. **Line 650**: "Generating report PDF. Check your downloads folder."
+8. **Line 637**: "\$${totalPendingCommission.toStringAsFixed(2)}"
+   *Context*: `.tr()),                           trailing: Text(                             '\$${totalPendingCommi...`
+9. **Line 650**: "\$${totalPaidCommission.toStringAsFixed(2)}"
+   *Context*: `.tr()),                           trailing: Text(                             '\$${totalPaidCommissi...`
+10. **Line 663**: "\$${(totalPendingCommission + totalPaidCommission).toStringAsFixed(2)}"
+   *Context*: `.tr()),                           trailing: Text(                             '\$${(totalPendingComm...`
+11. **Line 685**: "Generating report PDF. Check your downloads folder."
    *Context*: `onst SnackBar(                           content: Text(                               'Generating re...`
-12. **Line 452**: "Select Time Range"
+12. **Line 474**: "Select Time Range"
    *Context*: `on: const Icon(Icons.calendar_today),             tooltip: 'Select Time Range',             onSelect...`
 13. **Line 61**: "Gallery analytics requires a Gallery Plan subscription."
    *Context*: `= false;           _errorMessage =               'Gallery analytics requires a Gallery Plan subscrip...`
@@ -3958,43 +4123,43 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `(e) {       setState(() {         _errorMessage = 'Error loading gallery data: ${e.toString()}';    ...`
 17. **Line 161**: "Error loading analytics data: ${e.toString()}"
    *Context*: `(e) {       setState(() {         _errorMessage = 'Error loading analytics data: ${e.toString()}';  ...`
-18. **Line 349**: "Unknown Artist"
+18. **Line 363**: "Unknown Artist"
    *Context*: `yName'] as String? ??                             'Unknown Artist'),                       ],       ...`
-19. **Line 402**: "This feature is available with the Gallery Plan."
+19. **Line 422**: "This feature is available with the Gallery Plan."
    *Context*: `_errorMessage ??                       'This feature is available with the Gallery Plan.',          ...`
-20. **Line 445**: "Gallery Analytics"
+20. **Line 467**: "Gallery Analytics"
    *Context*: `Bar: core.EnhancedUniversalHeader(         title: 'Gallery Analytics',         showBackButton: true,...`
-21. **Line 508**: "Last 7 Days"
+21. **Line 537**: "Last 7 Days"
    *Context*: `howing data for: ${_selectedTimeRange == 'week' ? 'Last 7 Days' : _selectedTimeRange == 'month' ? 'L...`
-22. **Line 508**: "Last 30 Days"
+22. **Line 537**: "Last 30 Days"
    *Context*: `? 'Last 7 Days' : _selectedTimeRange == 'month' ? 'Last 30 Days' : _selectedTimeRange == 'quarter' ?...`
-23. **Line 508**: "Last 90 Days"
+23. **Line 537**: "Last 90 Days"
    *Context*: `Last 30 Days' : _selectedTimeRange == 'quarter' ? 'Last 90 Days' : 'Last 12 Months'}',              ...`
-24. **Line 508**: "Last 12 Months"
+24. **Line 537**: "Last 12 Months"
    *Context*: `selectedTimeRange == 'quarter' ? 'Last 90 Days' : 'Last 12 Months'}',                     style: Tex...`
-25. **Line 536**: "Total Views"
+25. **Line 565**: "Total Views"
    *Context*: `children: [                     _buildMetricCard('Total Views', totalViews,                         ...`
-26. **Line 537**: "Artwork views in period"
+26. **Line 566**: "Artwork views in period"
    *Context*: `Total Views', totalViews,                         'Artwork views in period', Icons.visibility),     ...`
-27. **Line 538**: "Total Sales"
+27. **Line 567**: "Total Sales"
    *Context*: `visibility),                     _buildMetricCard('Total Sales', totalSales,                        ...`
-28. **Line 539**: "Artworks sold in period"
+28. **Line 568**: "Artworks sold in period"
    *Context*: `Total Sales', totalSales,                         'Artworks sold in period', Icons.shopping_cart),  ...`
-29. **Line 540**: "Total Revenue"
+29. **Line 569**: "Total Revenue"
    *Context*: `pping_cart),                     _buildMetricCard('Total Revenue', totalRevenue,                    ...`
-30. **Line 541**: "Sales revenue in period"
+30. **Line 570**: "Sales revenue in period"
    *Context*: `l Revenue', totalRevenue,                         'Sales revenue in period', Icons.attach_money),   ...`
-31. **Line 542**: "Commission Earned"
+31. **Line 571**: "Commission Earned"
    *Context*: `tach_money),                     _buildMetricCard('Commission Earned', totalCommission,             ...`
-32. **Line 543**: "Total gallery commission"
+32. **Line 572**: "Total gallery commission"
    *Context*: `Earned', totalCommission,                         'Total gallery commission', Icons.monetization_on)...`
-33. **Line 544**: "Conversion Rate"
+33. **Line 573**: "Conversion Rate"
    *Context*: `ization_on),                     _buildMetricCard('Conversion Rate', viewsToSalesRate,              ...`
-34. **Line 545**: "Views to sales percentage"
+34. **Line 574**: "Views to sales percentage"
    *Context*: `Rate', viewsToSalesRate,                         'Views to sales percentage', Icons.trending_up),   ...`
-35. **Line 546**: "Avg. Commission"
+35. **Line 575**: "Avg. Commission"
    *Context*: `rending_up),                     _buildMetricCard('Avg. Commission', avgCommissionRate,             ...`
-36. **Line 547**: "Average commission rate"
+36. **Line 576**: "Average commission rate"
    *Context*: `sion', avgCommissionRate,                         'Average commission rate', Icons.percent),        ...`
 37. **Line 169**: "Revenue"
    *Context*: `s numbers   Widget _buildMetricCard(       String title, dynamic value, String subtitle, IconData ic...`
@@ -4344,52 +4509,52 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `setState(() {       _isProcessing = true;       _errorMessage = null;     });      try {       // Re...`
 
 #### packages/artbeat_artist/lib/src/screens/subscription_analytics_screen.dart (24 texts)
-1. **Line 248**: "Subscription Analytics"
+1. **Line 251**: "Subscription Analytics"
    *Context*: `nst SizedBox(height: 16),                   const Text(                     'Subscription Analytics'...`
-2. **Line 253**: "Get detailed insights about your subscription performance"
+2. **Line 256**: "Get detailed insights about your subscription performance"
    *Context*: `nst SizedBox(height: 16),                   const Text(                     'Get detailed insights a...`
-3. **Line 259**: "Available with Artist Pro Plan"
+3. **Line 262**: "Available with Artist Pro Plan"
    *Context*: `nst SizedBox(height: 24),                   const Text(                     'Available with Artist P...`
-4. **Line 392**: "Start Date"
+4. **Line 402**: "Start Date"
    *Context*: `children: [                     const Text(                       'Start Date',                     ...`
-5. **Line 408**: "Next Billing Date"
+5. **Line 418**: "Next Billing Date"
    *Context*: `children: [                     const Text(                       'Next Billing Date',              ...`
-6. **Line 428**: "Auto-renew: ${_subscription!.autoRenew ?"
+6. **Line 438**: "Auto-renew: ${_subscription!.autoRenew ?"
    *Context*: `etween,               children: [                 Text(                   'Auto-renew: ${_subscripti...`
-7. **Line 460**: "Performance Summary"
+7. **Line 472**: "Performance Summary"
    *Context*: `ossAxisAlignment.start,       children: [         Text(           'Performance Summary',           s...`
-8. **Line 591**: "Profile Views Over Time"
+8. **Line 603**: "Profile Views Over Time"
    *Context*: `child: Column(           children: [             Text(               'Profile Views Over Time',     ...`
-9. **Line 716**: "New Followers Over Time"
+9. **Line 729**: "New Followers Over Time"
    *Context*: `child: Column(           children: [             Text(               'New Followers Over Time',     ...`
-10. **Line 775**: "Recent Payments"
+10. **Line 789**: "Recent Payments"
    *Context*: `ossAxisAlignment.start,       children: [         Text(           'Recent Payments',           style...`
-11. **Line 811**: "Payment Completed"
+11. **Line 825**: "Payment Completed"
    *Context*: `children: [                       const Text(                         'Payment Completed',          ...`
-12. **Line 828**: "\$${(amount / 100).toStringAsFixed(2)} ${currency.toUpperCase()}"
+12. **Line 842**: "\$${(amount / 100).toStringAsFixed(2)} ${currency.toUpperCase()}"
    *Context*: `),                 ),                 Text(                   '\$${(amount / 100).toStringAsFixed(2)...`
-13. **Line 119**: "Error loading payment history: $e"
+13. **Line 122**: "Error loading payment history: $e"
    *Context*: `ta()).toList();     } catch (e) {       _logger.e('Error loading payment history: $e');       detail...`
-14. **Line 169**: "Error calculating analytics: $e"
+14. **Line 172**: "Error calculating analytics: $e"
    *Context*: `kSnapshot.size;     } catch (e) {       _logger.e('Error calculating analytics: $e');     }      ret...`
-15. **Line 340**: "MMM d, yyyy"
+15. **Line 350**: "MMM d, yyyy"
    *Context*: `}      final DateFormat formatter = DateFormat('MMM d, yyyy');     final String tierName = _getTierN...`
-16. **Line 473**: "Profile Views"
+16. **Line 485**: "Profile Views"
    *Context*: `dren: [             _buildStatCard(               'Profile Views',               totalProfileViews.t...`
-17. **Line 479**: "Artwork Views"
+17. **Line 491**: "Artwork Views"
    *Context*: `),             _buildStatCard(               'Artwork Views',               totalArtworkViews.toStri...`
-18. **Line 485**: "Total Followers"
+18. **Line 497**: "Total Followers"
    *Context*: `),             _buildStatCard(               'Total Followers',               totalFollowers.toStrin...`
-19. **Line 491**: "New Followers"
+19. **Line 503**: "New Followers"
    *Context*: `),             _buildStatCard(               'New Followers',               newFollowers.toString(),...`
-20. **Line 497**: "Engagement Rate"
+20. **Line 509**: "Engagement Rate"
    *Context*: `),             _buildStatCard(               'Engagement Rate',               '${engagementRate.toSt...`
-21. **Line 503**: "Artwork Count"
+21. **Line 515**: "Artwork Count"
    *Context*: `),             _buildStatCard(               'Artwork Count',               (_analyticsData['artwork...`
-22. **Line 119**: ");
+22. **Line 122**: ");
       details["
    *Context*: `a()).toList();     } catch (e) {       _logger.e('Error loading payment history: $e');       details...`
-23. **Line 169**: ");
+23. **Line 172**: ");
     }
 
     return analytics;
@@ -4416,7 +4581,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     switch (range) {
       case"
    *Context*: `Snapshot.size;     } catch (e) {       _logger.e('Error calculating analytics: $e');     }      retu...`
-24. **Line 623**: ");
+24. **Line 636**: ");
                       },
                       reservedSize: 30,
                     ),
@@ -4481,7 +4646,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 12. **Line 438**: "No bio provided"
    *Context*: `Text(                     artist.bio ?? 'No bio provided',                     maxLines: 2,...`
 
-### artbeat_artwork (16 files, 197 texts)
+### artbeat_artwork (21 files, 333 texts)
 
 #### packages/artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart (14 texts)
 1. **Line 416**: "Price Range"
@@ -4613,29 +4778,29 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `qualTo: _searchController.text)           .where('title',               isLessThanOrEqualTo: '${_sea...`
 
 #### packages/artbeat_artwork/lib/src/screens/artwork_detail_screen.dart (18 texts)
-1. **Line 563**: "${artwork.yearCreated}"
+1. **Line 583**: "${artwork.yearCreated}"
    *Context*: `rCreated != null)                                 Text(                                   '${artwork...`
-2. **Line 581**: "\$${artwork.price?.toStringAsFixed(2) ??"
+2. **Line 601**: "\$${artwork.price?.toStringAsFixed(2) ??"
    *Context*: `),                             child: Text(                               '\$${artwork.price?.toStri...`
-3. **Line 672**: "Details"
+3. **Line 692**: "Details"
    *Context*: `// Details section                     const Text(                       'Details',                 ...`
-4. **Line 693**: "Description"
+4. **Line 713**: "Description"
    *Context*: `// Description section                     const Text(                       'Description',         ...`
-5. **Line 746**: "${artwork.viewCount} views"
+5. **Line 766**: "${artwork.viewCount} views"
    *Context*: `const SizedBox(width: 4),                         Text(                           '${artwork.viewCou...`
 6. **Line 83**: "Unknown Artist"
    *Context*: `Data?['displayName'] as String?) ??               'Unknown Artist';           fallbackArtistImageUrl...`
 7. **Line 86**: "Error getting user profile for artist: $e"
    *Context*: `;         } catch (e) {           AppLogger.error('Error getting user profile for artist: $e');     ...`
-8. **Line 184**: "Amazing artwork on ARTbeat"
+8. **Line 199**: "Amazing artwork on ARTbeat"
    *Context*: `text: shareText,                         subject: 'Amazing artwork on ARTbeat',                     ...`
-9. **Line 333**: "Error recording share to challenge: $e"
+9. **Line 350**: "Error recording share to challenge: $e"
    *Context*: `re();       } catch (e) {         AppLogger.error('Error recording share to challenge: $e');       }...`
-10. **Line 336**: "Error tracking share: $e"
+10. **Line 353**: "Error tracking share: $e"
    *Context*: `;       }     } catch (e) {       AppLogger.error('Error tracking share: $e');     }   }    void _ed...`
-11. **Line 121**: ".tr(namedArgs: {"
-   *Context*: `ackBar(           SnackBar(content: Text('artwork_error_loading'.tr(namedArgs: {'error': e.toString(...`
-12. **Line 121**: ": e.toString()}))),
+11. **Line 135**: ".tr(namedArgs: {"
+   *Context*: `SnackBar(               content: Text('artwork_error_loading'                   .tr(namedArgs: {'err...`
+12. **Line 136**: ": e.toString()}))),
         );
         setState(() {
           _isLoading = false;
@@ -4655,8 +4820,8 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     final String artistName =
         _artist?.displayName ?? _fallbackArtistName ??"
-   *Context*: `ent: Text('artwork_error_loading'.tr(namedArgs: {'error': e.toString()}))),         );         setSt...`
-13. **Line 431**: ": e.toString()})),
+   *Context*: `error_loading'                   .tr(namedArgs: {'error': e.toString()}))),         );         setSt...`
+13. **Line 450**: ": e.toString()})),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -4672,19 +4837,19 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
             title:"
-   *Context*: `ent: Text('artwork_delete_failed'.tr(namedArgs: {'error': e.toString()})),             backgroundCol...`
-14. **Line 144**: "by $artistName on ARTbeat! 🎨\n\n$artworkUrl"
+   *Context*: `'artwork_delete_failed'.tr(namedArgs: {'error': e.toString()})),             backgroundColor: Artbea...`
+14. **Line 159**: "by $artistName on ARTbeat! 🎨\n\n$artworkUrl"
    *Context*: `final String shareText =         'Check out "$title" by $artistName on ARTbeat! 🎨\n\n$artworkUrl';  ...`
-15. **Line 166**: "by $artistName"
+15. **Line 181**: "by $artistName"
    *Context*: `eight: 8),               Text(                 '"$title" by $artistName',                 style: Tex...`
-16. **Line 364**: ": _artwork!.title}),
+16. **Line 381**: ": _artwork!.title}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text("
    *Context*: `'artwork_delete_confirm'.tr(namedArgs: {'title': _artwork!.title}),         ),         actions: [   ...`
-17. **Line 416**: ": _artwork!.title})),
+17. **Line 434**: ": _artwork!.title})),
             backgroundColor: ArtbeatColors.primaryGreen,
           ),
         );
@@ -4700,8 +4865,8 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("
-   *Context*: `t: Text('artwork_deleted_success'.tr(namedArgs: {'title': _artwork!.title})),             background...`
-18. **Line 761**: "/artwork/purchase"
+   *Context*: `deleted_success'                 .tr(namedArgs: {'title': _artwork!.title})),             background...`
+18. **Line 781**: "/artwork/purchase"
    *Context*: `tworkId: artwork.id,                       artworkTitle: artwork.title,                       showCo...`
 
 #### packages/artbeat_artwork/lib/src/screens/artwork_discovery_screen.dart (17 texts)
@@ -5216,6 +5381,188 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       labelText:"
    *Context*: `{                         return 'Please enter a title';                       }                    ...`
 
+#### packages/artbeat_artwork/lib/src/screens/audio_content_detail_screen.dart (18 texts)
+1. **Line 141**: "Error loading audio content: $e"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error loading audio content: $e')),         ...`
+2. **Line 183**: "Audio content not found"
+   *Context*: `Index: 1,         child: Center(           child: Text('Audio content not found'),         ),       ...`
+3. **Line 314**: "\$${artwork.price!.toStringAsFixed(2)}"
+   *Context*: `SizedBox(height: 8),                             Text(                               '\$${artwork.pr...`
+4. **Line 379**: "Description"
+   *Context*: `.isNotEmpty) ...[                           const Text(                             'Description',  ...`
+5. **Line 399**: "Audio Details"
+   *Context*: `ata != null) ...[                           const Text(                             'Audio Details',...`
+6. **Line 480**: "$label:"
+   *Context*: `edBox(             width: 100,             child: Text(               '$label:',               style...`
+7. **Line 514**: "Failed to share artwork"
+   *Context*: `).showSnackBar(           const SnackBar(content: Text('Failed to share artwork')),         );      ...`
+8. **Line 437**: "Share"
+   *Context*: `const Icon(Icons.share),                         tooltip: 'Share',                       ),...`
+9. **Line 448**: "Add to favorites"
+   *Context*: `n(Icons.favorite_border),                         tooltip: 'Add to favorites',                      ...`
+10. **Line 458**: "Edit"
+   *Context*: `const Icon(Icons.edit),                           tooltip: 'Edit',                         ),...`
+11. **Line 88**: "Artwork not found"
+   *Context*: `if (artwork == null) {         throw Exception('Artwork not found');       }        // Check if this...`
+12. **Line 93**: "This artwork is not audio content"
+   *Context*: `tworkContentType.audio) {         throw Exception('This artwork is not audio content');       }     ...`
+13. **Line 118**: "Failed to load artist info: $e"
+   *Context*: `ng failed, continue without it         debugPrint('Failed to load artist info: $e');       }        ...`
+14. **Line 304**: "Loading audio..."
+   *Context*: `work.price == 0                                 ? 'Loading audio...'                                ...`
+15. **Line 305**: "Purchase required to listen"
+   *Context*: `ading audio...'                                 : 'Purchase required to listen',                    ...`
+16. **Line 365**: "Unknown Artist"
+   *Context*: `ckArtistName ??                                   'Unknown Artist',                               st...`
+17. **Line 141**: ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _playPause() async {
+    if (_artwork?.audioUrls.isEmpty ?? true) return;
+
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.resume();
+    }
+  }
+
+  Future<void> _seekTo(Duration position) async {
+    await _audioPlayer.seek(position);
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2,"
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error loading audio content: $e')),         );    ...`
+18. **Line 508**: "by $artistName on ArtBeat!\n\n${artwork.description}"
+   *Context*: `text:               'Check out "${artwork.title}" by $artistName on ArtBeat!\n\n${artwork.descriptio...`
+
+#### packages/artbeat_artwork/lib/src/screens/audio_content_upload_screen.dart (37 texts)
+1. **Line 879**: "Audio Preview"
+   *Context*: `[           const SizedBox(height: 24),           Text(             'Audio Preview',             sty...`
+2. **Line 909**: "Waveform visualization placeholder"
+   *Context*: `child: Center(                       child: Text(                         'Waveform visualization pl...`
+3. **Line 930**: "${_formatDuration(_currentPosition)} / ${_formatDuration(_audioDuration)}"
+   *Context*: `const SizedBox(width: 16),                     Text(                       '${_formatDuration(_curre...`
+4. **Line 1216**: "Additional Information (Optional)"
+   *Context*: `ght: 24),          // Additional metadata         Text(           'Additional Information (Optional)...`
+5. **Line 1374**: "File: ${_audioFile!.path.split("
+   *Context*: `if (_audioFile != null) ...[                   Text('File: ${_audioFile!.path.split('/').last}'),   ...`
+6. **Line 1376**: "Duration: ${_formatDuration(_audioDuration)}"
+   *Context*: `const SizedBox(height: 8),                   Text('Duration: ${_formatDuration(_audioDuration)}'),  ...`
+7. **Line 1377**: "Format: $_audioFormat"
+   *Context*: `matDuration(_audioDuration)}'),                   Text('Format: $_audioFormat'),                   T...`
+8. **Line 1378**: "Size: ${_formatFileSize(_fileSize)}"
+   *Context*: `Text('Format: $_audioFormat'),                   Text('Size: ${_formatFileSize(_fileSize)}'),       ...`
+9. **Line 1380**: "No audio file selected"
+   *Context*: `] else ...[                   const Text('No audio file selected'),                 ],              ...`
+10. **Line 1412**: "Title: ${_titleController.text}"
+   *Context*: `ox(height: 8),                 ],                 Text('Title: ${_titleController.text}'),          ...`
+11. **Line 1413**: "Description: ${_descriptionController.text}"
+   *Context*: `itle: ${_titleController.text}'),                 Text('Description: ${_descriptionController.text}'...`
+12. **Line 1414**: "Type: $_contentType"
+   *Context*: `${_descriptionController.text}'),                 Text('Type: $_contentType'),               ],     ...`
+13. **Line 1433**: "Genres: ${_genres.join("
+   *Context*: `const SizedBox(height: 8),                 Text('Genres: ${_genres.join(", ")}'),                 if...`
+14. **Line 1435**: "Album: ${_albumTitleController.text}"
+   *Context*: `if (_isAlbum) ...[                   Text('Album: ${_albumTitleController.text}'),                  ...`
+15. **Line 1436**: "Track: ${_trackNumberController.text}"
+   *Context*: `{_albumTitleController.text}'),                   Text('Track: ${_trackNumberController.text}'),    ...`
+16. **Line 1439**: "Lyrics: Available"
+   *Context*: `ler.text.isNotEmpty) ...[                   const Text('Lyrics: Available'),                 ],     ...`
+17. **Line 1441**: "Schedule: ${_releaseSchedule.replaceAll("
+   *Context*: `: Available'),                 ],                 Text(                     'Schedule: ${_releaseSch...`
+18. **Line 1444**: "Price: \$${_priceController.text}"
+   *Context*: `if (_isForSale) ...[                   Text('Price: \$${_priceController.text}'),                 ],...`
+19. **Line 109**: "World Music"
+   *Context*: `ntry',     'Folk',     'Reggae',     'Blues',     'World Music',     'Spoken Word',     'Podcast',  ...`
+20. **Line 110**: "Spoken Word"
+   *Context*: `'Reggae',     'Blues',     'World Music',     'Spoken Word',     'Podcast',     'Audiobook',     'So...`
+21. **Line 115**: "Experimental"
+   *Context*: `'Audiobook',     'Soundtrack',     'Ambient',     'Experimental',   ];    final List<String> _conten...`
+22. **Line 178**: "Error loading user data: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error loading user data: $e');     }   }    bool ...`
+23. **Line 220**: "Error selecting audio file: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting audio file: $e');       if (mount...`
+24. **Line 285**: "Error processing audio file: $e"
+   *Context*: `});     } catch (e) {       AppLogger.error('Error processing audio file: $e');       setState(() =>...`
+25. **Line 370**: "Error starting recording: $e"
+   *Context*: `});     } catch (e) {       AppLogger.error('Error starting recording: $e');       if (mounted) {   ...`
+26. **Line 396**: "Error stopping recording: $e"
+   *Context*: `ioFile();     } catch (e) {       AppLogger.error('Error stopping recording: $e');       if (mounted...`
+27. **Line 430**: "Error selecting cover image: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting cover image: $e');       if (moun...`
+28. **Line 471**: "Not authenticated"
+   *Context*: `r?.uid;       if (userId == null) throw Exception('Not authenticated');        // Create artwork usi...`
+29. **Line 478**: "Audio Content"
+   *Context*: `ion: _descriptionController.text,         medium: 'Audio Content',         styles: _genres,         ...`
+30. **Line 535**: "Error uploading audio content: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error uploading audio content: $e');       if (mo...`
+31. **Line 225**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processAudioFile() async {
+    if (_audioFile == null) return;
+
+    try {
+      setState(() => _isGeneratingWaveform = true);
+
+      // Extract basic metadata
+      final fileSize = await _audioFile!.length();
+      final fileName = _audioFile!.path.split("
+   *Context*: `ext(                   'audio_content_upload_file_error'.tr(args: [e.toString()]))),         );     ...`
+32. **Line 290**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  bool _isValidAudioFormat(String extension) {
+    const validFormats = ["
+   *Context*: `content: Text('audio_content_upload_process_error'                   .tr(args: [e.toString()]))),   ...`
+33. **Line 435**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadAudioContent() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_coverImageFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("
+   *Context*: `xt(                   'audio_content_upload_image_error'.tr(args: [e.toString()]))),         );     ...`
+34. **Line 540**: ".tr(args: [e.toString()]))),
+        );
+      }
+    } finally {
+      if (mounted) {}
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title:"
+   *Context*: `ent:                   Text('audio_content_upload_error'.tr(args: [e.toString()]))),         );     ...`
+35. **Line 49**: "Music"
+   *Context*: `epIndex = 0;    late final TextEditingController _titleController;   late final TextEditingControlle...`
+36. **Line 500**: ": _albumTitleController.text,"
+   *Context*: `o': _isAlbum               ? {                   'title': _albumTitleController.text,               ...`
+37. **Line 1435**: "),
+                  Text("
+   *Context*: `lbum) ...[                   Text('Album: ${_albumTitleController.text}'),                   Text('T...`
+
 #### packages/artbeat_artwork/lib/src/screens/curated_gallery_screen.dart (4 texts)
 1. **Line 434**: "${collection.artworkIds.length} artworks"
    *Context*: `nst SizedBox(width: 4),                           Text(                             '${collection.ar...`
@@ -5226,34 +5573,47 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 4. **Line 167**: "${_filterType!.displayName} Collections"
    *Context*: `style: Theme.of(context).textTheme.titleLarge?.copyWith(                           fontWeight: FontW...`
 
-#### packages/artbeat_artwork/lib/src/screens/enhanced_artwork_upload_screen.dart (21 texts)
-1. **Line 1178**: "Add $label"
+#### packages/artbeat_artwork/lib/src/screens/enhanced_artwork_upload_screen.dart (23 texts)
+1. **Line 1047**: "${(_mainImageUploadProgress * 100).toInt()}% ${"
+   *Context*: `const SizedBox(height: 8),               Text(                 '${(_mainImageUploadProgress * 100).t...`
+2. **Line 1461**: "\$${_priceController.text}"
+   *Context*: `Chip(                           label: Text('\$${_priceController.text}'),                          ...`
+3. **Line 1818**: "Add $label"
    *Context*: `decoration: InputDecoration(                   labelText: 'Add $label',                   border: co...`
-2. **Line 90**: "Mixed Media"
+4. **Line 115**: "Mixed Media"
    *Context*: `'Charcoal',     'Pastel',     'Digital',     'Mixed Media',     'Sculpture',     'Photography',     ...`
-3. **Line 92**: "Photography"
+5. **Line 117**: "Photography"
    *Context*: `Digital',     'Mixed Media',     'Sculpture',     'Photography',     'Textiles',     'Ceramics',    ...`
-4. **Line 95**: "Printmaking"
+6. **Line 120**: "Printmaking"
    *Context*: `Photography',     'Textiles',     'Ceramics',     'Printmaking',     'Pen & Ink',     'Pencil',     ...`
-5. **Line 100**: "Performance Art"
+7. **Line 125**: "Performance Art"
    *Context*: `'Pencil',     'Video Art',     'Sound Art',     'Performance Art',     'Installation',   ];    final...`
-6. **Line 101**: "Installation"
+8. **Line 126**: "Installation"
    *Context*: `Art',     'Sound Art',     'Performance Art',     'Installation',   ];    final List<String> _availa...`
-7. **Line 107**: "Impressionism"
+9. **Line 132**: "Impressionism"
    *Context*: `ableStyles = [     'Abstract',     'Realism',     'Impressionism',     'Expressionism',     'Minimal...`
-8. **Line 108**: "Expressionism"
+10. **Line 133**: "Expressionism"
    *Context*: `bstract',     'Realism',     'Impressionism',     'Expressionism',     'Minimalism',     'Pop Art', ...`
-9. **Line 113**: "Contemporary"
+11. **Line 138**: "Contemporary"
    *Context*: `'Pop Art',     'Surrealism',     'Cubism',     'Contemporary',     'Folk Art',     'Street Art',    ...`
-10. **Line 116**: "Illustration"
+12. **Line 141**: "Illustration"
    *Context*: `temporary',     'Folk Art',     'Street Art',     'Illustration',     'Fantasy',     'Portrait',    ...`
-11. **Line 122**: "Photorealistic"
-   *Context*: `ndscape',     'Still Life',     'Conceptual',     'Photorealistic',   ];    @override   void initSta...`
-12. **Line 179**: "Error checking upload limit: $e"
+13. **Line 147**: "Photorealistic"
+   *Context*: `ndscape',     'Still Life',     'Conceptual',     'Photorealistic',   ];    final List<String> _dime...`
+14. **Line 236**: "Error checking upload limit: $e"
    *Context*: `}       }     } catch (e) {       // debugPrint('Error checking upload limit: $e');     } finally { ...`
-13. **Line 356**: "User not authenticated"
+15. **Line 426**: "User not authenticated"
    *Context*: `ser?.uid;     if (userId == null) throw Exception('User not authenticated');      // Use enhanced st...`
-14. **Line 179**: ");
+16. **Line 89**: ";
+  List<String> _styles = [];
+  List<String> _tags = [];
+  List<String> _hashtags = [];
+  List<String> _keywords = [];
+
+  // New rich metadata
+  String _dimensionUnit ="
+   *Context*: `e;   bool _isLoading = false;   String? _mainImageError;   bool _canUpload = true;   int _artworkCou...`
+17. **Line 236**: ");
     } finally {
       if (mounted) {
         setState(() {
@@ -5273,9 +5633,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final doc =
           await _firestore.collection("
    *Context*: `}       }     } catch (e) {       // debugPrint('Error checking upload limit: $e');     } finally { ...`
-15. **Line 249**: ".tr(namedArgs: {"
-   *Context*: `SnackBar(content: Text('enhanced_upload_load_error'.tr(namedArgs: {'error': e.toString()}))),       ...`
-16. **Line 249**: ": e.toString()}))),
+18. **Line 317**: ".tr(namedArgs: {"
+   *Context*: `content: Text('enhanced_upload_load_error'                   .tr(namedArgs: {'error': e.toString()})...`
+19. **Line 318**: ": e.toString()}))),
         );
       }
     } finally {
@@ -5304,14 +5664,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("
-   *Context*: `Text('enhanced_upload_load_error'.tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
-17. **Line 278**: ": e.toString()}))),
+          SnackBar(
+              content: Text("
+   *Context*: `ad_load_error'                   .tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
+20. **Line 349**: ": e.toString()}))),
         );
       }
     }
   }
-
 
   Future<void> _pickAdditionalImages() async {
     final result = await FilePicker.platform.pickFiles(
@@ -5385,16 +5745,12 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<String> _uploadFile(File file, String folder) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception("
-   *Context*: `ext('enhanced_upload_image_error'.tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
-18. **Line 502**: ": e.toString()}))),
+   *Context*: `d_image_error'                   .tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
+21. **Line 578**: ": e.toString()}))),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
+      if (mounted) {}
     }
   }
 
@@ -5415,43 +5771,393 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (hashtag.isNotEmpty && !_hashtags.contains(hashtag)) {
       setState(() {
         _hashtags.add(hashtag.startsWith("
-   *Context*: `ent: Text('enhanced_upload_error'.tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
-19. **Line 42**: ";
-  List<String> _styles = [];
-  List<String> _tags = [];
-  List<String> _hashtags = [];
-  List<String> _keywords = [];
-
-  // Available options
-  final List<String> _availableMediums = ["
-   *Context*: `lobalKey<FormState>();    // Controllers   final _titleController = TextEditingController();   final...`
-20. **Line 139**: "s current subscription
+   *Context*: `_upload_error'                   .tr(namedArgs: {'error': e.toString()}))),         );       }     }...`
+22. **Line 193**: "s current subscription
       final subscription = await _subscriptionService.getUserSubscription();
       _tierLevel = subscription?.tier ?? SubscriptionTier.starter;
 
       // Get count of user"
    *Context*: `e;     }   }    @override   void dispose() {     _titleController.dispose();     _descriptionControl...`
-21. **Line 455**: ": _titleController.text,"
+23. **Line 521**: ": _titleController.text,"
    *Context*: `/ For now, use userId as artistProfileId         'title': _titleController.text,         'descriptio...`
 
-#### packages/artbeat_artwork/lib/src/screens/written_content_upload_screen.dart (12 texts)
-1. **Line 58**: "Non-Fiction"
-   *Context*: `t<String> _availableGenres = [     'Fiction',     'Non-Fiction',     'Romance',     'Mystery',     '...`
-2. **Line 62**: "Science Fiction"
-   *Context*: `'Romance',     'Mystery',     'Thriller',     'Science Fiction',     'Fantasy',     'Horror',     'P...`
-3. **Line 70**: "Young Adult"
-   *Context*: `'Biography',     'Self-Help',     'Children',     'Young Adult',   ];    final List<String> _content...`
-4. **Line 73**: "Serial Story"
-   *Context*: `];    final List<String> _contentTypes = ['Book', 'Serial Story', 'Webtoon', 'Audiobook'];   final L...`
-5. **Line 121**: "Error loading user data: $e"
+#### packages/artbeat_artwork/lib/src/screens/video_content_upload_screen.dart (28 texts)
+1. **Line 637**: "${_videoDuration.inMinutes}:${(_videoDuration.inSeconds % 60).toString().padLeft(2,"
+   *Context*: `children: [                       Text(                         '${_videoDuration.inMinutes}:${(_vid...`
+2. **Line 642**: "${_width}x$_height"
+   *Context*: `const SizedBox(width: 16),                       Text(                         '${_width}x$_height',...`
+3. **Line 989**: "video_content_upload_schedule_$schedule"
+   *Context*: `value: schedule,               child: Text('video_content_upload_schedule_$schedule'.tr()),         ...`
+4. **Line 95**: "Documentary"
+   *Context*: `<String> _availableGenres = [     'Abstract',     'Documentary',     'Experimental',     'Animation'...`
+5. **Line 96**: "Experimental"
+   *Context*: `Genres = [     'Abstract',     'Documentary',     'Experimental',     'Animation',     'Music Video'...`
+6. **Line 98**: "Music Video"
+   *Context*: `entary',     'Experimental',     'Animation',     'Music Video',     'Narrative',     'Performance',...`
+7. **Line 100**: "Performance"
+   *Context*: `imation',     'Music Video',     'Narrative',     'Performance',     'Installation',     'Interactiv...`
+8. **Line 101**: "Installation"
+   *Context*: `c Video',     'Narrative',     'Performance',     'Installation',     'Interactive',     'Live Art',...`
+9. **Line 102**: "Interactive"
+   *Context*: `tive',     'Performance',     'Installation',     'Interactive',     'Live Art',     'Digital Art', ...`
+10. **Line 104**: "Digital Art"
+   *Context*: `allation',     'Interactive',     'Live Art',     'Digital Art',     'Mixed Media',     'Conceptual'...`
+11. **Line 105**: "Mixed Media"
+   *Context*: `eractive',     'Live Art',     'Digital Art',     'Mixed Media',     'Conceptual',     'Surreal',   ...`
+12. **Line 109**: "Avant-garde"
+   *Context*: `Conceptual',     'Surreal',     'Minimalist',     'Avant-garde',     'Traditional',     'Contemporar...`
+13. **Line 110**: "Traditional"
+   *Context*: `urreal',     'Minimalist',     'Avant-garde',     'Traditional',     'Contemporary',   ];    final L...`
+14. **Line 111**: "Contemporary"
+   *Context*: `alist',     'Avant-garde',     'Traditional',     'Contemporary',   ];    final List<String> _conten...`
+15. **Line 120**: "Performance Art"
+   *Context*: `mentary',     'Animation',     'Music Video',     'Performance Art',     'Installation Art',     'In...`
+16. **Line 121**: "Installation Art"
+   *Context*: `n',     'Music Video',     'Performance Art',     'Installation Art',     'Interactive Art',   ];   ...`
+17. **Line 122**: "Interactive Art"
+   *Context*: `'Performance Art',     'Installation Art',     'Interactive Art',   ];    final List<String> _releas...`
+18. **Line 197**: "Error loading user data: $e"
    *Context*: `;       }     } catch (e) {       AppLogger.error('Error loading user data: $e');     }   }    bool ...`
-6. **Line 158**: "Error selecting cover image: $e"
+19. **Line 238**: "Error selecting video file: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting video file: $e');       if (mount...`
+20. **Line 313**: "Error processing video file: $e"
+   *Context*: `});     } catch (e) {       AppLogger.error('Error processing video file: $e');       setState(() =>...`
+21. **Line 360**: "Error selecting thumbnail: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting thumbnail: $e');       if (mounte...`
+22. **Line 403**: "Not authenticated"
+   *Context*: `r?.uid;       if (userId == null) throw Exception('Not authenticated');        // Use thumbnail as t...`
+23. **Line 477**: "Error uploading video content: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error uploading video content: $e');       if (mo...`
+24. **Line 243**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processVideoFile() async {
+    if (_videoFile == null) return;
+
+    try {
+      setState(() => _isGeneratingThumbnail = true);
+
+      // Extract basic metadata
+      final fileSize = await _videoFile!.length();
+      final fileName = _videoFile!.path.split("
+   *Context*: `ext(                   'video_content_upload_file_error'.tr(args: [e.toString()]))),         );     ...`
+25. **Line 318**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _generateThumbnail() async {
+    // Simplified thumbnail generation - in real implementation would extract frame
+    // For now, we"
+   *Context*: `content: Text('video_content_upload_process_error'                   .tr(args: [e.toString()]))),   ...`
+26. **Line 364**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadVideoContent() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_videoFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("
+   *Context*: `content: Text('video_content_upload_thumbnail_error'                   .tr(args: [e.toString()]))), ...`
+27. **Line 482**: ".tr(args: [e.toString()]))),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  void _onStepContinue() {
+    if (_currentStepIndex < 3) {
+      setState(() {
+        _currentStepIndex++;
+      });
+    } else {
+      _uploadVideoContent();
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStepIndex > 0) {
+      setState(() {
+        _currentStepIndex--;
+      });
+    }
+  }
+
+  void _onStepTapped(int index) {
+    setState(() {
+      _currentStepIndex = index;
+    });
+  }
+
+  StepState _getStepState(int stepIndex) {
+    if (stepIndex < _currentStepIndex) return StepState.complete;
+    if (stepIndex == _currentStepIndex) return StepState.editing;
+    return StepState.disabled;
+  }
+
+  Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Row(
+        children: [
+          if (_currentStepIndex > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: details.onStepCancel,
+                child: Text("
+   *Context*: `ent:                   Text('video_content_upload_error'.tr(args: [e.toString()]))),         );     ...`
+28. **Line 47**: "Video Art"
+   *Context*: `epIndex = 0;    late final TextEditingController _titleController;   late final TextEditingControlle...`
+
+#### packages/artbeat_artwork/lib/src/screens/written_content_detail_screen.dart (20 texts)
+1. **Line 138**: "Error loading content: $e"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error loading content: $e')),         );    ...`
+2. **Line 279**: "${metadata["
+   *Context*: `unt'] != null)           Chip(             label: Text('${metadata['wordCount']} words'),           ...`
+3. **Line 300**: "Chapters"
+   *Context*: `ossAxisAlignment.start,       children: [         Text(           'Chapters',           style: Theme...`
+4. **Line 330**: "Chapter ${chapter.chapterNumber}"
+   *Context*: `children: [                         Text(                           'Chapter ${chapter.chapterNumber...`
+5. **Line 350**: "${chapter.estimatedReadingTime}min"
+   *Context*: `t SizedBox(width: 4),                             Text(                               '${chapter.est...`
+6. **Line 382**: "Premium Content"
+   *Context*: `const SizedBox(height: 16),               Text(                 'Premium Content',                 s...`
+7. **Line 387**: "This content requires purchase to read"
+   *Context*: `const SizedBox(height: 8),               Text(                 'This content requires purchase to re...`
+8. **Line 395**: "Purchase for \$${_artwork?.price?.toStringAsFixed(2) ??"
+   *Context*: `Pressed: _purchaseContent,                 child: Text(                     'Purchase for \$${_artwo...`
+9. **Line 485**: "Chapter ${_currentChapterIndex + 1} of ${_chapters.length}"
+   *Context*: `const SizedBox(height: 4),                   Text(                     'Chapter ${_currentChapterInd...`
+10. **Line 518**: "Purchase functionality coming soon!"
+   *Context*: `text).showSnackBar(       const SnackBar(content: Text('Purchase functionality coming soon!')),     ...`
+11. **Line 532**: "Content Not Found"
+   *Context*: `urn Scaffold(         appBar: AppBar(title: const Text('Content Not Found')),         body: const Ce...`
+12. **Line 533**: "Content not found"
+   *Context*: `t Not Found')),         body: const Center(child: Text('Content not found')),       );     }      re...`
+13. **Line 79**: "Artwork not found"
+   *Context*: `if (artwork == null) {         throw Exception('Artwork not found');       }        // Check if this...`
+14. **Line 84**: "This artwork is not written content"
+   *Context*: `orkContentType.written) {         throw Exception('This artwork is not written content');       }   ...`
+15. **Line 108**: "Unknown Artist"
+   *Context*: `Data?['displayName'] as String?) ??               'Unknown Artist';         }       } catch (e) {   ...`
+16. **Line 508**: "Written Content"
+   *Context*: `nt() async {     final title = _artwork?.title ?? 'Written Content';     final url = 'https://artbea...`
+17. **Line 138**: ")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _navigateToChapter(int index) {
+    if (index >= 0 && index < _chapters.length) {
+      setState(() {
+        _currentChapterIndex = index;
+        _currentChapter = _chapters[index];
+        _scrollProgress = 0.0;
+      });
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: _artwork?.imageUrl != null
+            ? Image.network(
+                _artwork!.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.book, size: 64),
+                ),
+              )
+            : Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.book, size: 64),
+              ),
+        title: Text(
+          _artwork?.title ??"
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error loading content: $e')),         );       }  ...`
+18. **Line 179**: ",
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.share),
+          onPressed: _shareContent,
+        ),
+        if (_isOwner)
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => Navigator.pushNamed(
+              context,"
+   *Context*: `n(Icons.book, size: 64),               ),         title: Text(           _artwork?.title ?? '',     ...`
+19. **Line 213**: ",
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundImage: _artist?.profileImageUrl != null
+                      ? NetworkImage(_artist!.profileImageUrl!)
+                      : null,
+                  child: _artist?.profileImageUrl == null
+                      ? Text((_artist?.displayName ??
+                              _fallbackArtistName ??"
+   *Context*: `nment.start,           children: [             // Title and author             Text(               _...`
+20. **Line 512**: ");
+  }
+
+  Future<void> _purchaseContent() async {
+    // TODO: Implement purchase flow
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("
+   *Context*: `re: deprecated_member_use     await Share.share('$title\n\n$url');   }    Future<void> _purchaseCont...`
+
+#### packages/artbeat_artwork/lib/src/screens/written_content_discovery_screen.dart (9 texts)
+1. **Line 295**: "Unknown Author"
+   *Context*: `Author (placeholder for now)                     Text(                       'Unknown Author', // TO...`
+2. **Line 317**: "Ongoing"
+   *Context*: `nst SizedBox(width: 4),                           Text(                             'Ongoing',      ...`
+3. **Line 328**: "Complete"
+   *Context*: `nst SizedBox(width: 4),                           Text(                             'Complete',     ...`
+4. **Line 34**: "Non-Fiction"
+   *Context*: `String> _genres = [     'All',     'Fiction',     'Non-Fiction',     'Romance',     'Mystery',     '...`
+5. **Line 37**: "Science Fiction"
+   *Context*: `'Non-Fiction',     'Romance',     'Mystery',     'Science Fiction',     'Fantasy',     'Biography', ...`
+6. **Line 52**: "Most Popular"
+   *Context*: `_sortOptions = [     'Newest',     'Oldest',     'Most Popular',     'Highest Rated',     'Most View...`
+7. **Line 53**: "Highest Rated"
+   *Context*: `'Newest',     'Oldest',     'Most Popular',     'Highest Rated',     'Most Viewed'   ];    @override...`
+8. **Line 54**: "Most Viewed"
+   *Context*: `st',     'Most Popular',     'Highest Rated',     'Most Viewed'   ];    @override   void initState()...`
+9. **Line 24**: "All"
+   *Context*: `dBooks = [];   bool _isLoading = true;   String? _error;    // Filter options   String _selectedGenr...`
+
+#### packages/artbeat_artwork/lib/src/screens/written_content_upload_screen.dart (34 texts)
+1. **Line 1270**: "File: ${_contentFile!.path.split("
+   *Context*: `d && _contentFile != null) ...[                   Text('File: ${_contentFile!.path.split('/').last}'...`
+2. **Line 1306**: "No content provided"
+   *Context*: `] else ...[                   const Text('No content provided'),                 ],               ],...`
+3. **Line 1338**: "Title: ${_titleController.text}"
+   *Context*: `ox(height: 8),                 ],                 Text('Title: ${_titleController.text}'),          ...`
+4. **Line 1339**: "Description: ${_descriptionController.text}"
+   *Context*: `itle: ${_titleController.text}'),                 Text('Description: ${_descriptionController.text}'...`
+5. **Line 1340**: "Type: $_contentType"
+   *Context*: `${_descriptionController.text}'),                 Text('Type: $_contentType'),               ],     ...`
+6. **Line 1362**: "Volume: ${_volumeController.text}, Chapter: ${_chapterController.text}, Series: ${_seriesController.text}"
+   *Context*: `ontroller.text.isNotEmpty) ...[                   Text(                       'Volume: ${_volumeCont...`
+7. **Line 1367**: "Author Note: ${_authorNoteController.text}"
+   *Context*: `ontroller.text.isNotEmpty) ...[                   Text('Author Note: ${_authorNoteController.text}')...`
+8. **Line 1370**: "Genres: ${_genres.join("
+   *Context*: `ox(height: 8),                 ],                 Text('Genres: ${_genres.join(", ")}'),            ...`
+9. **Line 1372**: "Chapters: ${_chaptersController.text}"
+   *Context*: `if (_isSerialized) ...[                   Text('Chapters: ${_chaptersController.text}'),            ...`
+10. **Line 1373**: "Schedule: ${_releaseSchedule.replaceAll("
+   *Context*: `${_chaptersController.text}'),                   Text(                       'Schedule: ${_releaseSc...`
+11. **Line 1377**: "Price: \$${_priceController.text}"
+   *Context*: `if (_isForSale) ...[                   Text('Price: \$${_priceController.text}'),                 ],...`
+12. **Line 899**: "Start writing your content..."
+   *Context*: `ding: EdgeInsets.all(12),                         hintText: 'Start writing your content...',        ...`
+13. **Line 869**: "Bold"
+   *Context*: `Formatting('**', '**'),                           tooltip: 'Bold',                         ),...`
+14. **Line 874**: "Italic"
+   *Context*: `wnFormatting('*', '*'),                           tooltip: 'Italic',                         ),...`
+15. **Line 879**: "Header"
+   *Context*: `wnFormatting('# ', ''),                           tooltip: 'Header',                         ),...`
+16. **Line 885**: "Link"
+   *Context*: `matting('[', '](url)'),                           tooltip: 'Link',                         ),...`
+17. **Line 94**: "Non-Fiction"
+   *Context*: `t<String> _availableGenres = [     'Fiction',     'Non-Fiction',     'Romance',     'Mystery',     '...`
+18. **Line 98**: "Science Fiction"
+   *Context*: `'Romance',     'Mystery',     'Thriller',     'Science Fiction',     'Fantasy',     'Horror',     'P...`
+19. **Line 106**: "Young Adult"
+   *Context*: `'Biography',     'Self-Help',     'Children',     'Young Adult',   ];    final List<String> _content...`
+20. **Line 111**: "Serial Story"
+   *Context*: `al List<String> _contentTypes = [     'Book',     'Serial Story',     'Webtoon',     'Audiobook'   ]...`
+21. **Line 169**: "Error loading user data: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error loading user data: $e');     }   }    bool ...`
+22. **Line 212**: "Error selecting content file: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting content file: $e');       if (mou...`
+23. **Line 230**: "Error processing content file: $e"
+   *Context*: `content);     } catch (e) {       AppLogger.error('Error processing content file: $e');       if (mo...`
+24. **Line 303**: "Error checking for duplicate content: $e"
+   *Context*: `rn false;     } catch (e) {       AppLogger.error('Error checking for duplicate content: $e');      ...`
+25. **Line 371**: "Error selecting cover image: $e"
    *Context*: `;       }     } catch (e) {       AppLogger.error('Error selecting cover image: $e');       if (moun...`
-7. **Line 192**: "Not authenticated"
-   *Context*: `r?.uid;       if (userId == null) throw Exception('Not authenticated');        final contentId = wid...`
-8. **Line 244**: "Error uploading content: $e"
+26. **Line 412**: "Not authenticated"
+   *Context*: `r?.uid;       if (userId == null) throw Exception('Not authenticated');        // Create artwork usi...`
+27. **Line 419**: "Written Work"
+   *Context*: `ion: _descriptionController.text,         medium: 'Written Work',         styles: _genres,         t...`
+28. **Line 490**: "Error uploading content: $e"
    *Context*: `;       }     } catch (e) {       AppLogger.error('Error uploading content: $e');       if (mounted)...`
-9. **Line 161**: ".tr(args: [e.toString()]))),
+29. **Line 216**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processContentFile() async {
+    if (_contentFile == null) return;
+
+    try {
+      final String content = await _contentFile!.readAsString();
+      await _validateAndProcessContent(content);
+    } catch (e) {
+      AppLogger.error("
+   *Context*: `content: Text('written_content_upload_file_error'                   .tr(args: [e.toString()]))),    ...`
+30. **Line 230**: ");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("
+   *Context*: `ontent);     } catch (e) {       AppLogger.error('Error processing content file: $e');       if (mou...`
+31. **Line 234**: ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _validateAndProcessContent(String content) async {
+    // Basic validation
+    if (content.trim().isEmpty) {
+      setState(() => _isValidContent = false);
+      return;
+    }
+
+    // Calculate word count and reading time
+    final words = content.split(RegExp(r"
+   *Context*: `content: Text('written_content_upload_process_error'                   .tr(args: [e.toString()]))), ...`
+32. **Line 375**: ".tr(args: [e.toString()]))),
         );
       }
     }
@@ -5463,31 +6169,27 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (_coverImageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("
-   *Context*: `ckBar(content: Text('written_content_upload_image_error'.tr(args: [e.toString()]))),         );     ...`
-10. **Line 247**: ".tr(args: [e.toString()]))),
+   *Context*: `content: Text('written_content_upload_image_error'                   .tr(args: [e.toString()]))),   ...`
+33. **Line 495**: ".tr(args: [e.toString()]))),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) {}
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title:"
-   *Context*: `SnackBar(content: Text('written_content_upload_error'.tr(args: [e.toString()]))),         );       }...`
-11. **Line 32**: "Book"
-   *Context*: `ormState>();    late final TextEditingController _titleController;   late final TextEditingControlle...`
-12. **Line 206**: ": _titleController.text,"
-   *Context*: `d': contentId,         'userId': userId,         'title': _titleController.text,         'descriptio...`
+  Future<void> _createChaptersForArtwork(String artworkId) async {
+    if (_chapters.isEmpty) return;
 
-### artbeat_auth (4 files, 81 texts)
+    for (final chapter in _chapters) {
+      await _chapterService.createChapter(
+        artworkId: artworkId,
+        chapterNumber: chapter["
+   *Context*: `: Text(                   'written_content_upload_error'.tr(args: [e.toString()]))),         );     ...`
+34. **Line 49**: "Book"
+   *Context*: `epIndex = 0;    late final TextEditingController _titleController;   late final TextEditingControlle...`
+
+### artbeat_auth (4 files, 80 texts)
 
 #### packages/artbeat_auth/lib/src/screens/email_verification_screen.dart (3 texts)
 1. **Line 73**: "Verification email sent to ${_user!.email}"
@@ -5505,26 +6207,24 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 3. **Line 80**: ".tr(namedArgs: {"
    *Context*: `default:         return 'auth_forgot_password_error_failed'.tr(namedArgs: {'code': e.code});     }  ...`
 
-#### packages/artbeat_auth/lib/src/screens/login_screen.dart (10 texts)
+#### packages/artbeat_auth/lib/src/screens/login_screen.dart (9 texts)
 1. **Line 102**: "Google Sign-In failed: ${e.toString()}"
    *Context*: `nackBar(           SnackBar(             content: Text('Google Sign-In failed: ${e.toString()}'),   ...`
 2. **Line 144**: "Apple Sign-In failed: $errorMessage"
    *Context*: `nackBar(           SnackBar(             content: Text('Apple Sign-In failed: $errorMessage'),      ...`
-3. **Line 238**: "Apple Sign-In configuration in progress"
-   *Context*: `ding: EdgeInsets.only(top: 8),             child: Text(               'Apple Sign-In configuration i...`
-4. **Line 73**: "FirebaseAuthException: [33m${e.message}[0m"
+3. **Line 73**: "FirebaseAuthException: [33m${e.message}[0m"
    *Context*: `baseAuthException catch (e) {       // debugPrint('FirebaseAuthException: [33m${e.message}[0m');  ...`
-5. **Line 78**: "Login failed"
+4. **Line 78**: "Login failed"
    *Context*: `.showSnackBar(SnackBar(content: Text(e.message ?? 'Login failed')));     } finally {       if (mount...`
-6. **Line 136**: "User cancelled"
+5. **Line 136**: "User cancelled"
    *Context*: `= e.toString();         if (errorMessage.contains('User cancelled')) {           errorMessage = 'App...`
-7. **Line 137**: "Apple Sign-In was cancelled."
+6. **Line 137**: "Apple Sign-In was cancelled."
    *Context*: `ins('User cancelled')) {           errorMessage = 'Apple Sign-In was cancelled.';         } else if ...`
-8. **Line 139**: "Apple Sign-In is not available on this device."
+7. **Line 139**: "Apple Sign-In is not available on this device."
    *Context*: `ains('not available')) {           errorMessage = 'Apple Sign-In is not available on this device.'; ...`
-9. **Line 138**: "not available"
+8. **Line 138**: "not available"
    *Context*: `Apple Sign-In was cancelled.';         } else if (errorMessage.contains('not available')) {         ...`
-10. **Line 144**: "),
+9. **Line 144**: "),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
@@ -5681,51 +6381,51 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 ### artbeat_capture (11 files, 210 texts)
 
 #### packages/artbeat_capture/lib/src/screens/admin_content_moderation_screen.dart (23 texts)
-1. **Line 224**: "Are you sure you want to permanently delete this capture? This action cannot be undone."
-   *Context*: `t_delete_capture'.tr()),           content: const Text(             'Are you sure you want to perman...`
-2. **Line 275**: "Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?"
-   *Context*: `ion_text_clear_reports'.tr()),           content: Text(             'Are you sure you want to clear ...`
-3. **Line 343**: "Capture Details"
+1. **Line 255**: "Are you sure you want to permanently delete this capture? This action cannot be undone."
+   *Context*: `ture'.tr(),           ),           content: const Text(             'Are you sure you want to perman...`
+2. **Line 315**: "Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?"
+   *Context*: `ar_reports'.tr(),           ),           content: Text(             'Are you sure you want to clear ...`
+3. **Line 390**: "Capture Details"
    *Context*: `t SizedBox(width: 8),                       const Text(                         'Capture Details',  ...`
-4. **Line 442**: "$label:"
+4. **Line 489**: "$label:"
    *Context*: `edBox(             width: 120,             child: Text(               '$label:',               style...`
-5. **Line 574**: "No ${_selectedTab} captures found"
+5. **Line 633**: "No ${_selectedTab} captures found"
    *Context*: `nst SizedBox(height: 16),                         Text(                           'No ${_selectedTab...`
-6. **Line 579**: "All caught up!"
+6. **Line 638**: "All caught up!"
    *Context*: `izedBox(height: 8),                         const Text(                           'All caught up!', ...`
-7. **Line 640**: "Created: ${capture.createdAt.toLocal().toString().split("
-   *Context*: `ttype'.tr()),                                     Text(                                       'Creat...`
-8. **Line 709**: "${capture.reportCount} report${capture.reportCount > 1 ?"
+7. **Line 705**: "Created: ${capture.createdAt.toLocal().toString().split("
+   *Context*: `),                                     Text(                                       'Created: ${captu...`
+8. **Line 774**: "${capture.reportCount} report${capture.reportCount > 1 ?"
    *Context*: `,                                                 Text(                                             ...`
-9. **Line 94**: "Moderation Notes (optional)"
+9. **Line 106**: "Moderation Notes (optional)"
    *Context*: `oration: const InputDecoration(                   labelText: 'Moderation Notes (optional)',         ...`
-10. **Line 164**: "Reason for rejection (optional)"
+10. **Line 187**: "Reason for rejection (optional)"
    *Context*: `oration: const InputDecoration(                   labelText: 'Reason for rejection (optional)',     ...`
-11. **Line 545**: "Refresh"
+11. **Line 604**: "Refresh"
    *Context*: `const Icon(Icons.refresh),                       tooltip: 'Refresh',                     ),         ...`
-12. **Line 734**: "View Details"
+12. **Line 799**: "View Details"
    *Context*: `.visibility),                                     tooltip: 'View Details',                          ...`
-13. **Line 741**: "Approve"
+13. **Line 806**: "Approve"
    *Context*: `lors.green,                                       tooltip: 'Approve',                               ...`
-14. **Line 747**: "Reject"
+14. **Line 812**: "Reject"
    *Context*: `ors.orange,                                       tooltip: 'Reject',                                ...`
-15. **Line 755**: "Clear Reports"
+15. **Line 820**: "Clear Reports"
    *Context*: `olors.blue,                                       tooltip: 'Clear Reports',                         ...`
-16. **Line 761**: "Delete"
+16. **Line 826**: "Delete"
    *Context*: `: Colors.red,                                     tooltip: 'Delete',                                ...`
-17. **Line 410**: "Description"
+17. **Line 457**: "Description"
    *Context*: `= null)                           _buildDetailRow('Description', capture.description!),             ...`
-18. **Line 419**: "Moderation Notes"
+18. **Line 466**: "Moderation Notes"
    *Context*: `_buildDetailRow(                             'Moderation Notes',                             capture...`
-19. **Line 484**: "Content Moderation"
+19. **Line 531**: "Content Moderation"
    *Context*: `Bar: core.EnhancedUniversalHeader(         title: 'Content Moderation',         showLogo: false,    ...`
-20. **Line 380**: "Title"
+20. **Line 427**: "Title"
    *Context*: `fit: BoxFit.cover,                               errorBuilder: (context, error, stackTrace) {       ...`
-21. **Line 612**: "Untitled"
+21. **Line 671**: "Untitled"
    *Context*: `BoxFit.cover,                                     errorBuilder: (context, error, stackTrace) {      ...`
-22. **Line 395**: ", capture.title ??"
+22. **Line 442**: ", capture.title ??"
    *Context*: `Details                         _buildDetailRow('Title', capture.title ?? 'No title'),              ...`
-23. **Line 395**: "),
+23. **Line 442**: "),
                         _buildDetailRow("
    *Context*: `_buildDetailRow('Title', capture.title ?? 'No title'),                         _buildDetailRow('Stat...`
 
@@ -9574,10 +10274,10 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `elines when sending gift messages',               'Report any suspicious gift activity',            ...`
 23. **Line 62**: "Processing & Security"
    *Context*: `ivity',             ]),             _buildSection('Processing & Security', [               'All tran...`
-24. **Line 63**: "All transactions are processed securely through Apple Pay / Google Play"
+24. **Line 63**: "All transactions are processed securely through Apple Pay"
    *Context*: `dSection('Processing & Security', [               'All transactions are processed securely through A...`
 25. **Line 64**: "Gift history is permanently recorded"
-   *Context*: `y through Apple Pay / Google Play',               'Gift history is permanently recorded',           ...`
+   *Context*: `cessed securely through Apple Pay',               'Gift history is permanently recorded',           ...`
 26. **Line 65**: "Suspicious activity is automatically flagged"
    *Context*: `t history is permanently recorded',               'Suspicious activity is automatically flagged',   ...`
 27. **Line 66**: "Gifts are non-refundable per App Store guidelines"
@@ -10260,27 +10960,27 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `'),             Tab(text: 'Pending'),             Tab(text: 'Completed'),           ],         ),   ...`
 
 #### packages/artbeat_community/lib/src/screens/artist_community_feed_screen.dart (21 texts)
-1. **Line 213**: "${widget.artist.displayName} hasn\"
+1. **Line 220**: "${widget.artist.displayName} hasn\"
    *Context*: `const SizedBox(height: 16),             Text(               '${widget.artist.displayName} hasn\'t po...`
-2. **Line 283**: "Posted new artwork • ${DateFormat("
+2. **Line 292**: "Posted new artwork • ${DateFormat("
    *Context*: `eight.bold),             ),             subtitle: Text(               'Posted new artwork • ${DateFo...`
-3. **Line 323**: "${item["
+3. **Line 332**: "${item["
    *Context*: `const SizedBox(width: 4),                     Text('${item['likes']}'),                     const Si...`
-4. **Line 355**: "Created new event • ${DateFormat("
+4. **Line 364**: "Created new event • ${DateFormat("
    *Context*: `eight.bold),             ),             subtitle: Text(               'Created new event • ${DateFor...`
-5. **Line 427**: "Posted an update • ${item["
+5. **Line 436**: "Posted an update • ${item["
    *Context*: `eight.bold),             ),             subtitle: Text(               'Posted an update • ${item['ti...`
-6. **Line 109**: "Error loading artwork items: $e"
+6. **Line 113**: "Error loading artwork items: $e"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading artwork items: $e');     }      return...`
-7. **Line 137**: "Error loading event items: $e"
+7. **Line 141**: "Error loading event items: $e"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading event items: $e');     }      return i...`
-8. **Line 161**: "Artist Update"
+8. **Line 165**: "Artist Update"
    *Context*: `'id': doc.id,           'title': data['title'] ?? 'Artist Update',           'content': data['conten...`
-9. **Line 171**: "Error loading community items: $e"
+9. **Line 175**: "Error loading community items: $e"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading community items: $e');     }      retu...`
-10. **Line 397**: "MMM d, yyyy • h:mm a"
+10. **Line 406**: "MMM d, yyyy • h:mm a"
    *Context*: `DateFormat(                         'MMM d, yyyy • h:mm a',                       ).format(item['tim...`
-11. **Line 109**: ");
+11. **Line 113**: ");
     }
 
     return items;
@@ -10298,7 +10998,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         // Take first 5 events
         items.add({"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading artwork items: $e');     }      return...`
-12. **Line 137**: ");
+12. **Line 141**: ");
     }
 
     return items;
@@ -10312,7 +11012,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final postsQuery = FirebaseFirestore.instance
           .collection("
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading event items: $e');     }      return i...`
-13. **Line 171**: ");
+13. **Line 175**: ");
     }
 
     return items;
@@ -10325,15 +11025,15 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       appBar: core.EnhancedUniversalHeader(
         title:"
    *Context*: `});       }     } catch (e) {       debugPrint('Error loading community items: $e');     }      retu...`
-14. **Line 99**: ": art.title,"
+14. **Line 103**: ": art.title,"
    *Context*: `e': 'artwork',           'id': art.id,           'title': art.title,           'description': art.de...`
-15. **Line 128**: ": event.title,"
+15. **Line 132**: ": event.title,"
    *Context*: `e': 'event',           'id': event.id,           'title': event.title,           'description': even...`
-16. **Line 161**: ": data["
+16. **Line 165**: ": data["
    *Context*: `type': 'post',           'id': doc.id,           'title': data['title'] ?? 'Artist Update',         ...`
-17. **Line 182**: "${widget.artist.displayName}\"
+17. **Line 186**: "${widget.artist.displayName}\"
    *Context*: `appBar: core.EnhancedUniversalHeader(         title: '${widget.artist.displayName}\'s Feed',        ...`
-18. **Line 307**: "] as String,
+18. **Line 316**: "] as String,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -10341,14 +11041,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                 ),
                 if (item["
    *Context*: `: [                 Text(                   item['title'] as String,                   style: const ...`
-19. **Line 438**: "] != null &&
+19. **Line 447**: "] != null &&
                     (item["
    *Context*: `children: [                 if (item['title'] != null &&                     (item['title'] as Strin...`
-20. **Line 439**: "] as String).isNotEmpty) ...[
+20. **Line 448**: "] as String).isNotEmpty) ...[
                   Text(
                     item["
    *Context*: `em['title'] != null &&                     (item['title'] as String).isNotEmpty) ...[               ...`
-21. **Line 441**: "] as String,
+21. **Line 450**: "] as String,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -10373,7 +11073,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 2. **Line 142**: "${_currentIndex + 1} / ${widget.imageUrls.length}"
    *Context*: `ar(20),                 ),                 child: Text(                   '${_currentIndex + 1} / ${...`
 
-### artbeat_core (16 files, 458 texts)
+### artbeat_core (20 files, 483 texts)
 
 #### packages/artbeat_core/lib/src/screens/advanced_analytics_dashboard.dart (43 texts)
 1. **Line 407**: "Activity Summary"
@@ -10696,6 +11396,130 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return AlertDialog(
       title: const Text("
    *Context*: `uponDialog> {   late final TextEditingController _titleController;   late final TextEditingControlle...`
+
+#### packages/artbeat_core/lib/src/screens/dashboard/admin_dashboard.dart (3 texts)
+1. **Line 856**: "$value - $status"
+   *Context*: `const SizedBox(height: 4),                       Text(                         '$value - $status',  ...`
+2. **Line 931**: "2h ago"
+   *Context*: `width: 60,                     child: Text(                       '2h ago',                       te...`
+3. **Line 366**: "/admin/reports"
+   *Context*: `s.red,                       color: ArtbeatColors.error,                       onTap: () => Navigato...`
+
+#### packages/artbeat_core/lib/src/screens/dashboard/artist_dashboard.dart (3 texts)
+1. **Line 481**: "Failed to load analytics data"
+   *Context*: `Center(                   child: Text(                     'Failed to load analytics data',         ...`
+2. **Line 613**: "Error"
+   *Context*: `child: Text(                       _dataError != null                           ? 'Error'           ...`
+3. **Line 805**: "/artwork/upload"
+   *Context*: `{     required IconData icon,     required String title,     required String subtitle,     required ...`
+
+#### packages/artbeat_core/lib/src/screens/dashboard/onboarding_dashboard.dart (17 texts)
+1. **Line 525**: "Tap to add profile photo"
+   *Context*: `Center(                   child: Text(                     'Tap to add profile photo',              ...`
+2. **Line 645**: "Error selecting image: ${e.toString()}"
+   *Context*: `(context).showSnackBar(         SnackBar(content: Text('Error selecting image: ${e.toString()}')),  ...`
+3. **Line 673**: "Error saving profile: ${e.toString()}"
+   *Context*: `ontext).showSnackBar(           SnackBar(content: Text('Error saving profile: ${e.toString()}')),   ...`
+4. **Line 950**: "+1.2K"
+   *Context*: `child: const Center(                       child: Text(                         '+1.2K',            ...`
+5. **Line 535**: "Enter your full name"
+   *Context*: `labelText: 'Full Name',                     hintText: 'Enter your full name',                     bo...`
+6. **Line 553**: "Choose a unique username"
+   *Context*: `labelText: 'Username',                     hintText: 'Choose a unique username',                    ...`
+7. **Line 571**: "Tell us about yourself"
+   *Context*: `labelText: 'Bio',                     hintText: 'Tell us about yourself',                     border...`
+8. **Line 584**: "Your city/region"
+   *Context*: `labelText: 'Location',                     hintText: 'Your city/region',                     border:...`
+9. **Line 534**: "Full Name"
+   *Context*: `decoration: InputDecoration(                     labelText: 'Full Name',                     hintTex...`
+10. **Line 552**: "Username"
+   *Context*: `decoration: InputDecoration(                     labelText: 'Username',                     hintText...`
+11. **Line 570**: "Bio"
+   *Context*: `decoration: InputDecoration(                     labelText: 'Bio',                     hintText: 'Te...`
+12. **Line 583**: "Location"
+   *Context*: `decoration: InputDecoration(                     labelText: 'Location',                     hintText...`
+13. **Line 543**: "Full name is required"
+   *Context*: `|| value.isEmpty) {                       return 'Full name is required';                     }     ...`
+14. **Line 561**: "Username is required"
+   *Context*: `|| value.isEmpty) {                       return 'Username is required';                     }      ...`
+15. **Line 645**: ")),
+      );
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSavingProfile = true);
+
+    try {
+      final userService = UserService();
+
+      await userService.updateUserProfile(
+        fullName: _fullNameController.text,
+        bio: _bioController.text,
+        location: _locationController.text,
+        zipCode: _locationController.text,
+      );
+
+      if (_profileImage != null) {
+        await userService.uploadAndUpdateProfilePhoto(_profileImage!);
+      }
+
+      _completeCurrentStep();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+   *Context*: `xt).showSnackBar(         SnackBar(content: Text('Error selecting image: ${e.toString()}')),       )...`
+16. **Line 673**: ")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingProfile = false);
+      }
+    }
+  }
+
+  Widget _buildQuickSetup() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("
+   *Context*: `).showSnackBar(           SnackBar(content: Text('Error saving profile: ${e.toString()}')),         ...`
+17. **Line 1068**: ");
+    }
+    
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => const ArtbeatDashboardScreen(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _refreshData() async {
+    // Simulate refresh
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  // Navigation methods
+  void _navigateToCamera(BuildContext context) {
+    Navigator.pushNamed(context,"
+   *Context*: `d');     } catch (e) {       AppLogger.warning('❌ Error marking onboarding as complete: $e');     } ...`
+
+#### packages/artbeat_core/lib/src/screens/dashboard_screen.dart (2 texts)
+1. **Line 48**: "Error loading user profile: $e"
+   *Context*: `;       }     } catch (e) {       AppLogger.error('Error loading user profile: $e');       if (mount...`
+2. **Line 51**: ",
+              email:"
+   *Context*: `if (mounted) {         setState(() {           _error = e.toString();           _isLoading = false; ...`
 
 #### packages/artbeat_core/lib/src/screens/example_dashboard_with_universal_header.dart (17 texts)
 1. **Line 99**: "Welcome to ARTbeat!"
@@ -11071,8 +11895,59 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `appBar: const EnhancedUniversalHeader(           title: 'Search',           showLogo: false,        ...`
 
 #### packages/artbeat_core/lib/src/screens/splash_screen.dart (1 texts)
-1. **Line 121**: "assets/images/splashTRANS_logo.png"
-   *Context*: `on {         // Ignore timeout       } catch (syncError) {         // Ignore sync errors in backgrou...`
+1. **Line 156**: ");
+      }
+      return false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _heartbeatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+              const Color(0xFF4A90E2).withValues(alpha: 0.2), // Blue accent
+              Colors.white.withValues(alpha: 0.95),
+              ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
+              Colors.white,
+            ],
+            stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8),
+              blurRadius: 4,
+              offset: const Offset(-1, -1),
+            ),
+            BoxShadow(
+              color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(1, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(flex: 2),
+            // Main ArtBeat Logo
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: Image.asset("
+   *Context*: `) {       if (kDebugMode) {         debugPrint('❌ Error checking onboarding status: $e');       }   ...`
 
 #### packages/artbeat_core/lib/src/screens/subscription_plans_screen.dart (25 texts)
 1. **Line 60**: "Start Your Artistic Journey"
@@ -11153,7 +12028,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
    *Context*: `nt.start,           children: [             const Text(               'Payment Information',        ...`
 9. **Line 316**: "Your subscription will automatically renew each month. You can cancel anytime from your account settings."
    *Context*: `const SizedBox(height: 12),             const Text(               'Your subscription will automatica...`
-10. **Line 333**: "Payment will be processed securely through the App Store or Google Play. You can manage your subscription in your device settings."
+10. **Line 333**: "Payment will be processed securely through the App Store. You can manage your subscription in your device settings."
    *Context*: `const Expanded(                     child: Text(                       'Payment will be processed se...`
 11. **Line 37**: "Subscribe to"
    *Context*: `t(           '${widget.isUpgrade ? 'Upgrade to' : 'Subscribe to'} ${_getTierName(widget.tier)}',    ...`
@@ -14322,7 +15197,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 25. **Line 446**: "Progress"
    *Context*: `Tab(text: 'Achievements'),             Tab(text: 'Progress'),           ],         ),         // Tab...`
 
-### artbeat_settings (3 files, 52 texts)
+### artbeat_settings (4 files, 56 texts)
 
 #### packages/artbeat_settings/lib/src/screens/account_settings_screen.dart (38 texts)
 1. **Line 445**: "Choose Image Source"
@@ -14430,6 +15305,16 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       appBar: AppBar(
         title: Text("
    *Context*: `ettings_blocked_users_error_load'.tr(namedArgs: {'error': e.toString()})),             backgroundCol...`
+
+#### packages/artbeat_settings/lib/src/screens/privacy_settings_screen.dart (4 texts)
+1. **Line 40**: "Please log in again to access privacy settings"
+   *Context*: `('not authenticated')) {           errorMessage = 'Please log in again to access privacy settings'; ...`
+2. **Line 41**: "Permission denied"
+   *Context*: `ttings';         } else if (e.toString().contains('Permission denied')) {           errorMessage = '...`
+3. **Line 42**: "Unable to load privacy settings - permission denied. Please check your privacy settings in Firestore."
+   *Context*: `('Permission denied')) {           errorMessage = 'Unable to load privacy settings - permission deni...`
+4. **Line 44**: "Network error - please check your internet connection"
+   *Context*: `).contains('Network')) {           errorMessage = 'Network error - please check your internet connec...`
 
 #### packages/artbeat_settings/lib/src/screens/security_settings_screen.dart (12 texts)
 1. **Line 469**: "A1B2-C3D4-E5F6\nG7H8-I9J0-K1L2\nM3N4-O5P6-Q7R8"
@@ -14805,109 +15690,119 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 26. "$status • Last seen: $lastSeen"
 27. "$unread"
 28. "$user • $timestamp"
-29. "$visitCount visits"
-30. "$xp XP"
-31. "${(_uploadProgress * 100).toInt()}%"
-32. "${(_videoUploadProgress * 100).toInt()}%"
-33. "${(goal.progressPercentage * 100).toInt()}% complete"
-34. "${(score * 100).toStringAsFixed(0)}% match"
-35. "${(status.migrationProgress * 100).toStringAsFixed(1)}%"
-36. "${10 + index}:${(index * 3).toString().padLeft(2,"
-37. "${_artWalkResults.length} results"
-38. "${_artwork.length} pieces"
-39. "${_artworks.length} ${_artworks.length == 1 ?"
-40. "${_currentIndex + 1} / ${widget.imageUrls.length}"
-41. "${_depositPercentage.toStringAsFixed(0)}%"
-42. "${_filterType!.displayName} Collections"
-43. "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}"
-44. "${_formatDate(weekStart)} - ${_formatDate(weekEnd)}"
-45. "${_onlineArtists.length} online"
-46. "${_participants.length} members"
-47. "${_pointsCountAnimation.value} Points Earned!"
-48. "${_portfolioImages.length}/10 images"
-49. "${_publicArtResults.length} results"
-50. "${_selectedArtPieces.length} art piece${_selectedArtPieces.length == 1 ?"
-51. "${_selectedContentIds.length} items approved successfully"
-52. "${_selectedContentIds.length} items rejected successfully"
-53. "${_selectedEventIds.length}"
-54. "${_selectedImages.length}/4"
-55. "${_selectedTransactionIds.length} selected"
-56. "${_selectedUserIds.length} users selected"
-57. "${_studio!.memberList.length} members"
-58. "${_thread!.replyCount} replies"
-59. "${account.bankName ??"
-60. "${art.title} marked as visited! +10 XP"
-61. "${artist.followersCount} followers"
-62. "${artist["
-63. "${artwork.commentCount}"
-64. "${artwork.viewCount}"
-65. "${artwork.viewCount} views"
-66. "${artwork.yearCreated}"
-67. "${capture.reportCount} report${capture.reportCount > 1 ?"
-68. "${captures.length}"
-69. "${captures.length} artwork${captures.length == 1 ?"
-70. "${chat.unreadCount}"
-71. "${collection.artworkIds.length}"
-72. "${collection.artworkIds.length} artworks"
-73. "${collection.viewCount}"
-74. "${connection.mutualFollowersCount} mutual connection${connection.mutualFollowersCount == 1 ?"
-75. "${coupon.currentUses}/${coupon.maxUses ??"
-76. "${date.day}/${date.month}/${date.year}"
-77. "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2,"
-78. "${difference.inDays}d ago"
-79. "${entry.experiencePoints} total XP"
-80. "${entry.key}: ${entry.value}"
-81. "${entry.value.toInt()}%"
-82. "${entry.value} purchase${entry.value > 1 ?"
-83. "${entry.value} views"
-84. "${event.attendeeIds.length}"
-85. "${event.attendeeIds.length} attending"
-86. "${event.startDate.day}/${event.startDate.month}/${event.startDate.year} - ${event.endDate!.day}/${event.endDate!.month}/${event.endDate!.year}"
-87. "${feedback.userName} • ${feedback.packageModules.map(_getPackageDisplayName).join("
-88. "${goal.currentCount} / ${goal.targetCount}"
-89. "${i + 1}. ${art.title}"
-90. "${images.length} image(s) selected"
-91. "${index + 1}"
-92. "${item["
-93. "${levelRange["
-94. "${portfolio["
-95. "${post.applauseCount}"
-96. "${post.commentsCount}"
-97. "${post.content.substring(0, 30)}..."
-98. "${post.likesCount}"
-99. "${post.sharesCount}"
-100. "${post["
-101. "${publicArt.viewCount}"
-102. "${queryData["
-103. "${refundTransactions.length} Refunds"
-104. "${selectedTransactions.length} transactions selected"
-105. "${server["
-106. "${status.migratedDocuments}/${status.totalDocuments} documents migrated"
-107. "${studio.memberList.length} members"
-108. "${template.estimatedDays} days"
-109. "${ticket.remainingQuantity} left"
-110. "${transaction.fromUserName} • ${_formatDate(transaction.timestamp)}"
-111. "${transaction.userName} • ${transaction.displayType}"
-112. "${trend.commissionCount} commissions"
-113. "${trend.month.month}/${trend.month.year}"
-114. "${user.displayName} has been unblocked"
-115. "${walk.artworkIds.length} artworks • ${walk.viewCount} views"
-116. "${walk.description.substring(0, 60)}..."
-117. "${widget.artWalk.title} ($visited/$total)"
-118. "${widget.artist.displayName} hasn\"
-119. "${widget.artist.displayName} is available for commissions!"
-120. "${widget.artist.displayName}\"
-121. "${widget.artistName}\"
-122. "${widget.celebrationData.artPiecesVisited}"
-123. "${widget.celebrationData.walk.title}"
-124. "${widget.groupType.title} post created successfully!"
-125. "${widget.isUpgrade ?"
-126. "${widget.paymentId.substring(0, 10)}..."
-127. "${widget.topicFilter} Feed"
-128. "(${template.useCount} used)"
-129. ")) {
+29. "$value - $status"
+30. "$visitCount visits"
+31. "$xp XP"
+32. "${(_mainImageUploadProgress * 100).toInt()}% ${"
+33. "${(_uploadProgress * 100).toInt()}%"
+34. "${(_videoUploadProgress * 100).toInt()}%"
+35. "${(goal.progressPercentage * 100).toInt()}% complete"
+36. "${(score * 100).toStringAsFixed(0)}% match"
+37. "${(status.migrationProgress * 100).toStringAsFixed(1)}%"
+38. "${10 + index}:${(index * 3).toString().padLeft(2,"
+39. "${_artWalkResults.length} results"
+40. "${_artwork.length} pieces"
+41. "${_artworks.length} ${_artworks.length == 1 ?"
+42. "${_currentIndex + 1} / ${widget.imageUrls.length}"
+43. "${_depositPercentage.toStringAsFixed(0)}%"
+44. "${_filterType!.displayName} Collections"
+45. "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}"
+46. "${_formatDate(weekStart)} - ${_formatDate(weekEnd)}"
+47. "${_formatDuration(_currentPosition)} / ${_formatDuration(_audioDuration)}"
+48. "${_onlineArtists.length} online"
+49. "${_participants.length} members"
+50. "${_pointsCountAnimation.value} Points Earned!"
+51. "${_portfolioImages.length}/10 images"
+52. "${_publicArtResults.length} results"
+53. "${_selectedArtPieces.length} art piece${_selectedArtPieces.length == 1 ?"
+54. "${_selectedContentIds.length} items approved successfully"
+55. "${_selectedContentIds.length} items rejected successfully"
+56. "${_selectedEventIds.length}"
+57. "${_selectedImages.length}/4"
+58. "${_selectedTransactionIds.length} selected"
+59. "${_selectedUserIds.length} users selected"
+60. "${_studio!.memberList.length} members"
+61. "${_thread!.replyCount} replies"
+62. "${_videoDuration.inMinutes}:${(_videoDuration.inSeconds % 60).toString().padLeft(2,"
+63. "${_width}x$_height"
+64. "${account.bankName ??"
+65. "${art.title} marked as visited! +10 XP"
+66. "${artist.followersCount} followers"
+67. "${artist["
+68. "${artwork.commentCount}"
+69. "${artwork.description.substring(0, 50)}..."
+70. "${artwork.viewCount}"
+71. "${artwork.viewCount} views"
+72. "${artwork.yearCreated}"
+73. "${capture.reportCount} report${capture.reportCount > 1 ?"
+74. "${captures.length}"
+75. "${captures.length} artwork${captures.length == 1 ?"
+76. "${chapter.estimatedReadingTime}min"
+77. "${chat.unreadCount}"
+78. "${collection.artworkIds.length}"
+79. "${collection.artworkIds.length} artworks"
+80. "${collection.viewCount}"
+81. "${comments.length} total"
+82. "${connection.mutualFollowersCount} mutual connection${connection.mutualFollowersCount == 1 ?"
+83. "${coupon.currentUses}/${coupon.maxUses ??"
+84. "${date.day}/${date.month}/${date.year}"
+85. "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2,"
+86. "${difference.inDays}d ago"
+87. "${entry.experiencePoints} total XP"
+88. "${entry.key}: ${entry.value}"
+89. "${entry.value.toInt()}%"
+90. "${entry.value} purchase${entry.value > 1 ?"
+91. "${entry.value} views"
+92. "${event.attendeeIds.length}"
+93. "${event.attendeeIds.length} attending"
+94. "${event.startDate.day}/${event.startDate.month}/${event.startDate.year} - ${event.endDate!.day}/${event.endDate!.month}/${event.endDate!.year}"
+95. "${feedback.userName} • ${feedback.packageModules.map(_getPackageDisplayName).join("
+96. "${goal.currentCount} / ${goal.targetCount}"
+97. "${i + 1}. ${art.title}"
+98. "${images.length} image(s) selected"
+99. "${index + 1}"
+100. "${item["
+101. "${levelRange["
+102. "${metadata["
+103. "${portfolio["
+104. "${post.applauseCount}"
+105. "${post.commentsCount}"
+106. "${post.content.substring(0, 30)}..."
+107. "${post.likesCount}"
+108. "${post.sharesCount}"
+109. "${post["
+110. "${publicArt.viewCount}"
+111. "${queryData["
+112. "${refundTransactions.length} Refunds"
+113. "${reports.length} total"
+114. "${selectedTransactions.length} transactions selected"
+115. "${server["
+116. "${status.migratedDocuments}/${status.totalDocuments} documents migrated"
+117. "${studio.memberList.length} members"
+118. "${template.estimatedDays} days"
+119. "${ticket.remainingQuantity} left"
+120. "${transaction.fromUserName} • ${_formatDate(transaction.timestamp)}"
+121. "${transaction.userName} • ${transaction.displayType}"
+122. "${trend.commissionCount} commissions"
+123. "${trend.month.month}/${trend.month.year}"
+124. "${user.displayName} has been unblocked"
+125. "${walk.artworkIds.length} artworks • ${walk.viewCount} views"
+126. "${walk.description.substring(0, 60)}..."
+127. "${widget.artWalk.title} ($visited/$total)"
+128. "${widget.artist.displayName} hasn\"
+129. "${widget.artist.displayName} is available for commissions!"
+130. "${widget.artist.displayName}\"
+131. "${widget.artistName}\"
+132. "${widget.celebrationData.artPiecesVisited}"
+133. "${widget.celebrationData.walk.title}"
+134. "${widget.groupType.title} post created successfully!"
+135. "${widget.isUpgrade ?"
+136. "${widget.paymentId.substring(0, 10)}..."
+137. "${widget.topicFilter} Feed"
+138. "(${template.useCount} used)"
+139. ")) {
       return Center(child: Text("
-130. ")));
+140. ")));
         setState(() {
           _isLoading = false;
         });
@@ -14931,7 +15826,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("
-131. ")));
+141. ")));
         }
       }
     }
@@ -14940,7 +15835,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Widget _buildMessageBubble(DocumentSnapshot messageDoc) {
     final message = messageDoc.data() as Map<String, dynamic>;
     final isCurrentUser = message["
-132. ")));
+142. ")));
       }
     }
   }
@@ -14948,7 +15843,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   // Handle form submission
   Future<void> _handleSubmit() async {
     AppLogger.debug("
-133. ")));
+143. ")));
       }
     }
   }
@@ -14958,7 +15853,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     // Double-check guard: prevent any concurrent post submissions
     if (_postSubmissionInProgress) {
       debugPrint("
-134. ")));
+144. ")));
       }
     }
   }
@@ -14995,7 +15890,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : Text(_isFollowing ?"
-135. ")));
+145. ")));
       }
     }
   }
@@ -15008,7 +15903,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         currentIndex: -1,
         appBar: const core.EnhancedUniversalHeader(
           title:"
-136. ")));
+146. ")));
       }
     }
   }
@@ -15018,7 +15913,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-137. ")));
+147. ")));
       }
     }
   }
@@ -15061,7 +15956,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("
-138. ")));
+148. ")));
       }
     }
   }
@@ -15104,7 +15999,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("
-139. ")));
+149. ")));
       }
     }
   }
@@ -15147,7 +16042,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text("
-140. ")));
+150. ")));
       }
     }
   }
@@ -15186,7 +16081,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("
-141. ")));
+151. ")));
       }
     }
   }
@@ -15195,14 +16090,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     // In a real implementation, fetch from Firestore where user was mentioned
     return [
       {"
-142. ")));
+152. ")));
       }
     }
   }
 
   Future<List<Map<String, dynamic>>> _getViewHistory(String userId) async {
     // In a real implementation, fetch from Firestore user"
-143. ")));
+153. ")));
       }
     }
   }
@@ -15214,7 +16109,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text("
-144. ")));
+154. ")));
       }
     }
   }
@@ -15222,7 +16117,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<void> _loadActivities() async {
     try {
       AppLogger.info("
-145. ")));
+155. ")));
       }
     }
   }
@@ -15233,7 +16128,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         commissionId: _commission!.id,
         amount: _commission!.depositAmount,
         message:"
-146. ")));
+156. ")));
       }
     }
   }
@@ -15253,7 +16148,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         commercialUse: _commercialUse,
         deliveryFormat: _deliveryFormat,
         customRequirements: {"
-147. ")));
+157. ")));
       }
     }
   }
@@ -15299,7 +16194,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             content: Text(
               isFollowing
                   ?"
-148. ")));
+158. ")));
       }
     }
   }
@@ -15314,7 +16209,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       CommissionType.commercial: 100.0,
     };
     _sizePricing = {"
-149. ")));
+159. ")));
       }
     }
   }
@@ -15348,7 +16243,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("
-150. ")));
+160. ")));
       }
     }
   }
@@ -15361,7 +16256,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       if (result != null) {
         _submitQuote(
           result["
-151. ")));
+161. ")));
       }
     }
   }
@@ -15408,7 +16303,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("
-152. ")));
+162. ")));
       }
     }
   }
@@ -15419,7 +16314,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (user != null) {
       _firestore
           .collection("
-153. ")));
+163. ")));
       }
     } finally {
       if (mounted) {
@@ -15435,7 +16330,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       currentIndex: -1, // Detail screen
       appBar: const core.EnhancedUniversalHeader(
         title:"
-154. ")));
+164. ")));
       }
     } finally {
       if (mounted) {
@@ -15448,7 +16343,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final commentsSnapshot = await FirebaseFirestore.instance
           .collection("
-155. ")));
+165. ")));
       }
     } finally {
       if (mounted) {
@@ -15464,7 +16359,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       final postRef = FirebaseFirestore.instance
           .collection("
-156. ")));
+166. ")));
       }
     } finally {
       if (mounted) {
@@ -15489,7 +16384,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         // Save edited image to temporary file
         final tempDir = Directory.systemTemp;
         final tempFile = File("
-157. ")));
+167. ")));
       }
     } finally {
       if (mounted) {
@@ -15503,7 +16398,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     setState(() => _isPickingMedia = true);
 
     debugPrint("
-158. ")));
+168. ")));
       }
     } finally {
       if (mounted) {
@@ -15517,7 +16412,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     setState(() => _isPickingMedia = true);
 
     debugPrint("
-159. ")));
+169. ")));
       }
     } finally {
       if (mounted) {
@@ -15557,7 +16452,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text("
-160. ")));
+170. ")));
       }
     } finally {
       if (mounted) {
@@ -15584,7 +16479,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         return networkImage;
       } else {
         AppLogger.warning("
-161. ")));
+171. ")));
     }
   }
 
@@ -15597,7 +16492,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           controller: _tabController,
           tabs: const [
             Tab(text:"
-162. ")));
+172. ")));
     }
   }
 
@@ -15615,7 +16510,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-163. ")));
+173. ")));
     }
   }
 
@@ -15626,7 +16521,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("
-164. ")));
+174. ")));
     }
   }
 
@@ -15635,7 +16530,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       setState(() {
         _friendSuggestions.removeWhere(
           (suggestion) => suggestion["
-165. ")));
+175. ")));
     }
   }
 
@@ -15645,7 +16540,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-166. ")));
+176. ")));
     }
   }
 
@@ -15663,7 +16558,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-167. ")));
+177. ")));
     }
   }
 
@@ -15683,7 +16578,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("
-168. ")));
+178. ")));
     }
   }
 
@@ -15701,7 +16596,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-169. ")));
+179. ")));
     }
   }
 
@@ -15711,7 +16606,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-170. ")));
+180. ")));
     }
   }
 
@@ -15732,7 +16627,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       : null,
                   child: post.userPhotoUrl.isEmpty
                       ? Text(post.userName.isNotEmpty ? post.userName[0] :"
-171. ")));
+181. ")));
     }
   }
 
@@ -15740,7 +16635,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("
-172. ")));
+182. ")));
     }
   }
 
@@ -15751,7 +16646,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       } else {
         _filteredPortfolios = _portfolios.where((portfolio) {
           final name = (portfolio["
-173. ")));
+183. ")));
     }
   }
 
@@ -15783,7 +16678,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       currentIndex: 3, // Community tab in bottom navigation
       appBar: const core.EnhancedUniversalHeader(
         title:"
-174. ")));
+184. ")));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -15793,7 +16688,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("
-175. ")));
+185. ")));
     } finally {
       if (mounted) {
         setState(() => _isPickingImages = false);
@@ -15805,7 +16700,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (_contentController.text.trim().isEmpty && _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("
-176. ")));
+186. ")));
     } finally {
       if (mounted) {
         setState(() {
@@ -15822,7 +16717,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("
-177. ")),
+187. ")),
           );
         }
 
@@ -15830,7 +16725,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         if (docs.isEmpty) {
           return Center(
             child: Text("
-178. ")),
+188. ")),
           );
         }
       } finally {
@@ -15850,7 +16745,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       child: Scaffold(
         appBar: EnhancedUniversalHeader(
           title:"
-179. ")),
+189. ")),
         );
         setState(() {
           _isLoading = false;
@@ -15866,7 +16761,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text((_favoriteData?["
-180. ")),
+190. ")),
         );
         setState(() {
           _isLoading = false;
@@ -15884,7 +16779,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("
-181. ")),
+191. ")),
         );
       }
     }
@@ -15902,7 +16797,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Parse tags
       _tags = _tagController.text
           .split("
-182. ")),
+192. ")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("
+193. ")),
         );
       }
     }
@@ -15923,7 +16829,36 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-183. ")),
+194. ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteArtwork(String reason) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.deleteArtwork(_selectedArtwork!.id, reason: reason);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("
+195. ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteComment(String commentId, String reason) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.deleteComment(_selectedArtwork!.id, commentId, reason: reason);
+      await _loadArtworkDetails(_selectedArtwork!);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("
+196. ")),
         );
       }
     }
@@ -15936,7 +16871,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("
-184. ")),
+197. ")),
         );
       }
     }
@@ -15950,7 +16885,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-185. ")),
+198. ")),
         );
       }
     }
@@ -15964,7 +16899,47 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-186. ")),
+199. ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _playPause() async {
+    if (_artwork?.audioUrls.isEmpty ?? true) return;
+
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.resume();
+    }
+  }
+
+  Future<void> _seekTo(Duration position) async {
+    await _audioPlayer.seek(position);
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2,"
+200. ")),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateArtworkStatus(String newStatus, {String? reason}) async {
+    if (_selectedArtwork == null) return;
+
+    try {
+      await _service.updateArtworkStatus(
+        _selectedArtwork!.id,
+        newStatus,
+        reason: reason,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+201. ")),
         );
       }
     }
@@ -16019,7 +16994,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text("
-187. ")),
+202. ")),
         );
       }
     }
@@ -16079,7 +17054,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Text("
-188. ")),
+203. ")),
         );
       }
     }
@@ -16104,7 +17079,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-189. ")),
+204. ")),
         );
       }
     }
@@ -16113,7 +17088,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   void _handlePostTap(PostModel post) {
     // You can implement post detail view here
     AppLogger.info("
-190. ")),
+205. ")),
         );
       }
     }
@@ -16180,7 +17155,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
               ),
               const SizedBox(height: 16),
               Text("
-191. ")),
+206. ")),
         );
       }
     }
@@ -16196,7 +17171,25 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("
-192. ")),
+207. ")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingProfile = false);
+      }
+    }
+  }
+
+  Widget _buildQuickSetup() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("
+208. ")),
         );
       }
     } finally {
@@ -16214,7 +17207,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (_imageFile == null && _imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("
-193. ")),
+209. ")),
         );
       }
     } finally {
@@ -16239,7 +17232,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-194. ")),
+210. ")),
         );
       }
     } finally {
@@ -16263,7 +17256,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText:"
-195. ")),
+211. ")),
         );
       }
     } finally {
@@ -16306,7 +17299,50 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("
-196. ")),
+212. ")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _navigateToChapter(int index) {
+    if (index >= 0 && index < _chapters.length) {
+      setState(() {
+        _currentChapterIndex = index;
+        _currentChapter = _chapters[index];
+        _scrollProgress = 0.0;
+      });
+      _scrollController.jumpTo(0);
+    }
+  }
+
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: _artwork?.imageUrl != null
+            ? Image.network(
+                _artwork!.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: const Icon(Icons.book, size: 64),
+                ),
+              )
+            : Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Icon(Icons.book, size: 64),
+              ),
+        title: Text(
+          _artwork?.title ??"
+213. ")),
         );
       }
     } finally {
@@ -16324,14 +17360,35 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("
-197. ")),
+214. ")),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadArtworkDetails(artwork_pkg.ArtworkModel artwork) async {
+    try {
+      final details = await _service.getArtworkReportDetails(artwork.id);
+      setState(() {
+        _selectedArtwork = artwork;
+        _selectedArtworkDetails = details;
+        _titleController.text = artwork.title;
+        _descriptionController.text = artwork.description;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+215. ")),
       );
     }
   }
 
   Future<Map<String, dynamic>?> _getUserInfo(String userId) async {
     // In a real implementation, you"
-198. ")),
+216. ")),
       );
     }
   }
@@ -16368,14 +17425,43 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("
-199. ")),
+217. ")),
+      );
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSavingProfile = true);
+
+    try {
+      final userService = UserService();
+
+      await userService.updateUserProfile(
+        fullName: _fullNameController.text,
+        bio: _bioController.text,
+        location: _locationController.text,
+        zipCode: _locationController.text,
+      );
+
+      if (_profileImage != null) {
+        await userService.uploadAndUpdateProfilePhoto(_profileImage!);
+      }
+
+      _completeCurrentStep();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("
+218. ")),
       );
     }
   }
 
   void _handleComment(PostModel post) {
     AppLogger.info("
-200. ")),
+219. ")),
       );
     }
   }
@@ -16401,7 +17487,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("
-201. ")),
+220. ")),
       );
     } finally {
       if (mounted) {
@@ -16430,18 +17516,20 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("
-202. "),
+221. "),
                         _buildDetailRow("
-203. "),
+222. "),
                       subtitle: Text("
-204. "),
+223. "),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
             child: const Text("
-205. "),
+224. "),
+                  Text("
+225. "),
                 value: isSelected,
                 onChanged: (value) {
                   setState(() {
@@ -16468,7 +17556,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("
-206. "),
+226. "),
               backgroundColor: Colors.red,
             ),
           );
@@ -16513,7 +17601,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         ),
                         SizedBox(height: 16),
                         Text("
-207. "),
+227. "),
               backgroundColor: Colors.red,
             ),
           );
@@ -16558,7 +17646,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         ),
                         SizedBox(height: 16),
                         Text("
-208. "),
+228. "),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -16589,7 +17677,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       child: Scaffold(
         appBar: core.EnhancedUniversalHeader(
           title:"
-209. "),
+229. "),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
@@ -16609,7 +17697,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         const SizedBox(height: 24),
 
         // Divider with"
-210. "),
+230. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16624,7 +17712,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("
-211. "),
+231. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16640,7 +17728,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-212. "),
+232. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16659,7 +17747,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-213. "),
+233. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16674,7 +17762,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         milestoneId: milestone.id,
         amount: milestone.amount,
         message:"
-214. "),
+234. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16720,7 +17808,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("
-215. "),
+235. "),
             backgroundColor: Colors.red,
           ),
         );
@@ -16739,13 +17827,13 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text("
-216. "),
+236. "),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               decoration: const InputDecoration(
                 labelText:"
-217. "),
+237. "),
           ),
         );
         setState(() {
@@ -16802,7 +17890,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           Text(
             _isCurrentUser
                 ?"
-218. "),
+238. "),
           ),
         );
         setState(() {
@@ -16821,7 +17909,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("
-219. "),
+239. "),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
         ),
@@ -16834,7 +17922,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("
-220. "),
+240. "),
           trailing: IconButton(
             icon: const Icon(Icons.remove_circle_outline),
             onPressed: () => _removeArtistFromGallery(artist.id),
@@ -16861,18 +17949,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             ),
             SizedBox(height: 16),
             Text("
-221. "),
+241. "),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("
-222. ");
+242. ");
 
     // CSV Data rows
     for (final transaction in transactions) {
       final description =
           transaction.description?.replaceAll("
-223. ");
+243. ");
                       },
                       reservedSize: 30,
                     ),
@@ -16909,7 +17997,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     // Extract follower data by day
     final followersByDay =
         _analyticsData["
-224. ");
+244. ");
           }
         }
 
@@ -16922,7 +18010,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-225. ");
+245. ");
           }
         }
         // Posts loaded successfully
@@ -16934,7 +18022,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         });
       } else {
         // debugPrint("
-226. ");
+246. ");
           }
         }
       }
@@ -16957,13 +18045,13 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       currentIndex: -1,
       appBar: EnhancedUniversalHeader(
         title: widget.title ??"
-227. ");
+247. ");
         _showErrorSnackBar("
-228. ");
+248. ");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("
-229. ");
+249. ");
         }
       }
 
@@ -16976,7 +18064,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       if (userModel == null) {
         // debugPrint("
-230. ");
+250. ");
       // Default to Asheville, NC
       _updateMapPosition(35.5951, -82.5515);
     }
@@ -16991,7 +18079,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-231. ");
+251. ");
       // Default to Asheville, NC
       _updateMapPosition(35.5951, -82.5515);
     }
@@ -17022,7 +18110,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-232. ");
+252. ");
       // Default to central NC if location fails
       setState(() {
         _mapCenter = const LatLng(35.7796, -78.6382);
@@ -17041,48 +18129,53 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         final placemark = placemarks.first;
         setState(() {
           _zipCodeController.text = placemark.postalCode ??"
-233. ");
+253. ");
       // Don"
-234. ");
+254. ");
       // Set fallback data immediately
       _messagingStats = {"
-235. ");
+255. ");
       // Use default settings with miles for American users
       setState(() {
         _userSettings = UserSettingsModel.defaultSettings(
           _auth.currentUser?.uid ??"
-236. ");
+256. ");
       // debugPrint("
-237. ");
+257. ");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("
-238. ");
+258. ");
       _publicArtCriteria = _publicArtCriteria.copyWith(searchQuery:"
-239. ");
+259. ");
       _showErrorSnackBar("
-240. ");
+260. ");
       details["
-241. ");
+261. ");
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("
-242. ");
+262. ");
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("
-243. ");
+263. ");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("
+264. ");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("
-244. ");
+265. ");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("
-245. ");
+266. ");
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -17144,7 +18237,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("
-246. ");
+267. ");
       if (mounted) {
         setState(() {
           _isLoadingCaptures = false;
@@ -17163,18 +18256,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       AppLogger.error("
-247. ");
+268. ");
       if (mounted) {
         setState(() {
           _messagingStats = {"
-248. ");
+269. ");
       return 0.0;
     }
   }
 
   String _getDistanceToArt(PublicArtModel art) {
     if (_currentPosition == null) return"
-249. ");
+270. ");
       return 0;
     }
   }
@@ -17187,7 +18280,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection("
-250. ");
+271. ");
       return [];
     }
   }
@@ -17195,7 +18288,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<List<ArtistProfileModel>> _loadNearbyArtists(GeoPoint location) async {
     try {
       final artistsRef = FirebaseFirestore.instance.collection("
-251. ");
+272. ");
       return [];
     }
   }
@@ -17203,7 +18296,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<List<EventModel>> _loadNearbyEvents(GeoPoint point) async {
     try {
       final eventsRef = FirebaseFirestore.instance.collection("
-252. ");
+273. ");
       return [];
     }
   }
@@ -17211,7 +18304,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<List<community.PostModel>> _loadNearbyPosts(GeoPoint location) async {
     try {
       final postsRef = FirebaseFirestore.instance.collection("
-253. ");
+274. ");
       return [];
     }
   }
@@ -17235,7 +18328,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       if (!mounted) return;
 
       // debugPrint("
-254. ");
+275. ");
       return [];
     }
   }
@@ -17252,7 +18345,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   ) async {
     try {
       final artworksRef = FirebaseFirestore.instance.collection("
-255. ");
+276. ");
       return null;
     }
   }
@@ -17260,9 +18353,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   void _showCaptureDetails(core.CaptureModel capture) {
     Navigator.pushNamed(
       context,"
-256. ");
+277. ");
       return {"
-257. ");
+278. ");
       return {};
     }
   }
@@ -17276,19 +18369,19 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     // Walk count milestones
     if (totalWalksCompleted == 1) milestones.add("
-258. ");
+279. ");
       setState(() => _isLoading = false);
       _showErrorSnackBar("
-259. ");
+280. ");
       setState(() {
         _error ="
-260. ");
+281. ");
       setState(() {
         _hasError = true;
         _errorMessage ="
-261. ");
+282. ");
       throw Exception("
-262. ");
+283. ");
       }
 
       setState(() {
@@ -17299,7 +18392,59 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       _applyFilters();
     } on FirebaseException catch (e) {
       _debugLog("
-263. ");
+284. ");
+      }
+      return false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _heartbeatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+              const Color(0xFF4A90E2).withValues(alpha: 0.2), // Blue accent
+              Colors.white.withValues(alpha: 0.95),
+              ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
+              Colors.white,
+            ],
+            stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8),
+              blurRadius: 4,
+              offset: const Offset(-1, -1),
+            ),
+            BoxShadow(
+              color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(1, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(flex: 2),
+            // Main ArtBeat Logo
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: Image.asset("
+285. ");
       }
       return null;
     }
@@ -17319,7 +18464,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Fallback for common ZIP codes if LocationUtils fails (useful for simulator)
       switch (zipCode) {
         case"
-264. ");
+286. ");
       }
     } finally {
       if (mounted) {
@@ -17339,10 +18484,10 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-265. ");
+287. ");
     _descriptionController = TextEditingController(
       text: widget.capture.description ??"
-266. ");
+288. ");
     }
 
     return analytics;
@@ -17368,7 +18513,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     switch (range) {
       case"
-267. ");
+289. ");
     }
 
     return items;
@@ -17380,7 +18525,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       currentIndex: -1, // Detail screen
       appBar: core.EnhancedUniversalHeader(
         title:"
-268. ");
+290. ");
     }
 
     return items;
@@ -17393,7 +18538,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Load posts/updates from Firestore
       final postsQuery = FirebaseFirestore.instance
           .collection("
-269. ");
+291. ");
     }
 
     return items;
@@ -17410,7 +18555,28 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       for (final event in artistEvents.take(5)) {
         // Take first 5 events
         items.add({"
-270. ");
+292. ");
+    }
+    
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => const ArtbeatDashboardScreen(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _refreshData() async {
+    // Simulate refresh
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+  }
+
+  // Navigation methods
+  void _navigateToCamera(BuildContext context) {
+    Navigator.pushNamed(context,"
+293. ");
     }
   }
 
@@ -17489,7 +18655,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text("
-271. ");
+294. ");
     }
   }
 
@@ -17500,7 +18666,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           0, // Dashboard tab - artwork browsing is accessed from dashboard
       appBar: ArtworkHeader(
         title:"
-272. ");
+295. ");
     }
   }
 
@@ -17552,14 +18718,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           } else {
             // Log why it was skipped
             debugPrint("
-273. ");
+296. ");
     }
   }
 
   Future<List<UserModel>> _loadNearbyUsers(GeoPoint location) async {
     try {
       final usersRef = FirebaseFirestore.instance.collection("
-274. ");
+297. ");
     }
   }
 
@@ -17575,7 +18741,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("
-275. ");
+298. ");
     }
   }
 
@@ -17585,7 +18751,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final documentsDir = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final file = File("
-276. ");
+299. ");
     }
   }
 
@@ -17601,7 +18767,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // print("
-277. ");
+300. ");
     }
   }
 
@@ -17618,7 +18784,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final walk = await _artWalkService.getArtWalkById(widget.walkId);
       if (walk == null) {
         throw Exception("
-278. ");
+301. ");
     }
   }
 
@@ -17630,7 +18796,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-279. ");
+302. ");
     }
   }
 
@@ -17647,7 +18813,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-280. ");
+303. ");
     }
   }
 
@@ -17699,7 +18865,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             final publicArt = PublicArtModel(
               id: capture.id,
               title: capture.title ??"
-281. ");
+304. ");
     }
   }
 
@@ -17714,7 +18880,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Load challenge stats for streak
       final stats = await _challengeService.getChallengeStats();
       final streak = (stats["
-282. ");
+305. ");
     }
   }
 
@@ -17730,7 +18896,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ]);
     } catch (e) {
       // debugPrint("
-283. ");
+306. ");
     }
   }
 
@@ -17740,7 +18906,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Featured walk data loaded
     } catch (e) {
       // debugPrint("
-284. ");
+307. ");
     }
   }
 
@@ -17752,7 +18918,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Friends walks data loaded
     } catch (e) {
       // print("
-285. ");
+308. ");
     }
   }
 
@@ -17761,7 +18927,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     setState(() => _isLoadingMore = true);
     debugPrint("
-286. ");
+309. ");
     }
   }
 
@@ -17772,7 +18938,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       // Try to load existing progress
       debugPrint("
-287. ");
+310. ");
     }
   }
 
@@ -17785,7 +18951,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-288. ");
+311. ");
     }
   }
 
@@ -17815,7 +18981,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-289. ");
+312. ");
     }
   }
 
@@ -17827,7 +18993,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       // debugPrint("
-290. ");
+313. ");
     }
   }
 
@@ -17876,7 +19042,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // User location marker
       Marker(
         markerId: const MarkerId("
-291. ");
+314. ");
     }
   }
 
@@ -17958,7 +19124,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context,
       ArtWalkRoutes.experience,
       arguments: {"
-292. ");
+315. ");
     }
   }
 
@@ -17973,12 +19139,12 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       markers.add(
         Marker(
           markerId: const MarkerId("
-293. ");
+316. ");
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
         debugPrint("
-294. ");
+317. ");
     } finally {
       if (mounted) {
         setState(() => _isLoadingMore = false);
@@ -17988,7 +19154,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
   void _applyFilters() {
     debugPrint("
-295. ");
+318. ");
     } finally {
       if (mounted) {
         setState(() {
@@ -18007,7 +19173,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final doc =
           await _firestore.collection("
-296. ");
+319. ");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -18029,13 +19195,21 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ]);
     } catch (e) {
       // debugPrint("
-297. "+${_selectedArtPieces.length - 3}"
-298. "+${widget.celebrationData.newAchievements.length - 3} more"
-299. "+\$${modifier.toStringAsFixed(2)}"
-300. "+\$${transaction.amount.toStringAsFixed(2)}"
-301. ",
+320. ");
+  }
+
+  Future<void> _purchaseContent() async {
+    // TODO: Implement purchase flow
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("
+321. "+${_selectedArtPieces.length - 3}"
+322. "+${widget.celebrationData.newAchievements.length - 3} more"
+323. "+1.2K"
+324. "+\$${modifier.toStringAsFixed(2)}"
+325. "+\$${transaction.amount.toStringAsFixed(2)}"
+326. ",
                                       hintText:"
-302. ",
+327. ",
                                     ),
                                     backgroundColor: theme.colorScheme.error,
                                   ),
@@ -18059,7 +19233,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     if (difference.inMinutes < 1) {
       return"
-303. ",
+328. ",
                                     style: TextStyle(
                                       color: Colors.blue[700],
                                       fontSize: 14,
@@ -18080,7 +19254,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                               onPressed: _startNavigation,
                               icon: const Icon(Icons.navigation),
                               label: const Text("
-304. ",
+329. ",
                                   ),
                                   backgroundColor: theme.colorScheme.error,
                                 ),
@@ -18119,12 +19293,12 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ListTile(
           leading: const Icon(Icons.block),
           title: Text("
-305. ",
+330. ",
                             );
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text("
-306. ",
+331. ",
                         style: const TextStyle(
                           color: ArtbeatColors.textSecondary,
                           fontSize: 14,
@@ -18144,7 +19318,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         child: InkWell(
                           onTap: () {
                             final userId = artist["
-307. ",
+332. ",
                       hintStyle:
                           TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                       prefixIcon: Icon(Icons.search_rounded,
@@ -18174,7 +19348,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     child: Row(
                       children: [
                         _buildContentFilterChip("
-308. ",
+333. ",
                       prefixIcon: Icon(Icons.search),
                     ),
                     onChanged: (value) {
@@ -18185,7 +19359,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text("
-309. ",
+334. ",
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
@@ -18197,7 +19371,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     Navigator.of(context).pop();
                   },
                   child: const Text("
-310. ",
+335. ",
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
@@ -18207,25 +19381,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                   onPressed: () {
                     setState(() {
                       _searchQuery ="
-311. ",
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+336. ",
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _loadData();
-                  });
-                },
-                child: Text("
-312. ",
-              isLessThanOrEqualTo:"
-313. ",
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -18269,7 +19432,23 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       ),
                       const SizedBox(width: 12),
                       const Text("
-314. ",
+337. ",
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _loadData();
+                  });
+                },
+                child: Text("
+338. ",
+              email:"
+339. ",
+              isLessThanOrEqualTo:"
+340. ",
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 24),
@@ -18284,7 +19463,23 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("
-315. ",
+341. ",
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundImage: _artist?.profileImageUrl != null
+                      ? NetworkImage(_artist!.profileImageUrl!)
+                      : null,
+                  child: _artist?.profileImageUrl == null
+                      ? Text((_artist?.displayName ??
+                              _fallbackArtistName ??"
+342. ",
             ),
             backgroundColor: _getGroupColor(),
           ),
@@ -18294,7 +19489,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       }
     } catch (e) {
       AppLogger.error("
-316. ",
+343. ",
             style: const TextStyle(
               fontSize: 14,
               color: ArtbeatColors.textSecondary,
@@ -18309,7 +19504,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             label: Text(
               _selectedImages.isEmpty
                   ?"
-317. ",
+344. ",
           );
         }
       }
@@ -18321,20 +19516,20 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           artWithDistance.map((item) => item.$1).toList();
 
       debugPrint("
-318. ",
+345. ",
           Icons.list_alt,
           () => _showLogsDialog(),
         ),
         _buildActionTile("
-319. ",
+346. ",
           _settings!.errorLoggingEnabled,
           (value) => _updateSetting(value, (s) => s.errorLoggingEnabled,
               (s, v) => s.copyWith(errorLoggingEnabled: v)),
         ),
         _buildSwitchSetting("
-320. ",
+347. ",
           description: (data["
-321. ",
+348. ",
           style: TextStyle(
             fontSize: 10,
             color: isHealthy ? Colors.green : Colors.red,
@@ -18366,7 +19561,25 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             controller: _userSearchController,
             decoration: InputDecoration(
               hintText:"
-322. ",
+349. ",
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.share),
+          onPressed: _shareContent,
+        ),
+        if (_isOwner)
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => Navigator.pushNamed(
+              context,"
+350. ",
         );
       }
 
@@ -18377,7 +19590,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       // Categorize achievements
       final Map<String, List<art_walk_model.AchievementModel>> categorized = {"
-323. ",
+351. ",
         displayName: _nameController.text.trim(),
         username: _usernameController.text.trim(),
         bio: _bioController.text.trim(),
@@ -18393,7 +19606,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           );
         } catch (e) {
           // debugPrint("
-324. ",
+352. ",
         subject: title,
       ),
     );
@@ -18403,7 +19616,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     Navigator.of(
       context,
     ).pushNamed("
-325. ",
+353. ",
       );
 
       await _loadCommissionDetails();
@@ -18412,7 +19625,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("
-326. ",
+354. ",
       );
       return 0;
     }
@@ -18426,7 +19639,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         : 0;
     if (intCount >= 1000000) {
       return"
-327. ",
+355. ",
       );
     }
 
@@ -18441,7 +19654,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         final bytes = utf8.encode(csvContent);
         final base64Data = base64Encode(bytes);
         final dataUrl ="
-328. ",
+356. ",
     );
     _selectedStatus = widget.coupon.status;
     _expiresAt = widget.coupon.expiresAt;
@@ -18461,10 +19674,10 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     return AlertDialog(
       title: const Text("
-329. ", capture.title ??"
-330. ", commission.title),
+357. ", capture.title ??"
+358. ", commission.title),
               _buildDetailRow("
-331. ", value),
+359. ", value),
                                   ),
                                 ),
                                 IconButton(
@@ -18479,10 +19692,75 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                             const SizedBox(height: 8),
                             TextFormField(
                               initialValue: milestone["
-332. "- visited ${completedProgress.visitedArt.length} art pieces!"
-333. "-\$${_discountAmount.toStringAsFixed(2)}"
-334. "... and ${_lastResult!.errors.length - 3} more errors"
-335. ".tr(args: [e.toString()]))),
+360. "- visited ${completedProgress.visitedArt.length} art pieces!"
+361. "-\$${_discountAmount.toStringAsFixed(2)}"
+362. "... and ${_lastResult!.errors.length - 3} more errors"
+363. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _generateThumbnail() async {
+    // Simplified thumbnail generation - in real implementation would extract frame
+    // For now, we"
+364. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processAudioFile() async {
+    if (_audioFile == null) return;
+
+    try {
+      setState(() => _isGeneratingWaveform = true);
+
+      // Extract basic metadata
+      final fileSize = await _audioFile!.length();
+      final fileName = _audioFile!.path.split("
+365. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processContentFile() async {
+    if (_contentFile == null) return;
+
+    try {
+      final String content = await _contentFile!.readAsString();
+      await _validateAndProcessContent(content);
+    } catch (e) {
+      AppLogger.error("
+366. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _processVideoFile() async {
+    if (_videoFile == null) return;
+
+    try {
+      setState(() => _isGeneratingThumbnail = true);
+
+      // Extract basic metadata
+      final fileSize = await _videoFile!.length();
+      final fileName = _videoFile!.path.split("
+367. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadAudioContent() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_coverImageFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("
+368. ".tr(args: [e.toString()]))),
         );
       }
     }
@@ -18494,13 +19772,96 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (_coverImageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("
-336. ".tr(args: [e.toString()]))),
+369. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadVideoContent() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_videoFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("
+370. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  Future<void> _validateAndProcessContent(String content) async {
+    // Basic validation
+    if (content.trim().isEmpty) {
+      setState(() => _isValidContent = false);
+      return;
+    }
+
+    // Calculate word count and reading time
+    final words = content.split(RegExp(r"
+371. ".tr(args: [e.toString()]))),
+        );
+      }
+    }
+  }
+
+  bool _isValidAudioFormat(String extension) {
+    const validFormats = ["
+372. ".tr(args: [e.toString()]))),
         );
       }
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
       }
+    }
+  }
+
+  void _onStepContinue() {
+    if (_currentStepIndex < 3) {
+      setState(() {
+        _currentStepIndex++;
+      });
+    } else {
+      _uploadVideoContent();
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStepIndex > 0) {
+      setState(() {
+        _currentStepIndex--;
+      });
+    }
+  }
+
+  void _onStepTapped(int index) {
+    setState(() {
+      _currentStepIndex = index;
+    });
+  }
+
+  StepState _getStepState(int stepIndex) {
+    if (stepIndex < _currentStepIndex) return StepState.complete;
+    if (stepIndex == _currentStepIndex) return StepState.editing;
+    return StepState.disabled;
+  }
+
+  Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Row(
+        children: [
+          if (_currentStepIndex > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: details.onStepCancel,
+                child: Text("
+373. ".tr(args: [e.toString()]))),
+        );
+      }
+    } finally {
+      if (mounted) {}
     }
   }
 
@@ -18511,64 +19872,82 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       child: Scaffold(
         appBar: EnhancedUniversalHeader(
           title:"
-337. ".tr(namedArgs: {"
-338. "/admin/dashboard"
-339. "/art-walk/instant-discovery"
-340. "/artist/activity"
-341. "/artist/browse"
-342. "/artist/payout-accounts"
-343. "/artist/profile"
-344. "/artwork/detail"
-345. "/artwork/purchase"
-346. "/capture/detail"
-347. "/community/artists"
-348. "/community/create"
-349. "/create-post"
-350. "/events/all"
-351. "/events/detail"
-352. "/login"
-353. "/messaging/chat"
-354. "/messaging/chat-info"
-355. "/month"
-356. "1 hour ago"
-357. "1. Acceptance of Terms"
-358. "1. Introduction"
-359. "1.2K views"
-360. "10. Changes to This Policy"
-361. "10. Location-Based Features"
-362. "11. Contact Us"
-363. "11. Privacy & Data Use"
-364. "12. Moderation & Enforcement"
-365. "13. Prohibited Uses"
-366. "14. International Use"
-367. "15. Limitation of Liability"
-368. "16. Indemnification"
-369. "17. Termination"
-370. "18. Governing Law & Dispute Resolution"
-371. "19. Changes to Terms"
-372. "2. Eligibility"
-373. "2. Information We Collect"
-374. "20. Contact"
-375. "2024-12-${(index + 1).toString().padLeft(2,"
-376. "2FA Enabled"
-377. "3. Accounts & Registration"
-378. "3. How We Use Your Information"
-379. "30 minutes ago"
-380. "30d"
-381. "4. Sharing of Information"
-382. "4. User Types & Roles"
-383. "5. Data Retention"
-384. "5. User Content & Intellectual Property"
-385. "6. International Data Transfers"
-386. "6. Payments & Subscriptions"
-387. "7. Advertising & Sponsorship"
-388. "7. Your Rights"
-389. "8. Events & Ticketing"
-390. "8. Security"
-391. "85% engagement"
-392. "9. Children\"
-393. "9. Messaging & Community Conduct"
-394. ":
+374. ".tr(args: [e.toString()]))),
+        );
+      }
+    } finally {
+      if (mounted) {}
+    }
+  }
+
+  Future<void> _createChaptersForArtwork(String artworkId) async {
+    if (_chapters.isEmpty) return;
+
+    for (final chapter in _chapters) {
+      await _chapterService.createChapter(
+        artworkId: artworkId,
+        chapterNumber: chapter["
+375. ".tr(namedArgs: {"
+376. "/admin/dashboard"
+377. "/admin/reports"
+378. "/art-walk/instant-discovery"
+379. "/artist/activity"
+380. "/artist/browse"
+381. "/artist/payout-accounts"
+382. "/artist/profile"
+383. "/artwork/detail"
+384. "/artwork/purchase"
+385. "/artwork/upload"
+386. "/capture/detail"
+387. "/community/artists"
+388. "/community/create"
+389. "/create-post"
+390. "/events/all"
+391. "/events/detail"
+392. "/login"
+393. "/messaging/chat"
+394. "/messaging/chat-info"
+395. "/month"
+396. "1 hour ago"
+397. "1. Acceptance of Terms"
+398. "1. Introduction"
+399. "1.2K views"
+400. "10. Changes to This Policy"
+401. "10. Location-Based Features"
+402. "11. Contact Us"
+403. "11. Privacy & Data Use"
+404. "12. Moderation & Enforcement"
+405. "13. Prohibited Uses"
+406. "14. International Use"
+407. "15. Limitation of Liability"
+408. "16. Indemnification"
+409. "17. Termination"
+410. "18. Governing Law & Dispute Resolution"
+411. "19. Changes to Terms"
+412. "2. Eligibility"
+413. "2. Information We Collect"
+414. "20. Contact"
+415. "2024-12-${(index + 1).toString().padLeft(2,"
+416. "2FA Enabled"
+417. "2h ago"
+418. "3. Accounts & Registration"
+419. "3. How We Use Your Information"
+420. "30 minutes ago"
+421. "30d"
+422. "4. Sharing of Information"
+423. "4. User Types & Roles"
+424. "5. Data Retention"
+425. "5. User Content & Intellectual Property"
+426. "6. International Data Transfers"
+427. "6. Payments & Subscriptions"
+428. "7. Advertising & Sponsorship"
+429. "7. Your Rights"
+430. "8. Events & Ticketing"
+431. "8. Security"
+432. "85% engagement"
+433. "9. Children\"
+434. "9. Messaging & Community Conduct"
+435. ":
         color = Colors.red;
         break;
       default:
@@ -18602,7 +19981,8 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ),
       child: const Center(
         child: Text("
-395. ": _artwork!.title})),
+436. ": _albumTitleController.text,"
+437. ": _artwork!.title})),
             backgroundColor: ArtbeatColors.primaryGreen,
           ),
         );
@@ -18618,17 +19998,17 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("
-396. ": _artwork!.title}),
+438. ": _artwork!.title}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text("
-397. ": _event?.title ??"
-398. ": _getArtworkTitle(),"
-399. ": _titleController.text,"
-400. ": art.title,"
-401. ": artwork.title})),
+439. ": _event?.title ??"
+440. ": _getArtworkTitle(),"
+441. ": _titleController.text,"
+442. ": art.title,"
+443. ": artwork.title})),
             backgroundColor: core.ArtbeatColors.primaryGreen,
           ),
         );
@@ -18639,13 +20019,13 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("
-402. ": artwork.title})),
+444. ": artwork.title})),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("
-403. ": data["
-404. ": e.toString()}))));
+445. ": data["
+446. ": e.toString()}))));
       }
     }
   }
@@ -18656,7 +20036,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       _searchResults = [];
       _hasSearched = false;
       _selectedCategory ="
-405. ": e.toString()}))),
+447. ": e.toString()}))),
         );
         setState(() {
           _isLoading = false;
@@ -18676,12 +20056,25 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
     final String artistName =
         _artist?.displayName ?? _fallbackArtistName ??"
-406. ": e.toString()}))),
+448. ": e.toString()}))),
         );
       }
     }
   }
 
+  // Check if user can upload more artwork based on subscription
+  Future<void> _checkUploadLimit() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Get user"
+449. ": e.toString()}))),
+        );
+      }
+    }
+  }
 
   Future<void> _pickAdditionalImages() async {
     final result = await FilePicker.platform.pickFiles(
@@ -18755,21 +20148,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   Future<String> _uploadFile(File file, String folder) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception("
-407. ": e.toString()}))),
-        );
-      }
-    }
-  }
-
-  // Check if user can upload more artwork based on subscription
-  Future<void> _checkUploadLimit() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Get user"
-408. ": e.toString()}))),
+450. ": e.toString()}))),
         );
       }
     } finally {
@@ -18798,8 +20177,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("
-409. ": e.toString()}))),
+          SnackBar(
+              content: Text("
+451. ": e.toString()}))),
         );
       }
     } finally {
@@ -18808,6 +20188,18 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           _isSaving = false;
         });
       }
+    }
+  }
+
+  // Upload image to Firebase Storage using EnhancedStorageService
+  Future<String> _uploadImage(File imageFile) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception("
+452. ": e.toString()}))),
+        );
+      }
+    } finally {
+      if (mounted) {}
     }
   }
 
@@ -18828,23 +20220,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     if (hashtag.isNotEmpty && !_hashtags.contains(hashtag)) {
       setState(() {
         _hashtags.add(hashtag.startsWith("
-410. ": e.toString()}))),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
-    }
-  }
-
-  // Upload image to Firebase Storage using EnhancedStorageService
-  Future<String> _uploadImage(File imageFile) async {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) throw Exception("
-411. ": e.toString()}))),
+453. ": e.toString()}))),
       );
     }
   }
@@ -18877,7 +20253,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text("
-412. ": e.toString()}))),
+454. ": e.toString()}))),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -18901,7 +20277,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("
-413. ": e.toString()}))),
+455. ": e.toString()}))),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -18915,7 +20291,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("
-414. ": e.toString()})),
+456. ": e.toString()})),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -18931,7 +20307,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
             title:"
-415. ": e.toString()})),
+457. ": e.toString()})),
             backgroundColor: Colors.red,
           ),
         );
@@ -18955,7 +20331,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-416. ": e.toString()})),
+458. ": e.toString()})),
             backgroundColor: Colors.red,
           ),
         );
@@ -18969,7 +20345,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       currentIndex: 0,
       appBar: AppBar(
         title: Text("
-417. ": e.toString()})),
+459. ": e.toString()})),
             backgroundColor: Colors.red,
           ),
         );
@@ -18980,7 +20356,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   String _getPriorityLevel(String reason) {
     switch (reason.toLowerCase()) {
       case"
-418. ": e.toString()})),
+460. ": e.toString()})),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -19007,7 +20383,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             : _followers.isEmpty
             ? Center(
                 child: Text("
-419. ": e.toString()})),
+461. ": e.toString()})),
             backgroundColor: core.ArtbeatColors.error,
           ),
         );
@@ -19022,7 +20398,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           -1,
       appBar: core.EnhancedUniversalHeader(
         title:"
-420. ": e.toString()})),
+462. ": e.toString()})),
           ),
         );
 
@@ -19039,7 +20415,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
       if (widget.userId.isEmpty) {
         // debugPrint("
-421. ": e.toString()})),
+463. ": e.toString()})),
           ),
         );
         setState(() {
@@ -19060,12 +20436,12 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         throw Exception("
-422. ": e.toString()})),
+464. ": e.toString()})),
           ),
         );
       }
       AppLogger.error("
-423. ": e.toString()})), backgroundColor: Colors.red),
+465. ": e.toString()})), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -19084,7 +20460,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text("
-424. ": e.toString()});
+466. ": e.toString()});
           _isLoading = false;
         });
       }
@@ -19097,7 +20473,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
   void _navigateToUpload() {
     Navigator.pushNamed(context,"
-425. ": e.toString()};
+467. ": e.toString()};
     }
   }
 
@@ -19109,7 +20485,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final artworksQuery = await _firestore
           .collection("
-426. ": e.toString()};
+468. ": e.toString()};
     }
   }
 
@@ -19121,7 +20497,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final capturesQuery = await _firestore
           .collection("
-427. ": e.toString()};
+469. ": e.toString()};
     }
   }
 
@@ -19133,7 +20509,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final postsQuery = await _firestore
           .collection("
-428. ": e.toString()};
+470. ": e.toString()};
     }
   }
 
@@ -19145,7 +20521,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       final engagementQuery = await _firestore
           .collection("
-429. ": e.toString()};
+471. ": e.toString()};
     }
   }
 
@@ -19156,7 +20532,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   ) async {
     try {
       final profileDoc = await _firestore.collection("
-430. ": e.toString()};
+472. ": e.toString()};
     }
   }
 
@@ -19170,7 +20546,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     // final engagement = data[5];
 
     return {"
-431. ": error.toString()})),
+473. ": error.toString()})),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
           ),
@@ -19196,15 +20572,15 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text("
-432. ": event.title,"
-433. ": null,
+474. ": event.title,"
+475. ": null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
                   labelText:"
-434. ": null,
+476. ": null,
           ),
         ),
         const SizedBox(height: 12),
@@ -19217,17 +20593,17 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             controller: _descriptionController,
             decoration: const InputDecoration(
               labelText:"
-435. ": title,"
-436. ": widget.artWalk.title,"
-437. ": widget.celebrationData.walk.title,"
-438. ";
+477. ": title,"
+478. ": widget.artWalk.title,"
+479. ": widget.celebrationData.walk.title,"
+480. ";
 
     if (title.contains("
-439. ";
+481. ";
 
     switch (type) {
       case"
-440. ";
+482. ";
 
   @override
   void initState() {
@@ -19256,13 +20632,13 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         if (mounted) {
           setState(() {
             _error ="
-441. ";
+483. ";
 
   String? _selectedArtType;
   String? _selectedArtMedium;
 
   // Static lists to ensure they"
-442. ";
+484. ";
 
   void _handleUserTap(String userId) async {
     try {
@@ -19282,7 +20658,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       );
     } catch (e) {
       AppLogger.error("
-443. ";
+485. ";
                           }
                           return null;
                         },
@@ -19293,7 +20669,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText:"
-444. ";
+486. ";
                         }
                         return null;
                       },
@@ -19305,7 +20681,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       controller: _artistController,
                       decoration: const InputDecoration(
                         labelText:"
-445. ";
+487. ";
                       }
                       return null;
                     },
@@ -19318,7 +20694,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     maxLines: 4,
                     decoration: const InputDecoration(
                       labelText:"
-446. ";
+488. ";
                   }
                   return null;
                 },
@@ -19334,7 +20710,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("
-447. ";
+489. ";
                   }
                   return null;
                 },
@@ -19344,7 +20720,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
               // Description
               Text("
-448. ";
+490. ";
                   }
                   return null;
                 },
@@ -19356,7 +20732,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                 controller: _artistController,
                 decoration: const InputDecoration(
                   labelText:"
-449. ";
+491. ";
             }
             return null;
           },
@@ -19366,10 +20742,10 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           controller: _descriptionController,
           decoration: const InputDecoration(
             labelText:"
-450. ";
+492. ";
         _estimatedDurationController.text =
             _artWalk!.estimatedDuration?.toString() ??"
-451. ";
+493. ";
         _isLoading = false;
       });
     }
@@ -19388,9 +20764,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       // Check if user has permission to edit
       if (eventModel.artistId != _auth.currentUser?.uid) {
         throw Exception("
-452. ";
+494. ";
         _materialsController.text = _artwork!.materials ??"
-453. ";
+495. ";
         });
       }
     }
@@ -19401,7 +20777,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: core.EnhancedUniversalHeader(
         title:"
-454. ";
+496. ";
       });
     }
   }
@@ -19417,7 +20793,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
         throw Exception("
-455. ";
+497. ";
     _loadCapture();
   }
 
@@ -19433,13 +20809,13 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       if (capture == null) {
         setState(() {
           _error ="
-456. ";
+498. ";
     _zipCodeController.text = artWalk.zipCode ??"
-457. ";
+499. ";
     final String description = data["
-458. ";
+500. ";
     if (progress < 70) return"
-459. ";
+501. ";
     }
   }
 
@@ -19450,3428 +20826,3540 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     // Default fallback
     switch (widget.postType) {
       case"
-460. ";
+502. ";
   // ignore: unused_field
   String _expiryDate ="
-461. ";
+503. ";
   List<String> _styles = [];
   List<String> _tags = [];
 
   // Available options
   final List<String> _availableMediums = ["
-462. ";
+504. ";
   List<String> _styles = [];
   List<String> _tags = [];
 
   // Available options (would typically come from backend)
   final List<String> _availableMediums = ["
-463. ";
+505. ";
   List<String> _styles = [];
   List<String> _tags = [];
   List<String> _hashtags = [];
   List<String> _keywords = [];
 
-  // Available options
-  final List<String> _availableMediums = ["
-464. ";
+  // New rich metadata
+  String _dimensionUnit ="
+506. ";
   bool _showCapturesSlider = false;
 
   // Map data
   final Set<Marker> _markers = <Marker>{};
   List<CaptureModel> _nearbyCaptures = [];
   String _artFilter ="
-465. "? This action cannot be undone."
-466. "@$username"
-467. "@${comment.userName}"
-468. "@${user.username!}"
-469. "@${user.username}"
-470. "@yourhandle"
-471. "A comprehensive feedback collection and management system designed to improve ARTbeat through user insights and bug reports."
-472. "A payment method is required to subscribe. Please add one to continue."
-473. "A verification code has been sent to $phoneNumber"
-474. "A vibrant abstract painting inspired by the colors of a summer sunset."
-475. "A vibrant digital artwork exploring the intersection of technology and creativity."
-476. "A1B2-C3D4-E5F6\nG7H8-I9J0-K1L2\nM3N4-O5P6-Q7R8"
-477. "AI Recommended"
-478. "API Services"
-479. "ARTbeat Community"
-480. "ARTbeat Dashboard"
-481. "ARTbeat Feedback System"
-482. "ARTbeat Privacy Policy\n"
-483. "ARTbeat Social Engagement System"
-484. "ARTbeat Support Request"
-485. "ARTbeat Terms of Service"
-486. "ARTbeat Terms of Service\n"
-487. "ARTbeat User"
-488. "ARTbeat complies with GDPR (EU), CCPA (California), and other applicable data protection laws.\n\nUsers may request data export or deletion via the Privacy Settings Screen.\n\nData may be transferred internationally; by using ARTbeat, you consent to such transfers."
-489. "ARTbeat is provided"
-490. "ARTbeat may update these Terms from time to time. Notice will be provided via app notification or email. Continued use of the Platform constitutes acceptance of changes."
-491. "ARTbeat reserves the right to remove content, suspend accounts, or ban users at its discretion.\n\nUsers may appeal moderation actions by contacting support@localartbeat.app.\n\nRepeated violations may result in permanent account termination."
-492. "About Migration"
-493. "About This Event"
-494. "About You"
-495. "Absolutely stunning work!"
-496. "Abstract"
-497. "Abstract Painting Class"
-498. "Abstract Sculpture"
-499. "Accept Commissions"
-500. "Accept Quote"
-501. "Acceptance Rate"
-502. "Accepting Commissions"
-503. "Access Control"
-504. "Access denied. Admin privileges required."
-505. "Accessible Only"
-506. "Account Created"
-507. "Account Holder Name"
-508. "Account Information"
-509. "Account Number"
-510. "Account Type"
-511. "Account deleted successfully"
-512. "Account editing functionality coming soon."
-513. "Account verification is pending. You cannot receive payouts until verification is complete."
-514. "Achievement"
-515. "Achievement Progress"
-516. "Achievement Unlocked!"
-517. "Achievements"
-518. "Achievements are awarded in three tiers:"
-519. "Acrylic Paint"
-520. "Acrylic Painting"
-521. "Acrylic painting capturing the power and beauty of ocean waves."
-522. "Active"
-523. "Active (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted, CommissionStatus.accepted, CommissionStatus.inProgress]).length})"
-524. "Active Ads (${activeAds.length})"
-525. "Active Threats"
-526. "Active User"
-527. "Active Users"
-528. "Activity"
-529. "Activity & Progress"
-530. "Activity Summary"
-531. "Activity occurred"
-532. "Activity: ${activity.activityType}"
-533. "Ad Campaign Management"
-534. "Ad Content"
-535. "Ad Management"
-536. "Ad Management Coming Soon"
-537. "Ad Performance Analytics"
-538. "Ad Title"
-539. "Ad campaign purchase would be initiated here"
-540. "Ad payment completed successfully"
-541. "Add"
-542. "Add $label"
-543. "Add Account"
-544. "Add Cover Image"
-545. "Add Location"
-546. "Add Milestone"
-547. "Add More"
-548. "Add Payment Method"
-549. "Add Payout Account"
-550. "Add Portfolio Image"
-551. "Add Post"
-552. "Add a bank account or PayPal account to receive your earnings."
-553. "Add a comment..."
-554. "Add a credit card or other payment method to manage your subscription"
-555. "Add a tag"
-556. "Add any additional details or notes..."
-557. "Add content and help grow the community"
-558. "Add new artwork to your portfolio"
-559. "Add portfolio images"
-560. "Add some art pieces to create your path 🗺️"
-561. "Add tag"
-562. "Add tags"
-563. "Add tags (separate with commas)"
-564. "Add tags to help others find your studio"
-565. "Add test notification"
-566. "Add to Art Walk"
-567. "Add up to 10 images of your artwork:"
-568. "Add your artwork"
-569. "Added on ${_formatDate(createdAt)}"
-570. "Additional Details"
-571. "Additional Fields"
-572. "Additional Requirements"
-573. "Additional charges for different types and sizes"
-574. "Admin"
-575. "Admin Access Control"
-576. "Admin Actions"
-577. "Admin Command Center"
-578. "Admin Control Center"
-579. "Admin Dashboard"
-580. "Admin Features"
-581. "Admin Flags"
-582. "Admin Information"
-583. "Admin Interface"
-584. "Admin Notes"
-585. "Admin Settings"
-586. "Admin authentication required"
-587. "Admin processed refund"
-588. "AdminMessagingService not initialized"
-589. "Ads"
-590. "Ads must comply with community and legal standards.\n\nARTbeat reserves the right to reject or remove ads at its discretion.\n\nAd performance analytics are aggregated and anonymized."
-591. "Advanced"
-592. "Advanced Filters"
-593. "Advanced Pricing"
-594. "Advanced Search & Filters"
-595. "Advanced achievements for true art enthusiasts"
-596. "Advanced analytics"
-597. "Advanced features for professional artists"
-598. "Advanced insights"
-599. "Advanced reporting"
-600. "Advanced security"
-601. "Advertisement Packages"
-602. "Advertisement transactions require a valid adType"
-603. "Advertisement transactions require a valid duration"
-604. "Advertisement: ${widget.orderDetails.metadata["
-605. "Advertisements"
-606. "After"
-607. "Alerts"
-608. "Alex Johnson"
-609. "Alice Johnson"
-610. "All"
-611. "All (${_allCommissions.length})"
-612. "All Artists"
-613. "All Content"
-614. "All Events"
-615. "All Feedback"
-616. "All Quests"
-617. "All caught up!"
-618. "All dates"
-619. "All events have been reviewed."
-620. "All events query returned ${allEventsQuery.docs.length} documents"
-621. "All gifts are non-refundable"
-622. "All notifications marked as read"
-623. "All transactions are processed securely through Apple Pay / Google Play"
-624. "Allow commercial use of artwork"
-625. "Allow others to see and register for this event"
-626. "Allow others to see your email address"
-627. "Allow others to see your phone number"
-628. "Almost Full"
-629. "Almost there! Finalize your route 🎯"
-630. "Already signed in: ${user.uid}"
-631. "Amazing Street Art"
-632. "Amazing art scene around you"
-633. "Amazing artwork on ARTbeat"
-634. "Amazing collaboration with @$userId on this piece!"
-635. "Amount"
-636. "Amount (USD)"
-637. "Amount (\$)"
-638. "Amount Range"
-639. "Amount exceeds available balance"
-640. "Amount must be greater than 0"
-641. "Amount: \$${milestone.amount.toStringAsFixed(2)}"
-642. "An error occurred"
-643. "An unexpected error occurred. Please try again."
-644. "An unexpected error occurred: $e"
-645. "Analytics"
-646. "Analytics & Insights"
-647. "Analytics Dashboard"
-648. "Analytics data not available"
-649. "Announce upcoming events"
-650. "Anonymous User"
-651. "Anonymous Walker"
-652. "Anonymous posts fix completed! Check logs for details."
-653. "Any additional details, references, or special requests..."
-654. "Anyone can find and join this studio"
-655. "App Check"
-656. "App Description"
-657. "App Version"
-658. "Apple Sign-In configuration in progress"
-659. "Apple Sign-In failed: $errorMessage"
-660. "Apple Sign-In is not available on this device."
-661. "Apple Sign-In was cancelled."
-662. "Apply"
-663. "Apply Filters"
-664. "Appreciation"
-665. "Approval Status Tracking"
-666. "Approve"
-667. "Approve Selected"
-668. "Architecture"
-669. "Are you an artist?"
-670. "Are you sure you want to $action? This action cannot be undone."
-671. "Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered."
-672. "Are you sure you want to abandon this walk? Your progress will be lost."
-673. "Are you sure you want to cancel the invitation to ${invitation.artistName}?"
-674. "Are you sure you want to cancel this commission? This action cannot be undone."
-675. "Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?"
-676. "Are you sure you want to clear all chat history? This action cannot be undone."
-677. "Are you sure you want to clear the application cache?"
-678. "Are you sure you want to create a backup of the database?"
-679. "Are you sure you want to delete"
-680. "Are you sure you want to delete the account"
-681. "Are you sure you want to delete the coupon"
-682. "Are you sure you want to delete this ${content.type}?"
-683. "Are you sure you want to delete this art walk? This action cannot be undone."
-684. "Are you sure you want to delete this feedback? This action cannot be undone."
-685. "Are you sure you want to delete this payout account? This action cannot be undone."
-686. "Are you sure you want to delete this post?"
-687. "Are you sure you want to delete this studio? This action cannot be undone."
-688. "Are you sure you want to permanently delete"
-689. "Are you sure you want to permanently delete this capture? This action cannot be undone."
-690. "Are you sure you want to process refunds for all selected transactions?"
-691. "Are you sure you want to remove this from your favorites?"
-692. "Are you sure you want to remove this user\"
-693. "Are you sure you want to reset all settings to default values?"
-694. "Are you sure you want to reset all user preferences to default?"
-695. "Are you sure you want to unblock ${user.displayName}? They will be able to message you again."
-696. "Art Capture"
-697. "Art Collector"
-698. "Art Collector - View 10 different art pieces"
-699. "Art Commentator - Leave 10 comments on art walks"
-700. "Art Community"
-701. "Art Curator - Create 3 art walks"
-702. "Art Discovery"
-703. "Art Discussion"
-704. "Art Enthusiast"
-705. "Art Exhibition"
-706. "Art Expert - View 50 different art pieces"
-707. "Art Explorer"
-708. "Art Gallery"
-709. "Art Information"
-710. "Art Legend (Leonardo da Vinci)"
-711. "Art Lovers Group"
-712. "Art Medium"
-713. "Art Mediums"
-714. "Art Styles"
-715. "Art Type"
-716. "Art Walk"
-717. "Art Walk Adventure"
-718. "Art Walk Analytics"
-719. "Art Walk Details"
-720. "Art Walk Experience"
-721. "Art Walk Influencer"
-722. "Art Walk Map"
-723. "Art Walk Map Preview"
-724. "Art Walk Not Found"
-725. "Art Walks"
-726. "Art enthusiast and creative explorer"
-727. "Art events and spaces near you"
-728. "Art exhibitions, workshops, and community events"
-729. "Art hotspot! $_nearbyArtCount artworks nearby!"
-730. "Art hotspots loading..."
-731. "Art in this Walk"
-732. "Art walk not found"
-733. "Art walks in your area"
-734. "Art-related: 78%"
-735. "ArtWalkCelebrationScreen"
-736. "ArtWalkEditScreen"
-737. "Artist"
-738. "Artist (optional)"
-739. "Artist Approved Ads"
-740. "Artist Bio"
-741. "Artist Community"
-742. "Artist Dashboard"
-743. "Artist Discovery"
-744. "Artist Features"
-745. "Artist Feed"
-746. "Artist John Doe followed you"
-747. "Artist Management Hub"
-748. "Artist Marketing"
-749. "Artist Onboarding"
-750. "Artist Performance"
-751. "Artist Post"
-752. "Artist Profile"
-753. "Artist Profile Engagement"
-754. "Artist Tools & Analytics"
-755. "Artist Update"
-756. "Artist and creator"
-757. "Artist selection will be implemented soon. For now, this feature requires selecting a specific artist."
-758. "Artist: ${capture.artistName}"
-759. "Artist: ${commission.artistName}"
-760. "ArtistCommunityFeedScreen"
-761. "ArtistOnboardingScreen"
-762. "Artists"
-763. "Artists Gallery"
-764. "Artists Nearby"
-765. "Artists Online"
-766. "Artists and galleries may create public or private events.\n\nTickets (free, paid, VIP) are sold through Stripe.\n\nRefunds depend on the event\"
-767. "Artists are working on amazing pieces. Check back soon!"
-768. "Artists near you"
-769. "Artists will appear here as they join the community"
-770. "Artwork"
-771. "Artwork Analytics"
-772. "Artwork Count"
-773. "Artwork Details"
-774. "Artwork Engagement"
-775. "Artwork Management"
-776. "Artwork Nearby"
-777. "Artwork Post"
-778. "Artwork Sales"
-779. "Artwork Sales Revenue"
-780. "Artwork Selection"
-781. "Artwork Sold"
-782. "Artwork Views"
-783. "Artwork deleted successfully"
-784. "Artwork for commercial use"
-785. "Artwork not found"
-786. "Artwork updated successfully"
-787. "Artwork views in period"
-788. "Artwork • ${_formatDuration((item["
-789. "Artworks"
-790. "Artworks Sold"
-791. "Artworks sold in period"
-792. "Attending Event"
-793. "Audio file selected"
-794. "Audio file too large (max 10MB)"
-795. "Authentication"
-796. "Authentication failed: ${e.message}"
-797. "Auto-approve Content"
-798. "Auto-renew: ${_subscription!.autoRenew ?"
-799. "Automatic device & app version capture"
-800. "Available Ad Packages"
-801. "Available Ad Packages: ${PurchaseHelper.getAvailableAdPackages().length}"
-802. "Available Art Pieces (${_availableArtPieces.length})"
-803. "Available Balance"
-804. "Available Gifts"
-805. "Available Gifts: ${PurchaseHelper.getAvailableGifts().length}"
-806. "Available Subscription Tiers"
-807. "Available Types: ${_artistSettings!.availableTypes.map((t) => t.displayName).join("
-808. "Available balance"
-809. "Available for sale"
-810. "Available with Artist Pro Plan"
-811. "Avant-Garde Explorer (Zarina Hashmi)"
-812. "Average Commission"
-813. "Average Commission Value"
-814. "Average Rating"
-815. "Average Revenue"
-816. "Average Turnaround: $_averageTurnaroundDays days"
-817. "Average Views per Day"
-818. "Average commission rate"
-819. "Average revenue data will appear here"
-820. "Average revenue per transaction: ${_formatCurrency(_analytics!.financialMetrics.averageRevenuePerUser)}"
-821. "Avg Level"
-822. "Avg Session"
-823. "Avg Transaction"
-824. "Avg Turnaround"
-825. "Avg members: 8.5"
-826. "Avg. Commission"
-827. "Avg: ${messagingStats["
-828. "Back"
-829. "Backend"
-830. "Badges"
-831. "Ban Selected"
-832. "Bank Account"
-833. "Bank Name"
-834. "Banned Words (comma-separated)"
-835. "Base Price"
-836. "Base Price (\$)"
-837. "Base Price: \$${_artistSettings!.basePrice.toStringAsFixed(2)}"
-838. "Base Pricing"
-839. "Based on your interests: ${_selectedInterests.take(2).join("
-840. "Basic Features"
-841. "Basic Information"
-842. "Basic Profile"
-843. "Basic Settings"
-844. "Basic analytics"
-845. "Basic community access"
-846. "Basic features for artists"
-847. "Basic features to get started"
-848. "Be professional and respectful"
-849. "Be specific and factual about the issue"
-850. "Be the first to earn points in this category!"
-851. "Be the first to post!"
-852. "Be the first to share your creative work and connect with the community."
-853. "Be the first to share your creative work!"
-854. "Become an Art Walk Influencer with featured profile"
-855. "Become an Artist"
-856. "Before"
-857. "Before You Capture"
-858. "Begin exploring art walks to earn your first achievements and start climbing the levels!"
-859. "Best Streak"
-860. "Billing Cycle"
-861. "Bio"
-862. "Bio must be less than 500 characters"
-863. "Black & White"
-864. "Blocked IPs"
-865. "Blocked Users"
-866. "Blocked on ${_formatBlockedDate(user.blockedAt ?? DateTime.now())}"
-867. "Blocked user report"
-868. "Blocked: ${messagingStats["
-869. "Bob Gallery"
-870. "Book"
-871. "Boost Your Post"
-872. "Bounce Rate"
-873. "Browse"
-874. "Browse All Art Walks"
-875. "Browse All Artists"
-876. "Browse All Artwork"
-877. "Browse All Captures"
-878. "Browse Artists"
-879. "Browse Artwork"
-880. "Browse Templates"
-881. "Browse Walks"
-882. "Browse artists and request custom artwork tailored to your needs."
-883. "Browse by Category"
-884. "Browse by art categories"
-885. "Browse commissions & requests"
-886. "Browse template artworks and styles"
-887. "Brush Pack (\$5) - Show greater support"
-888. "Brush Trailblazer (Yayoi Kusama)"
-889. "Budget (USD)"
-890. "Budget constraints"
-891. "Bug reports with screenshots"
-892. "Build Number"
-893. "Build Your Portfolio"
-894. "Building Art"
-895. "Built-in payment processing with Stripe integration"
-896. "Bulk Actions"
-897. "Bulk action functionality coming soon"
-898. "Bulk admin refund"
-899. "Bulk management actions"
-900. "Business Plan"
-901. "Business Settings"
-902. "By ${content.authorName}"
-903. "By ${post.userName}"
-904. "By ${review.authorName}"
-905. "By Priority"
-906. "By accessing or using ARTbeat (the"
-907. "By: ${noteData["
-908. "CPU Usage"
-909. "Cache Duration (hours)"
-910. "Calculate Price"
-911. "Camera"
-912. "Camera capture failed: $e"
-913. "Camera capture was cancelled."
-914. "Camera not available on this device."
-915. "Camera permission required. Please enable camera access in settings."
-916. "Can I change my plan later?"
-917. "Cancel"
-918. "Cancel Commission"
-919. "Cancel invitation"
-920. "Cancelled"
-921. "Cannot open ${contentType} content"
-922. "Canvas Print"
-923. "Capture"
-924. "Capture Analytics"
-925. "Capture Details"
-926. "Capture Engagement"
-927. "Capture illuminated artworks"
-928. "Capture not found"
-929. "Capture photos of artworks"
-930. "Capture saved successfully!"
-931. "Capture uploaded successfully! Rewards are being processed."
-932. "CaptureUpload: Art mediums available: ${_artMediums.length}"
-933. "CaptureUpload: Art types available: ${_artTypes.length}"
-934. "CaptureUpload: Disclaimer not accepted"
-935. "CaptureUpload: Form validation failed"
-936. "CaptureUpload: Selected art medium: $_selectedArtMedium"
-937. "CaptureUpload: Selected art type: $_selectedArtType"
-938. "CaptureUpload: Submit button tapped"
-939. "CaptureUploadScreen: Art mediums count: ${_artMediums.length}"
-940. "CaptureUploadScreen: Art types count: ${_artTypes.length}"
-941. "Captured"
-942. "Captured 2 hours ago"
-943. "Captured Art"
-944. "Captures"
-945. "Carol Davis"
-946. "Categories"
-947. "Category"
-948. "Category assignment"
-949. "Category:"
-950. "Center on my location"
-951. "Century Club"
-952. "Change Password"
-953. "Change Photo"
-954. "Changed my mind"
-955. "Changes to these settings will apply to all your chats."
-956. "Charlie Davis"
-957. "Chart visualization will be implemented\nwith real Firebase data using fl_chart"
-958. "Chat"
-959. "Chat Settings"
-960. "Chat archived"
-961. "Check back later for featured artists"
-962. "Check back later for new artwork!"
-963. "Check back later for new events"
-964. "Check back later for trending content!"
-965. "Check back later to see who\"
-966. "Check back soon for amazing featured artists"
-967. "Check back soon for new challenges!"
-968. "Check debug console for details"
-969. "Check out this Art Walk:"
-970. "Check out this art capture on ArtBeat!\n\n$title\n$text"
-971. "Check out this event on ARTbeat! $eventUrl"
-972. "Check out who\"
-973. "Check your goals daily to track progress"
-974. "Checking initialization..."
-975. "Choose Image Source"
-976. "Choose Plan"
-977. "Choose Your Artist Plan"
-978. "Choose a plan"
-979. "Choose a sponsorship tier:"
-980. "Choose an artist for your commission"
-981. "Choose the perfect plan to showcase and sell your art"
-982. "City, State"
-983. "Clear"
-984. "Clear ${walk.reportCount} report(s) from"
-985. "Clear All History"
-986. "Clear Filters"
-987. "Clear History"
-988. "Clear Reports"
-989. "Clear Search History"
-990. "Clear application cache and temporary files"
-991. "Client Metrics"
-992. "Client: ${commission.clientName}"
-993. "Clients can now request commissions from you"
-994. "Clients cannot request new commissions from you"
-995. "Clients will be able to request work"
-996. "Close"
-997. "Close All Open Feedback"
-998. "Coffee Shop Art Tour"
-999. "Coffee Shop Tour"
-1000. "Color Blender (Jacob Lawrence)"
-1001. "Color Scheme"
-1002. "Comment"
-1003. "Comment Engagement"
-1004. "Comment Type: ${comment.type}"
-1005. "Comment approved"
-1006. "Comment removed"
-1007. "Commented on"
-1008. "Comments"
-1009. "Comments (${_flaggedComments.length})"
-1010. "Commercial Use"
-1011. "Commission ${widget.artist.displayName}"
-1012. "Commission Analytics"
-1013. "Commission Artists"
-1014. "Commission Details"
-1015. "Commission Dispute"
-1016. "Commission Earned"
-1017. "Commission Earnings"
-1018. "Commission Gallery"
-1019. "Commission Hub"
-1020. "Commission ID"
-1021. "Commission Progress"
-1022. "Commission Request"
-1023. "Commission Request from ${FirebaseAuth.instance.currentUser?.displayName ??"
-1024. "Commission Settings"
-1025. "Commission Summary"
-1026. "Commission Templates"
-1027. "Commission Timeline"
-1028. "Commission Title"
-1029. "Commission Type"
-1030. "Commission Type Modifiers"
-1031. "Commission Types"
-1032. "Commission Wizard"
-1033. "Commission accepted! Proceed to payment."
-1034. "Commission cancelled successfully"
-1035. "Commission delivered successfully"
-1036. "Commission has been cancelled"
-1037. "Commission is under dispute"
-1038. "Commission marked as completed!"
-1039. "Commission payment completed successfully"
-1040. "Commission request created: $commissionId"
-1041. "Commission request sent to ${selectedArtist.displayName}!"
-1042. "Commission request submitted successfully!"
-1043. "Commission settings saved successfully!"
-1044. "Commission transactions require a valid artistId"
-1045. "Commission transactions require a valid commissionType"
-1046. "Commission transactions require a valid description"
-1047. "Commission: ${widget.orderDetails.metadata["
-1048. "CommissionHubScreen"
-1049. "Commissions"
-1050. "Commissions by Type"
-1051. "Communication"
-1052. "Communication problems"
-1053. "Community"
-1054. "Community Activity"
-1055. "Community Analytics"
-1056. "Community Art"
-1057. "Community Capture"
-1058. "Community Connector"
-1059. "Community Contribution"
-1060. "Community Features"
-1061. "Community Feed"
-1062. "Community Guidelines"
-1063. "Community Inspiration"
-1064. "Community Member"
-1065. "Community Posts"
-1066. "Community Views"
-1067. "Community features"
-1068. "Community posts and discussions"
-1069. "CommunityProvider access failed: $e"
-1070. "Complete $count quests"
-1071. "Complete Art Walk"
-1072. "Complete Order (Free)"
-1073. "Complete Your Walk"
-1074. "Complete an Art Walk"
-1075. "Complete art walks and explore new routes"
-1076. "Complete daily quests to progress weekly goals"
-1077. "Complete quests daily to build your streak"
-1078. "Complete solution for growing businesses"
-1079. "Complete this quest for rewards"
-1080. "Complete your commission setup"
-1081. "Complete your first art walk to see it here"
-1082. "Completed"
-1083. "Completed (${_getCommissionsByStatus([CommissionStatus.completed, CommissionStatus.delivered]).length})"
-1084. "Completing early means:"
-1085. "Completing..."
-1086. "Completion Rate"
-1087. "Comprehensive admin interface for managing feedback"
-1088. "Configure platform settings"
-1089. "Configure your commission preferences"
-1090. "Confirm"
-1091. "Confirm Bulk Action"
-1092. "Congratulations to ${user.displayName ??"
-1093. "Congratulations!"
-1094. "Congratulations! You\"
-1095. "Connect"
-1096. "Connect with artists"
-1097. "Connect with artists and creators"
-1098. "Connect with artists and explore their work"
-1099. "Connect with fellow artists"
-1100. "Connect with fellow artists and participate in exclusive events"
-1101. "Connect with other artists and art enthusiasts"
-1102. "Connect with talented artists in your community"
-1103. "Connected with"
-1104. "Connections"
-1105. "Constructive Critique"
-1106. "Contact Information"
-1107. "Contemporary"
-1108. "Contemporary Art Exhibition"
-1109. "Content"
-1110. "Content Deleted"
-1111. "Content Moderation"
-1112. "Content Quality"
-1113. "Content Settings"
-1114. "Content moderation failed: ${moderationResult.reason}"
-1115. "Contributions"
-1116. "Conversion Rate"
-1117. "Core System"
-1118. "Could not load image"
-1119. "Could not load nearby activities: $e"
-1120. "Could not open URL: $sourceUrl"
-1121. "Could not record view, probably offline: ${e.toString()}"
-1122. "Coupon ${newStatus == CouponStatus.active ?"
-1123. "Coupon Type"
-1124. "Coupon applied! You saved \$${discountAmount.toStringAsFixed(2)}"
-1125. "Cover Image"
-1126. "Create ${widget.groupType.title} Post"
-1127. "Create & Share"
-1128. "Create Art Walk"
-1129. "Create Artist Post"
-1130. "Create Artist Profile"
-1131. "Create Coupon"
-1132. "Create Event"
-1133. "Create Group"
-1134. "Create Group Post"
-1135. "Create New Post"
-1136. "Create Post"
-1137. "Create Profile"
-1138. "Create Studio"
-1139. "Create Walk"
-1140. "Create Your Art Walk Journey"
-1141. "Create Your Profile"
-1142. "Create a New Art Walk"
-1143. "Create a new art walking route for others to follow"
-1144. "Create a professional profile to showcase and sell your artwork"
-1145. "Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city."
-1146. "Create ads featuring your artwork to reach more art lovers"
-1147. "Create and manage your advertising campaigns"
-1148. "Create and promote your exhibitions and art shows"
-1149. "Create your artist profile and showcase your work to art enthusiasts worldwide."
-1150. "Create your first art walk to get started"
-1151. "Create your first coupon to get started"
-1152. "Create your first event by tapping the + button"
-1153. "Create your first group to connect with other artists"
-1154. "CreateArtWalkScreen"
-1155. "CreateGroupPostScreen"
-1156. "CreatePostScreen"
-1157. "Created"
-1158. "Created new event • ${DateFormat("
-1159. "Created: ${capture.createdAt.toLocal().toString().split("
-1160. "Creating art as a hobby"
-1161. "Creating unique pieces that blend traditional and digital techniques."
-1162. "Creative Process"
-1163. "Creative Studio"
-1164. "Creator Plan"
-1165. "Credits can be used to purchase ad products"
-1166. "Credits can be used to purchase subscriptions"
-1167. "Credits support artists indirectly through platform engagement"
-1168. "Critical Alerts"
-1169. "Cultural Art"
-1170. "Cultural Curator (Shirin Neshat)"
-1171. "Curated experiences"
-1172. "Curated selections"
-1173. "Current"
-1174. "Current Artists"
-1175. "Current Location"
-1176. "Current Location (${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)})"
-1177. "Current Streak"
-1178. "Current Week"
-1179. "Current location: $latitude, $longitude"
-1180. "Current time: $now"
-1181. "Currently accepting commissions"
-1182. "Custom"
-1183. "Custom Colors"
-1184. "Custom Palette"
-1185. "Custom Requirements"
-1186. "Custom Size"
-1187. "Custom branding"
-1188. "Custom integrations"
-1189. "Custom portraits of people or pets"
-1190. "Customer not found"
-1191. "DEBUG: $message"
-1192. "DEBUG: Achievement - ${achievement.type.name}: ${achievement.title}"
-1193. "DEBUG: Adding ${validFiles.length} valid images to selection"
-1194. "DEBUG: Audio file size: ${audioFile.lengthSync()} bytes"
-1195. "DEBUG: Audio file too large"
-1196. "DEBUG: Audio picker result: ${result?.files.single.path}"
-1197. "DEBUG: Audio selected successfully"
-1198. "DEBUG: Audio upload complete. URL: $audioUrl"
-1199. "DEBUG: Error loading achievements: $e"
-1200. "DEBUG: Error loading pre-filled image: $e"
-1201. "DEBUG: Error picking audio: $e"
-1202. "DEBUG: Error picking video: $e"
-1203. "DEBUG: Found ${achievements.length} achievements"
-1204. "DEBUG: GestureDetector tapped!"
-1205. "DEBUG: Including pre-filled discovery image: $_prefilledImageUrl"
-1206. "DEBUG: Loading achievements for user..."
-1207. "DEBUG: Loading pre-filled image from discovery: ${widget.prefilledImageUrl}"
-1208. "DEBUG: No audio file selected"
-1209. "DEBUG: No audio selected for upload"
-1210. "DEBUG: No valid images found"
-1211. "DEBUG: No video file selected"
-1212. "DEBUG: No video selected for upload"
-1213. "DEBUG: Post creation already in progress, ignoring duplicate request"
-1214. "DEBUG: Post submission already in progress, ignoring duplicate tap"
-1215. "DEBUG: Starting audio selection"
-1216. "DEBUG: Starting media upload. Selected images: ${_selectedImages.length}"
-1217. "DEBUG: Starting video selection"
-1218. "DEBUG: Total selected images now: ${_selectedImages.length}"
-1219. "DEBUG: Upload complete. Image URLs: $imageUrls"
-1220. "DEBUG: Uploading ${_selectedImages.length} images"
-1221. "DEBUG: Uploading audio file: ${_selectedAudio!.path}"
-1222. "DEBUG: Uploading video file: ${_selectedVideo!.path}"
-1223. "DEBUG: Video file size: ${videoFile.lengthSync()} bytes"
-1224. "DEBUG: Video file too large"
-1225. "DEBUG: Video picker result: ${pickedFile?.path}"
-1226. "DEBUG: Video selected successfully"
-1227. "DEBUG: Video upload complete. URL: $videoUrl"
-1228. "DEBUG: Video upload failed: $e"
-1229. "Daily Views"
-1230. "Danger Zone"
-1231. "Dangerous Actions"
-1232. "Dashboard"
-1233. "Data Access"
-1234. "Data Export"
-1235. "Data Structure"
-1236. "Date"
-1237. "Date Range"
-1238. "Date: ${intl.DateFormat("
-1239. "Deadline"
-1240. "Deadline: ${_deadline!.toLocal().toString().split("
-1241. "Debug Information"
-1242. "Debug Information:"
-1243. "Dedicated account manager"
-1244. "Dedicated support"
-1245. "Default"
-1246. "Delete"
-1247. "Delete Account"
-1248. "Delete All Resolved"
-1249. "Delete Content"
-1250. "Delete Feedback"
-1251. "Delete Post"
-1252. "Delete Studio"
-1253. "Delete all resolved feedback"
-1254. "Delete capture"
-1255. "Delivery Format"
-1256. "Demo Artist"
-1257. "Demo Artwork"
-1258. "Deposit %"
-1259. "Deposit Percentage: ${_depositPercentage.round()}%"
-1260. "Deposit Required"
-1261. "Deposit payment for commission: ${_commission!.title}"
-1262. "Deposit payment processed successfully!"
-1263. "Deposit: ${_depositPercentage.round()}%"
-1264. "Deposit: \$${depositAmount.toStringAsFixed(2)}"
-1265. "Describe the artwork..."
-1266. "Describe the route, highlights, and difficulty..."
-1267. "Describe this milestone"
-1268. "Describe what you want in detail..."
-1269. "Describe what you want..."
-1270. "Describe your art walk experience"
-1271. "Describe your art walk route and discoveries..."
-1272. "Describe your artwork, inspiration, or technique..."
-1273. "Describe your commission project, style preferences, size, timeline, and budget..."
-1274. "Describe your project and what kind of artist you need"
-1275. "Describe your project, timeline, and requirements..."
-1276. "Describe your skills, experience, and availability..."
-1277. "Describe your studio and its purpose"
-1278. "Describe your work and approach"
-1279. "Description"
-1280. "Description (optional)"
-1281. "Description *"
-1282. "Description is required"
-1283. "Description: ${file.description}"
-1284. "Design your own walk"
-1285. "Detailed Analytics"
-1286. "Detailed Description"
-1287. "Detailed Ratings"
-1288. "Detailed Settings"
-1289. "Details"
-1290. "Details:"
-1291. "Detection Settings"
-1292. "Developer Admin Panel"
-1293. "Developer Feedback Admin"
-1294. "Developer Response"
-1295. "Developer Tools"
-1296. "Developer menu: Feedback System section"
-1297. "Development"
-1298. "Device Info"
-1299. "Difficulty"
-1300. "Digital Art"
-1301. "Digital Art Discussion"
-1302. "Digital Art Workshop"
-1303. "Digital Artist"
-1304. "Digital Dreams"
-1305. "Digital File"
-1306. "Digital Illustration"
-1307. "Digital Photo + Physical"
-1308. "Digital Portrait"
-1309. "Digital artwork delivered as files"
-1310. "Digital, Physical, Portraits, or Commercial"
-1311. "Digital/LED"
-1312. "Direct Commissions"
-1313. "Direct Traffic"
-1314. "Direct navigation from any screen"
-1315. "Disabled account for $user"
-1316. "Discount (${_appliedCoupon!.code})"
-1317. "Discount Amount"
-1318. "Discount Percentage"
-1319. "Discount value is required"
-1320. "Discover & Browse"
-1321. "Discover & Explore"
-1322. "Discover 3 pieces of public art today"
-1323. "Discover Art Events"
-1324. "Discover Events"
-1325. "Discover More"
-1326. "Discover Studios"
-1327. "Discover all available art walking experiences"
-1328. "Discover amazing artists"
-1329. "Discover amazing artwork, connect with artists, and explore your creative side."
-1330. "Discover amazing photo captures from the community"
-1331. "Discover amazing street art and public installations"
-1332. "Discover amazing street art while exploring the best coffee shops in town. Complete this walk and get 10% off your next coffee!"
-1333. "Discover and appreciate public art"
-1334. "Discover and document public art to help build our community map"
-1335. "Discover and follow artists whose work inspires you."
-1336. "Discover and join art communities"
-1337. "Discover and join existing groups"
-1338. "Discover art captures near you"
-1339. "Discover art in the morning"
-1340. "Discover art, earn experience, and unlock achievements as you explore the world of public art."
-1341. "Discover beautiful artwork from our community"
-1342. "Discover events in your area"
-1343. "Discover exceptional artists making waves in the community"
-1344. "Discover exhibitions, workshops, and art community events"
-1345. "Discover featured artists and their amazing work"
-1346. "Discover local and featured artists"
-1347. "Discover new pieces of public art"
-1348. "Discover public art in your area or create your own custom art walks"
-1349. "Discover talented artists in your community"
-1350. "Discoveries"
-1351. "Discovery"
-1352. "Discussing ${widget.post.userName}\"
-1353. "Display Name"
-1354. "Display Name *"
-1355. "Display name is required"
-1356. "Display name must be at least 2 characters"
-1357. "Display your birthday on your profile"
-1358. "Display your recent activity feed"
-1359. "Dispute Resolution"
-1360. "Dispute created. Support team will review soon."
-1361. "Distance (miles)"
-1362. "Document data: $data"
-1363. "Don\"
-1364. "Downloading ${file.name}..."
-1365. "Dry Run Results"
-1366. "Dry run completed"
-1367. "Due Date"
-1368. "Due: ${_formatDate(commission.deadline!)}"
-1369. "Due: ${_formatDate(milestone.dueDate)}"
-1370. "Due: ${_formatDateTime(milestone.dueDate)}"
-1371. "Duration (minutes)"
-1372. "Each approved capture becomes part of curated routes that guide other users to discover"
-1373. "Early Adopter"
-1374. "Early Adopter - Join during the first month"
-1375. "Early Bird Explorer"
-1376. "Early access to beta features"
-1377. "Earn XP by participating in ARTbeat activities:"
-1378. "Earned on ${_formatDate(achievement.earnedAt)}"
-1379. "Earnings Breakdown"
-1380. "Earnings Dashboard"
-1381. "Easy Access"
-1382. "Edit"
-1383. "Edit (Wizard)"
-1384. "Edit Account"
-1385. "Edit Art Walk"
-1386. "Edit Artist Profile"
-1387. "Edit Artwork"
-1388. "Edit Content"
-1389. "Edit Coupon"
-1390. "Edit Profile"
-1391. "Edit capture"
-1392. "Edit permissions for $user"
-1393. "Edit post - Coming Soon"
-1394. "Edit/Update Walk"
-1395. "Effective Date: September 1, 2025"
-1396. "Effective Date: September 1, 2025\n"
-1397. "Email"
-1398. "Email Verified"
-1399. "Email is already verified"
-1400. "Email support"
-1401. "Emerging Artist"
-1402. "Enable Admin Alerts"
-1403. "Enable Analytics"
-1404. "Enable Artwork Ratings"
-1405. "Enable Comments"
-1406. "Enable Content Reporting"
-1407. "Enable Email Notifications"
-1408. "Enable Error Logging"
-1409. "Enable IP Blocking"
-1410. "Enable Performance Monitoring"
-1411. "Enable Push Notifications"
-1412. "Enable Quiet Mode"
-1413. "Enable Registration"
-1414. "Enable Two-Factor Authentication"
-1415. "End Date"
-1416. "End Time"
-1417. "End time cannot be before start time"
-1418. "Engage with comments and replies"
-1419. "Engage with other art lovers"
-1420. "Engage with the ARTbeat community"
-1421. "Engagement"
-1422. "Engagement Over Time"
-1423. "Engagement Rate"
-1424. "Engagement Rate: ${artwork["
-1425. "Engagement Score"
-1426. "Engagement score: ${(summary["
-1427. "Enhanced Art Walk"
-1428. "EnhancedArtWalkCreateScreen"
-1429. "EnhancedArtWalkExperienceScreen"
-1430. "EnhancedMyArtWalksScreen"
-1431. "Enter Selection Mode"
-1432. "Enter Verification Code"
-1433. "Enter ZIP code"
-1434. "Enter ZIP code (current: $_currentZipCode)"
-1435. "Enter capture description"
-1436. "Enter capture title"
-1437. "Enter coupon code"
-1438. "Enter description"
-1439. "Enter feed name"
-1440. "Enter location name"
-1441. "Enter name or username..."
-1442. "Enter studio name"
-1443. "Enter the amount you want to withdraw"
-1444. "Enter title"
-1445. "Enter your broadcast message..."
-1446. "Enter your commission terms..."
-1447. "Enter your quote amount"
-1448. "Enter zip code or city"
-1449. "Enterprise features with unlimited access"
-1450. "Enterprise-grade features and support"
-1451. "Environment"
-1452. "Error"
-1453. "Error ${isFollowing ?"
-1454. "Error ${widget.artWalkId != null ?"
-1455. "Error accepting commission: $e"
-1456. "Error accepting quote: $e"
-1457. "Error adding payment method: ${error.toString()}"
-1458. "Error approving comment: $e"
-1459. "Error approving post: $e"
-1460. "Error blocking user: $e"
-1461. "Error calculating analytics: $e"
-1462. "Error calculating distance for capture ${capture.title}: $e"
-1463. "Error calculating personal bests: $e"
-1464. "Error calculating price: $e"
-1465. "Error cancelling commission: $e"
-1466. "Error checking completion status: ${e.toString()}"
-1467. "Error checking subscription status: ${e.toString()}"
-1468. "Error checking upload limit: $e"
-1469. "Error clearing badge: $e"
-1470. "Error completing commission: $e"
-1471. "Error creating artist profile: $e"
-1472. "Error creating chat: ${e.toString()}"
-1473. "Error creating commission request: $e"
-1474. "Error creating post: $e"
-1475. "Error creating studio: $e"
-1476. "Error deleting art walk: $e"
-1477. "Error deleting artwork: $e"
-1478. "Error deleting capture: $e"
-1479. "Error deleting studio: $e"
-1480. "Error dismissing flag: ${e.toString()}"
-1481. "Error dismissing suggestion: $e"
-1482. "Error downloading CSV file: $e"
-1483. "Error editing image: $e"
-1484. "Error enriching post ${post.id} user data: $e"
-1485. "Error exporting transactions: $e"
-1486. "Error featuring post: $e"
-1487. "Error fixing posts: $e"
-1488. "Error following user: $e"
-1489. "Error getting coordinates for ZIP code $zipCode: $e"
-1490. "Error getting current location: $e"
-1491. "Error getting follower count for artist $artistProfileId: $e"
-1492. "Error getting location: $e"
-1493. "Error getting location: ${e.toString().split("
-1494. "Error getting total distance: $e"
-1495. "Error getting total walks completed: $e"
-1496. "Error getting user profile for artist: $e"
-1497. "Error getting zip code from location: $e"
-1498. "Error handling like: $e"
-1499. "Error loading achievements: $e"
-1500. "Error loading active walkers: $e"
-1501. "Error loading activity"
-1502. "Error loading analytics data: ${e.toString()}"
-1503. "Error loading analytics: $e"
-1504. "Error loading analytics: $error"
-1505. "Error loading art pieces: $e"
-1506. "Error loading art walk: $e"
-1507. "Error loading artist feed: $e"
-1508. "Error loading artist posts: $e"
-1509. "Error loading artists: $e"
-1510. "Error loading artwork for purchase: $e"
-1511. "Error loading artwork items: $e"
-1512. "Error loading artwork: $e"
-1513. "Error loading artworks: $e"
-1514. "Error loading capture dashboard data: $e"
-1515. "Error loading capture: $e"
-1516. "Error loading captures: $e"
-1517. "Error loading chats"
-1518. "Error loading comments for post $postId: $e"
-1519. "Error loading commission details: $e"
-1520. "Error loading commissions: $e"
-1521. "Error loading community items: $e"
-1522. "Error loading connections: $e"
-1523. "Error loading current user: $e"
-1524. "Error loading customization: $e"
-1525. "Error loading dashboard"
-1526. "Error loading data: $e"
-1527. "Error loading engagement data: $e"
-1528. "Error loading event items: $e"
-1529. "Error loading event: ${e.toString()}"
-1530. "Error loading events"
-1531. "Error loading events: $e"
-1532. "Error loading favorite: ${e.toString()}"
-1533. "Error loading featured artists: $e"
-1534. "Error loading featured artists: ${e.toString()}"
-1535. "Error loading featured artworks: $e"
-1536. "Error loading featured walk: $e"
-1537. "Error loading feedback: ${snapshot.error}"
-1538. "Error loading followed artists: ${e.toString()}"
-1539. "Error loading following: ${e.toString()}"
-1540. "Error loading friends recent walks: $e"
-1541. "Error loading gallery data: ${e.toString()}"
-1542. "Error loading gifts: $e"
-1543. "Error loading groups"
-1544. "Error loading history: $e"
-1545. "Error loading initial content: $e"
-1546. "Error loading leaderboards: $e"
-1547. "Error loading liked content: ${e.toString()}"
-1548. "Error loading local captures: $e"
-1549. "Error loading locations: $e"
-1550. "Error loading mentions: $e"
-1551. "Error loading messages"
-1552. "Error loading messaging data: $e"
-1553. "Error loading moderation queue: $e"
-1554. "Error loading more artworks: $e"
-1555. "Error loading more posts: $e"
-1556. "Error loading more trending content: $e"
-1557. "Error loading nearby artists: $e"
-1558. "Error loading nearby artworks: $e"
-1559. "Error loading nearby content: $e"
-1560. "Error loading nearby events: $e"
-1561. "Error loading nearby posts: $e"
-1562. "Error loading nearby users: $e"
-1563. "Error loading online artists: $e"
-1564. "Error loading online users"
-1565. "Error loading package info: $e"
-1566. "Error loading payment data: $e"
-1567. "Error loading payment history: $e"
-1568. "Error loading payment methods: ${error.toString()}"
-1569. "Error loading portfolios: $e"
-1570. "Error loading posts: $e"
-1571. "Error loading profile: $e"
-1572. "Error loading progress: $e"
-1573. "Error loading quest data: $e"
-1574. "Error loading recent artworks: $e"
-1575. "Error loading recent posts: $e"
-1576. "Error loading rewards data: $e"
-1577. "Error loading saved searches: $e"
-1578. "Error loading search suggestions: $e"
-1579. "Error loading settings"
-1580. "Error loading settings: $e"
-1581. "Error loading starred messages"
-1582. "Error loading studio: $e"
-1583. "Error loading studios: $e"
-1584. "Error loading suggested users: ${e.toString()}"
-1585. "Error loading thread: $e"
-1586. "Error loading trending artworks: $e"
-1587. "Error loading trending captures: $e"
-1588. "Error loading trending content: $e"
-1589. "Error loading unread activities"
-1590. "Error loading user achievements: $e"
-1591. "Error loading user data: $e"
-1592. "Error loading user model: $e"
-1593. "Error loading user settings: $e"
-1594. "Error loading user streak: $e"
-1595. "Error loading users"
-1596. "Error loading verified artists: $e"
-1597. "Error loading weekly goals: $e"
-1598. "Error marking as read: $e"
-1599. "Error navigating to user profile: $e"
-1600. "Error parsing artist: $e"
-1601. "Error parsing post ${doc.id}: $e"
-1602. "Error performing advanced search: $e"
-1603. "Error picking audio: $e"
-1604. "Error picking image: $e"
-1605. "Error picking images: $e"
-1606. "Error picking portfolio images: $e"
-1607. "Error picking profile image: $e"
-1608. "Error picking video: $e"
-1609. "Error processing bulk refund: $e"
-1610. "Error processing deposit payment: $e"
-1611. "Error processing milestone payment: $e"
-1612. "Error processing purchase: $e"
-1613. "Error processing refund: $e"
-1614. "Error providing quote: $e"
-1615. "Error recording share to challenge: $e"
-1616. "Error removing comment: $e"
-1617. "Error removing favorite: ${e.toString()}"
-1618. "Error removing member: $e"
-1619. "Error removing payment method: ${error.toString()}"
-1620. "Error removing post: $e"
-1621. "Error saving capture: $e"
-1622. "Error saving capture: ${e.toString()}"
-1623. "Error saving customization: $e"
-1624. "Error saving event: ${e.toString()}"
-1625. "Error saving settings: $e"
-1626. "Error searching artists: $e"
-1627. "Error searching chats"
-1628. "Error searching users: ${e.toString()}"
-1629. "Error selecting cover image: $e"
-1630. "Error selecting image: ${e.toString()}"
-1631. "Error sending message: $e"
-1632. "Error sending reply: $e"
-1633. "Error sending request: $e"
-1634. "Error setting default payment method: ${error.toString()}"
-1635. "Error sharing media: $e"
-1636. "Error sharing post: $e"
-1637. "Error sharing: ${e.toString()}"
-1638. "Error submitting capture: $e"
-1639. "Error submitting quote: $e"
-1640. "Error submitting refund request: ${e.toString()}"
-1641. "Error submitting request: $e"
-1642. "Error tracking share: $e"
-1643. "Error unfollowing artist: ${e.toString()}"
-1644. "Error unfollowing user: $e"
-1645. "Error unfollowing user: ${e.toString()}"
-1646. "Error unliking content: ${e.toString()}"
-1647. "Error updating artwork: $e"
-1648. "Error updating like. Please try again."
-1649. "Error updating profile: $e"
-1650. "Error updating transaction statuses: $e"
-1651. "Error uploading content: $e"
-1652. "Error: $e"
-1653. "Error: ${data["
-1654. "Error: ${e.toString()}"
-1655. "Error: ${snapshot.error}"
-1656. "Errors (${_lastResult!.errors.length}):"
-1657. "Essential features for emerging artists"
-1658. "Established artist seeking growth"
-1659. "Estimated Completion"
-1660. "Estimated Distance (miles)"
-1661. "Estimated Duration (hours)"
-1662. "Estimated Earnings"
-1663. "Estimated Price"
-1664. "Etsy"
-1665. "Etsy Shop"
-1666. "Event ${approved ?"
-1667. "Event Banner"
-1668. "Event Creation"
-1669. "Event Details"
-1670. "Event Engagement"
-1671. "Event Management"
-1672. "Event Photos"
-1673. "Event Post"
-1674. "Event Title"
-1675. "Event Venues"
-1676. "Event created successfully! (Reminder notifications require permission)"
-1677. "Event creation"
-1678. "Event creation is available with Artist Pro or Gallery Plan."
-1679. "Event: ${event.title} at ${event.dateTime}"
-1680. "Events"
-1681. "Events Near You"
-1682. "Events Nearby"
-1683. "Events by Category"
-1684. "Events nearby"
-1685. "Example: painting, abstract, oil"
-1686. "Exhausted"
-1687. "Existing content will be marked as"
-1688. "Exit Selection Mode"
-1689. "Expiration Date"
-1690. "Expiration Date (optional)"
-1691. "Expired"
-1692. "Expired Ads (${expiredAds.length})"
-1693. "Expires ${card.expMonth}/${card.expYear}"
-1694. "Expires: ${_formatDate(coupon.expiresAt!)}"
-1695. "Explore More"
-1696. "Explore Walks"
-1697. "Explore art clusters near you"
-1698. "Explore art collections and galleries"
-1699. "Explore art in different neighborhoods"
-1700. "Explore artists who have been verified for authenticity and quality"
-1701. "Explore curated art walking experiences"
-1702. "Explore different engagement options for various content types"
-1703. "Explore galleries, workshops, and exhibitions"
-1704. "Explore more artworks to see similar recommendations!"
-1705. "Explore more features"
-1706. "Explore our community of talented artists"
-1707. "Explore the complete artwork collection"
-1708. "Explore the full collection of community captures"
-1709. "Explore the latest works from emerging local artists in this exciting exhibition."
-1710. "Explore, create, connect"
-1711. "Export History"
-1712. "Export Selected"
-1713. "Export Settings"
-1714. "Export capabilities"
-1715. "Export completed successfully (${_filteredTransactions.length} records)"
-1716. "Export completed successfully (${selectedTransactions.length} records)"
-1717. "Export current application settings"
-1718. "Export functionality coming soon"
-1719. "Exported ${exportData.length} characters of data"
-1720. "Exported transaction data"
-1721. "Expressionism"
-1722. "Extra Large (30x40"
-1723. "Facebook"
-1724. "Failed Logins"
-1725. "Failed login attempt blocked"
-1726. "Failed to add comment"
-1727. "Failed to add response: $e"
-1728. "Failed to appreciate: $e"
-1729. "Failed to check migration status: $e"
-1730. "Failed to create ad payment intent: ${response.body}"
-1731. "Failed to create art walk"
-1732. "Failed to create artist profile"
-1733. "Failed to create commission payment intent: ${response.body}"
-1734. "Failed to create commission request: $e"
-1735. "Failed to create coupon: $e"
-1736. "Failed to create gift payment intent: ${response.body}"
-1737. "Failed to create post"
-1738. "Failed to create post: ${e.toString()}"
-1739. "Failed to create profile: ${e.toString()}"
-1740. "Failed to create sponsorship payment intent: ${response.body}"
-1741. "Failed to create subscription payment intent: ${response.body}"
-1742. "Failed to delete account: $e"
-1743. "Failed to delete coupon: $e"
-1744. "Failed to delete feedback: $e"
-1745. "Failed to delete post: $e"
-1746. "Failed to download CSV file"
-1747. "Failed to download file: $e"
-1748. "Failed to download file: ${response.statusCode}"
-1749. "Failed to export transactions"
-1750. "Failed to feature post: $e"
-1751. "Failed to follow artist"
-1752. "Failed to get location: $e"
-1753. "Failed to initialize voice recorder: ${snapshot.error}"
-1754. "Failed to initiate subscription purchase"
-1755. "Failed to load admin data: $e"
-1756. "Failed to load analytics: $e"
-1757. "Failed to load artworks: ${e.toString()}"
-1758. "Failed to load capture: $e"
-1759. "Failed to load captures: $e"
-1760. "Failed to load comments: ${e.toString()}"
-1761. "Failed to load commissions: $e"
-1762. "Failed to load dashboard data: $e"
-1763. "Failed to load earnings data"
-1764. "Failed to load event: $e"
-1765. "Failed to load events: ${e.toString()}"
-1766. "Failed to load gallery artists. Please try again."
-1767. "Failed to load image"
-1768. "Failed to load more results."
-1769. "Failed to load payment data"
-1770. "Failed to load payout accounts"
-1771. "Failed to load posts: $e"
-1772. "Failed to load posts: ${e.toString()}"
-1773. "Failed to load sales data"
-1774. "Failed to load stats: $e"
-1775. "Failed to load templates: $e"
-1776. "Failed to load user profile"
-1777. "Failed to pick images: $e"
-1778. "Failed to post walk completed activity: $e"
-1779. "Failed to process bulk refunds"
-1780. "Failed to process free gift: ${e.toString()}"
-1781. "Failed to process refund: ${e.toString()}"
-1782. "Failed to refund transaction ${transaction.id}: $e"
-1783. "Failed to schedule reminders: $notificationError"
-1784. "Failed to send verification code: $e"
-1785. "Failed to send verification email"
-1786. "Failed to send verification email. Please try again."
-1787. "Failed to send verification email: $e"
-1788. "Failed to send verification email: ${e.message}"
-1789. "Failed to set free plan"
-1790. "Failed to share location: ${e.toString()}"
-1791. "Failed to share post. Please try again."
-1792. "Failed to share: $e"
-1793. "Failed to submit commission request: $e"
-1794. "Failed to trigger capture approval rewards: $e"
-1795. "Failed to unfollow artist"
-1796. "Failed to update coupon: $e"
-1797. "Failed to update like"
-1798. "Failed to update like. Please try again."
-1799. "Failed to update profile picture: $e"
-1800. "Failed to update share count: $e"
-1801. "Failed to update status: $e"
-1802. "Failed to update transaction statuses"
-1803. "Failed to upload image"
-1804. "Failed to upload image. Please check your internet connection."
-1805. "Failed to upload image: $e"
-1806. "Failed to upload images: $e"
-1807. "Failed to upload portfolio image: $e"
-1808. "Failed to upload profile image: ${e.toString()}"
-1809. "Failed to verify phone number: $e"
-1810. "Favorite Detail"
-1811. "Favorite not found"
-1812. "Feature requests"
-1813. "Featured"
-1814. "Featured Artists"
-1815. "Featured Events"
-1816. "Featured Users"
-1817. "Featured Walks"
-1818. "Featured placement"
-1819. "Features Coming Soon:"
-1820. "Features not as expected"
-1821. "Features such as Art Walks rely on GPS and mapping.\n\nYou consent to ARTbeat\"
-1822. "Features:"
-1823. "Featuring work by @$userId in our latest collection"
-1824. "Feed"
-1825. "Feedback System"
-1826. "Feedback deleted successfully"
-1827. "Feedback will appear here when users submit it"
-1828. "Fellow Artist"
-1829. "File Storage"
-1830. "File Upload"
-1831. "File downloaded successfully: ${localFile.path}"
-1832. "File saved at: ${localFile.path}"
-1833. "Files"
-1834. "Filter Trending Content"
-1835. "Filtered captures within 30 miles: ${finalCaptureArt.length}"
-1836. "Financial"
-1837. "Financial Analytics"
-1838. "Financial Insights"
-1839. "Financial Overview"
-1840. "Financial Reports"
-1841. "Financial Summary"
-1842. "Financial reasons"
-1843. "Find Artists"
-1844. "Find Events"
-1845. "Find Groups"
-1846. "Find People"
-1847. "Find art around you in real-time"
-1848. "Find art captures and locations"
-1849. "Find art captures by location or type"
-1850. "Find artists accepting work"
-1851. "Find captures near you"
-1852. "Find conversations and contacts"
-1853. "Find diverse art styles"
-1854. "Find event venues and locations"
-1855. "Find events, venues, and organizers"
-1856. "Find messages and chat history"
-1857. "Find your next creative experience"
-1858. "Firebase Auth integration"
-1859. "Firebase Firestore & Storage"
-1860. "Firebase Project"
-1861. "FirebaseAuthException: [33m${e.message}[0m"
-1862. "First Quest"
-1863. "First Steps - Complete your first art walk"
-1864. "First Walk"
-1865. "First Walk Completed! 🎉"
-1866. "First stop: ${_artPieces.first.title}"
-1867. "First-time achievements and early milestones"
-1868. "Fix Anonymous Post Authors"
-1869. "Fix Images"
-1870. "Fix Posts"
-1871. "Fixed Amount Discount"
-1872. "Fixing anonymous post authors..."
-1873. "Flag Resolution Rate"
-1874. "Flag dismissed successfully"
-1875. "Flagged Events"
-1876. "Flagged for: Potential inappropriate content"
-1877. "Flagged for: Potential offensive language"
-1878. "Focus on one category at a time"
-1879. "Focus on this area to maximize engagement"
-1880. "Follow Back"
-1881. "Follow Ratio"
-1882. "Followers"
-1883. "Following"
-1884. "For Sale"
-1885. "For US users: governed by the laws of North Carolina, United States.\n\nFor international users: governed by applicable mandatory local law, otherwise North Carolina law applies.\n\nDisputes shall be resolved through binding arbitration in the United States, unless prohibited by law."
-1886. "For direct artist support, subscribe to an artist subscription"
-1887. "For established artists growing their business"
-1888. "For galleries and professional art businesses"
-1889. "For questions or data requests:\nLocal ARTbeat, LLC\nPO BOX 232 Kinston, NC 28502\nEmail: support@localartbeat.app"
-1890. "For: ${widget.commission.clientName}"
-1891. "Form validation failed"
-1892. "Form validation passed, proceeding with save"
-1893. "Found another artist"
-1894. "Found better alternative"
-1895. "Found this incredible mural while exploring the arts district. The colors and detail are absolutely stunning!"
-1896. "Free Plan"
-1897. "Free Plan Artwork Limit Reached"
-1898. "Free gift sent successfully! (100% coupon applied)"
-1899. "Frequently Asked Questions"
-1900. "From ${widget.artistName}"
-1901. "Full Access"
-1902. "Full Access (Free)"
-1903. "Full Color"
-1904. "Full Name"
-1905. "Full Rights Package"
-1906. "Gallery"
-1907. "Gallery Analytics"
-1908. "Gallery Analytics Dashboard"
-1909. "Gallery Business"
-1910. "Gallery Frame (\$20) - Significant recognition"
-1911. "Gallery Invitation"
-1912. "Gallery Invitation Reminder"
-1913. "Gallery Opening"
-1914. "Gallery Opening Night"
-1915. "Gallery Owner"
-1916. "Gallery analytics requires a Gallery Plan subscription."
-1917. "Gallery or institution"
-1918. "Gallery profile not found"
-1919. "Gallery • ${item["
-1920. "General Discussion"
-1921. "General Settings"
-1922. "General/Other"
-1923. "Generating report PDF. Check your downloads folder."
-1924. "Geo field migration completed successfully!"
-1925. "Geo field migration failed: $e"
-1926. "Get Art Capture Approved"
-1927. "Get Location"
-1928. "Get Started"
-1929. "Get a verified artist badge to build trust with buyers"
-1930. "Get access to location breakdown, top artwork performance, referral sources, and more detailed insights."
-1931. "Get detailed insights about your subscription performance"
-1932. "Get discovered by art collectors and enthusiasts worldwide"
-1933. "Get turn-by-turn directions to each art piece"
-1934. "Getting Started"
-1935. "Getting Started with Commissions"
-1936. "Gift Earnings"
-1937. "Gift Guidelines"
-1938. "Gift Guidelines & Regulations"
-1939. "Gift Received"
-1940. "Gift history is permanently recorded"
-1941. "Gift purchase initiated! 🎁"
-1942. "Gift purchase would be initiated here"
-1943. "Gift recipients receive in-app credits"
-1944. "Gift transactions require a valid giftType"
-1945. "Gift transactions require a valid recipientId"
-1946. "Gift: ${widget.orderDetails.metadata["
-1947. "Gifts"
-1948. "Gifts are non-refundable per App Store guidelines"
-1949. "Gifts can only be sent to active artists"
-1950. "Give your art walk a creative name"
-1951. "Go Back"
-1952. "Golden Canvas (\$50) - Premium support"
-1953. "Golden Hour"
-1954. "Golden Hour Artist"
-1955. "Good Afternoon"
-1956. "Good Evening"
-1957. "Good Morning"
-1958. "Good afternoon"
-1959. "Good evening"
-1960. "Good morning"
-1961. "Google Sign-In failed: ${e.toString()}"
-1962. "Graffiti Mural Downtown"
-1963. "Graphic Design"
-1964. "Great job exploring our community\"
-1965. "Great opportunity for discovery"
-1966. "Great title! Now describe your artistic journey ✍️"
-1967. "Grid"
-1968. "Group Activity"
-1969. "Group Chat"
-1970. "Group Info"
-1971. "Group name"
-1972. "Growth Trend"
-1973. "Healthy"
-1974. "Here\"
-1975. "Hey @$userId, what do you think about this technique?"
-1976. "Hide Filters"
-1977. "High Engagement"
-1978. "High-res JPEG"
-1979. "High-res PNG"
-1980. "Higher streaks unlock bonus challenges"
-1981. "Highest level achieved based on experience"
-1982. "Highest rated art capture (5-star rating system)"
-1983. "Highest rated art walk (5-star rating system)"
-1984. "Highlighted creators"
-1985. "Historical Marker"
-1986. "Host exhibitions and gatherings"
-1987. "Hosting Event"
-1988. "How Gift Credits Work"
-1989. "How long commissions typically take"
-1990. "How long projects typically take"
-1991. "How would you rate this art walk?"
-1992. "How you want to be known as an artist"
-1993. "I accept the"
-1994. "I confirm this is public art in a safe, accessible location. No private property, unsafe areas, nudity, or derogatory content."
-1995. "I have read and agree to all the safety guidelines, legal guidelines, and community standards listed above."
-1996. "I would recommend this artist to others"
-1997. "IP Address/Range"
-1998. "IP Whitelist"
-1999. "Ideal for artists ready to sell their first pieces"
-2000. "If you\"
-2001. "Illustration"
-2002. "Image (Optional)"
-2003. "Image Management"
-2004. "Image picker with compression"
-2005. "Image skipped due to size limit"
-2006. "Image skipped: ${file.path} - Size: ${imageFile.lengthSync()}, Valid: false"
-2007. "Important Dates"
-2008. "Impressionism"
-2009. "In Progress"
-2010. "In-App Purchase Demo"
-2011. "In-app purchases not initialized"
-2012. "In-app purchases ready!"
-2013. "Inappropriate content"
-2014. "Includes:"
-2015. "Increased Visibility"
-2016. "Industry-standard feedback form with categorization"
-2017. "Inspiration"
-2018. "Instagram"
-2019. "Instagram Handle"
-2020. "Installation"
-2021. "Instant Discovery"
-2022. "Interacted with"
-2023. "Interactions"
-2024. "Interactive Map"
-2025. "Interactive map available on mobile devices"
-2026. "Interactive map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
-2027. "Invalid client secret from advertisement payment intent"
-2028. "Invalid client secret from commission payment intent"
-2029. "Invalid client secret from payment intent"
-2030. "Invalid client secret from sponsorship payment intent"
-2031. "Invalid client secret from subscription payment intent"
-2032. "Invalid email address."
-2033. "Invalid metadata types for advertisement: adType must be string, duration must be int"
-2034. "Invalid metadata types for commission: artistId, commissionType, and description must be strings"
-2035. "Invalid metadata types for free gift: recipientId and giftType must be strings"
-2036. "Invalid metadata types for gift payment: recipientId and giftType must be strings"
-2037. "Invalid metadata types for sponsorship: artistId and sponsorshipType must be strings, duration must be int, benefits must be List<String>"
-2038. "Invalid metadata types for subscription: tier and billingCycle must be strings"
-2039. "Invalid number"
-2040. "Invalid or expired coupon code"
-2041. "Invalid password."
-2042. "Invalid verification code. Please try again."
-2043. "Invitation already sent to this artist"
-2044. "Invited ${_formatDate(invitation.createdAt)}"
-2045. "Is there a free trial?"
-2046. "Item"
-2047. "Jane Artist"
-2048. "John Admin"
-2049. "Join Groups"
-2050. "Join Studio"
-2051. "Join groups to connect with the art community"
-2052. "Join our artist community and share your creative work with the world"
-2053. "Join the artist community"
-2054. "Join the conversation with fellow art enthusiasts"
-2055. "Join thousands of artists and galleries on ARTbeat"
-2056. "Join us for the opening of our contemporary art exhibition."
-2057. "Joined ${_formatDate(user.createdAt)}"
-2058. "Joined the platform"
-2059. "Just finished my latest painting! What do you think about using bold colors in abstract art?"
-2060. "Just starting my artistic journey"
-2061. "Keep Commission"
-2062. "Key Metrics"
-2063. "Key Performance Indicators"
-2064. "Large (18x24"
-2065. "Last 12 Months"
-2066. "Last 3 months"
-2067. "Last 30 Days"
-2068. "Last 30 days"
-2069. "Last 7 Days"
-2070. "Last 7 days"
-2071. "Last 90 Days"
-2072. "Last Active"
-2073. "Last Migration Result"
-2074. "Last Sign In"
-2075. "Last Updated: September 1, 2025"
-2076. "Last Updated: September 1, 2025\n"
-2077. "Last Visited"
-2078. "Last seen: ${_formatLastSeen(_participants.first.lastSeen)}"
-2079. "Last seen: ${_formatLastSeen(user.lastSeen)}"
-2080. "Last updated: ${DateTime.now().toString().substring(0, 19)}"
-2081. "Last used: Today"
-2082. "Last used: Yesterday"
-2083. "Late Deliveries"
-2084. "Latest posts from artists"
-2085. "Latest uploads"
-2086. "Layout Style"
-2087. "Lead Clicks"
-2088. "Learn More"
-2089. "Learn digital painting techniques with professional artists."
-2090. "Leave"
-2091. "Leave a message for your followers"
-2092. "Leave blank if unknown"
-2093. "Leave empty for unlimited"
-2094. "Legal Guidelines"
-2095. "Let others know about your availability and skills"
-2096. "Let the adventure begin! 🚀"
-2097. "Let your followers hire you for custom artwork. This quick setup will get you started."
-2098. "Let\"
-2099. "Level ${entry.level} • ${_rewardsService.getLevelTitle(entry.level)}"
-2100. "Level ${userData.level}"
-2101. "Level up your art journey!"
-2102. "Like"
-2103. "Like some artworks to get better recommendations!"
-2104. "Limelight"
-2105. "List"
-2106. "Load more error: $e"
-2107. "Loaded ${_featuredArtworks.length} featured artworks"
-2108. "Loaded ${_recentArtworks.length} recent artworks"
-2109. "Loaded ${_trendingArtworks.length} trending artworks"
-2110. "Loaded ${allEvents.length} events: ${featured.length} featured, ${todayEvents.length} today, ${thisWeekEvents.length} this week"
-2111. "Loaded ${state.items.length} more featured artworks"
-2112. "Loaded ${state.items.length} more recent artworks"
-2113. "Loaded ${state.items.length} more trending artworks"
-2114. "Loaded ZIP code from profile: $profileZipCode"
-2115. "Loading admin data..."
-2116. "Loading art walk details..."
-2117. "Loading art walks..."
-2118. "Loading artist posts..."
-2119. "Loading conversations..."
-2120. "Loading events..."
-2121. "Loading images..."
-2122. "Loading map..."
-2123. "Loading messages..."
-2124. "Loading your artistic journey..."
-2125. "Loading..."
-2126. "Local ARTbeat ("
-2127. "Local Art"
-2128. "Local Art Map"
-2129. "Local Artists"
-2130. "Local Captures"
-2131. "Local Galleries & Museums"
-2132. "Local Pickup"
-2133. "Local Scene"
-2134. "Location"
-2135. "Location & Details"
-2136. "Location (optional)"
-2137. "Location added"
-2138. "Location must be less than 100 characters"
-2139. "Location not available. Please enable location services for navigation."
-2140. "Location not specified"
-2141. "Location permission denied. Navigation features will be limited."
-2142. "Location permission denied. Using saved location or default."
-2143. "Location permission permanently denied. Please enable in app settings."
-2144. "Location permissions are denied"
-2145. "Location permissions are permanently denied"
-2146. "Location permissions are permanently denied, we cannot request permissions."
-2147. "Location services are disabled. Please enable them in settings."
-2148. "Location services are disabled. Using saved location or default."
-2149. "Location services timed out. Using saved location or default."
-2150. "Location: $latitude,$longitude"
-2151. "Login Attempt Window (minutes)"
-2152. "Login failed"
-2153. "Long (> 60 min)"
-2154. "Long press on any message and tap the star icon to add it here"
-2155. "Looking to sell my first pieces"
-2156. "Los Angeles"
-2157. "Lv.$level"
-2158. "MM/DD/YYYY"
-2159. "MM/dd"
-2160. "MMM d, yyyy"
-2161. "MMM d, yyyy • h:mm a"
-2162. "MMM dd"
-2163. "MMM dd, HH:mm"
-2164. "MMM dd, yyyy"
-2165. "MMM dd, yyyy HH:mm"
-2166. "MacBook Pro"
-2167. "Main drawer: Settings > Send Feedback"
-2168. "Maintain your daily streak"
-2169. "Maintenance Message"
-2170. "Maintenance Mode"
-2171. "Maintenance Settings"
-2172. "Major Contributor - Add 20 new public art pieces"
-2173. "Manage ${_studio!.name}"
-2174. "Manage Accounts"
-2175. "Manage Listings"
-2176. "Manage Users"
-2177. "Manage active commissions"
-2178. "Manage blocked contacts"
-2179. "Manage notifications"
-2180. "Manage your approved advertisements and promotional content here. This feature is currently under development."
-2181. "Manage your commission requests"
-2182. "Manage your commission requests and settings"
-2183. "Manage your commissions"
-2184. "Management"
-2185. "Map"
-2186. "Map View"
-2187. "Map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
-2188. "Map view available on mobile"
-2189. "Map-based art walk creation is optimized for mobile devices.\nUse the list view below to select art pieces for your walk."
-2190. "Marathon Walker - Complete a walk of at least 5km"
-2191. "March 15-30, 2024 • Downtown Gallery"
-2192. "Marcus Rodriguez"
-2193. "Mark Complete"
-2194. "Mark all as read"
-2195. "Mark all open as closed"
-2196. "Mark as Artist Post"
-2197. "Mark as read"
-2198. "Mark as unread"
-2199. "Master Curator - Create 10 art walks"
-2200. "Materials Used"
-2201. "Max"
-2202. "Max Active Commissions"
-2203. "Max Active Commissions: $_maxActiveCommissions"
-2204. "Max Active: $_maxActiveCommissions"
-2205. "Max Artworks per User"
-2206. "Max Login Attempts"
-2207. "Max Upload Size (MB)"
-2208. "Maximum Amount"
-2209. "Maximum Uses"
-2210. "Maximum Uses (optional)"
-2211. "Maximum concurrent commissions"
-2212. "Maximum of 10 gifts per day per user"
-2213. "Maybe Later"
-2214. "Media"
-2215. "Media Preview"
-2216. "Media Viewer"
-2217. "Medium"
-2218. "Medium (11x14"
-2219. "Medium (30-60 min)"
-2220. "Member removed successfully"
-2221. "Members"
-2222. "Memory Usage"
-2223. "Message"
-2224. "Message Artist"
-2225. "Message Settings"
-2226. "Message Volume"
-2227. "Message to Client (Optional)"
-2228. "Messages"
-2229. "Messaging Dashboard"
-2230. "Messaging Help"
-2231. "Messaging Profile"
-2232. "Messaging is provided for personal and professional communication.\n\nUsers must not engage in spam, harassment, illegal solicitation, or unauthorized data collection.\n\nARTbeat may monitor reported messages for violations but does not read private messages by default."
-2233. "Metric"
-2234. "Mid-level achievements showing dedication"
-2235. "Migrate Geo Fields"
-2236. "Migrating..."
-2237. "Migration Actions"
-2238. "Migration Results"
-2239. "Migration Statistics"
-2240. "Migration completed"
-2241. "Migration completed successfully!"
-2242. "Migration failed: $e"
-2243. "Mike Manager"
-2244. "Milestone ${widget.index + 1}"
-2245. "Milestone Title"
-2246. "Milestone payment for ${milestone.description}"
-2247. "Milestone payment processed successfully!"
-2248. "Milestones"
-2249. "Min"
-2250. "Mini Palette (\$1) - Small token of appreciation"
-2251. "Minimum Amount"
-2252. "Minimum account age of 7 days to send gifts"
-2253. "Minimum payout amount is \$10"
-2254. "Misleading information"
-2255. "Missing payment information for refund."
-2256. "Missing required metadata for advertisement: adType or duration is null"
-2257. "Missing required metadata for commission: artistId, commissionType, or description is null"
-2258. "Missing required metadata for free gift: recipientId or giftType is null"
-2259. "Missing required metadata for gift payment: recipientId or giftType is null"
-2260. "Missing required metadata for sponsorship: artistId, sponsorshipType, duration, or benefits is null"
-2261. "Missing required metadata for subscription: tier or billingCycle is null"
-2262. "Mixed Media"
-2263. "Mixed Media Artist"
-2264. "Mobile app access"
-2265. "Moderate pending submissions"
-2266. "Moderate reviews (report abuse, vote quality)"
-2267. "Moderation Notes"
-2268. "Moderation Notes (optional)"
-2269. "Moderation Overview"
-2270. "Moderation Queue"
-2271. "Moderation Status Migration"
-2272. "Modern Art Gallery"
-2273. "Modern Art Workshop"
-2274. "Modern Creator"
-2275. "Module-specific categorization"
-2276. "Monitor the approval status of your ads"
-2277. "Month Master"
-2278. "Monthly"
-2279. "Monthly Recurring"
-2280. "Monthly Revenue"
-2281. "Monthly Subscription"
-2282. "Monthly Trends"
-2283. "More Featured Artists"
-2284. "Mosaic Tile"
-2285. "Most Active Area"
-2286. "Most Popular"
-2287. "Most liked captures"
-2288. "Move around to discover amazing art in your area!"
-2289. "Move around to discover art in your area"
-2290. "Move around to discover art nearby"
-2291. "Moving map to ZIP code $_currentZipCode coordinates: ${coordinates.latitude}, ${coordinates.longitude}"
-2292. "Multiple failed login attempts from IP 192.168.1.100"
-2293. "Multiple ways to access the feedback system"
-2294. "Mural"
-2295. "Mural Maven (Faith Ringgold)"
-2296. "Must be > 0"
-2297. "Must be logged in to follow/unfollow users"
-2298. "Mutual"
-2299. "My Art Walks"
-2300. "My Artwalks"
-2301. "My Artwork"
-2302. "My Captures"
-2303. "My Posts"
-2304. "My Profile"
-2305. "My Tickets"
-2306. "My Walks"
-2307. "N/A"
-2308. "NFT Creation"
-2309. "NSURLFileProtectionComplete"
-2310. "Nature Artist"
-2311. "Navigate to comments for post: $postId"
-2312. "Navigate to user profile: $userId"
-2313. "Navigating to $moduleName module"
-2314. "Navigating to manage listings..."
-2315. "Navigating to upload artwork..."
-2316. "Navigation"
-2317. "Navigation Mode:"
-2318. "Navigation started! Follow the turn-by-turn instructions."
-2319. "Navigation to splash failed: $e"
-2320. "Near Me"
-2321. "Nearby Art"
-2322. "Nearby Art Hotspots"
-2323. "Nearby Art Map"
-2324. "Nearby Captures"
-2325. "Nearby Captures (${_nearbyCaptures.length})"
-2326. "Nearby Events"
-2327. "Nearby Walks"
-2328. "Neighborhood"
-2329. "Neighborhood Scout"
-2330. "Network error. Please check your connection."
-2331. "Network error. Please check your internet connection."
-2332. "Network error. Using saved location or default."
-2333. "New"
-2334. "New Achievements Unlocked!"
-2335. "New Artists"
-2336. "New Artwork"
-2337. "New Collection (${_stats!.newCollectionName})"
-2338. "New Commission"
-2339. "New Event Created"
-2340. "New Followers"
-2341. "New Followers Over Time"
-2342. "New Message"
-2343. "New admin user added"
-2344. "New artwork added to your favorites"
-2345. "New commission inquiry received"
-2346. "New goals refresh every Monday"
-2347. "New message reported"
-2348. "Next"
-2349. "Next Billing Date"
-2350. "Night Owl Artist"
-2351. "No ${_selectedTab} captures found"
-2352. "No ${title.toLowerCase()} available"
-2353. "No Analytics Data"
-2354. "No Artwork Yet"
-2355. "No Comment Mentions"
-2356. "No Connection History"
-2357. "No Events Found"
-2358. "No Featured Artists Yet"
-2359. "No Followers Yet"
-2360. "No Group Chats"
-2361. "No Interaction History"
-2362. "No Mentions"
-2363. "No Mutual Connections"
-2364. "No Payout Accounts"
-2365. "No Recent Transactions"
-2366. "No Search History"
-2367. "No Suggestions Available"
-2368. "No View History"
-2369. "No additional perks at the next level."
-2370. "No ads in ${_selectedZone.displayName}"
-2371. "No ads yet"
-2372. "No analytics data available"
-2373. "No analytics data available yet"
-2374. "No art clusters nearby"
-2375. "No art nearby right now"
-2376. "No art walks available"
-2377. "No art walks found"
-2378. "No art walks found for"
-2379. "No artist profile found. Please create an artist profile first."
-2380. "No artists found"
-2381. "No artists online right now"
-2382. "No artists yet"
-2383. "No artwork ID provided"
-2384. "No artwork found matching your criteria"
-2385. "No artworks available"
-2386. "No artworks yet"
-2387. "No bio available"
-2388. "No bio provided"
-2389. "No blocked users"
-2390. "No captures found for"
-2391. "No captures found nearby"
-2392. "No captures yet"
-2393. "No chats found"
-2394. "No collectors yet"
-2395. "No commissions found"
-2396. "No commissions yet"
-2397. "No completed commissions yet"
-2398. "No completed walks yet"
-2399. "No conversations yet"
-2400. "No coupons found"
-2401. "No daily view data available yet"
-2402. "No data available"
-2403. "No deadline set"
-2404. "No description"
-2405. "No details available"
-2406. "No discussion yet"
-2407. "No eligible transactions for refund"
-2408. "No events found"
-2409. "No events match your filters"
-2410. "No exchanging gifts for services outside the platform"
-2411. "No expiration"
-2412. "No featured artists available"
-2413. "No featured templates"
-2414. "No feedback found"
-2415. "No flagged comments to review"
-2416. "No flagged posts to review"
-2417. "No gallery profile found. Please create one first."
-2418. "No gifts yet"
-2419. "No groups created yet"
-2420. "No groups joined yet"
-2421. "No location"
-2422. "No messages yet"
-2423. "No milestones added. Add milestones to break down the work and payments."
-2424. "No notifications yet"
-2425. "No one is online right now"
-2426. "No payment methods added"
-2427. "No paymentIntentId found for transaction ${transaction.id}."
-2428. "No pending events"
-2429. "No pending invitations"
-2430. "No perks unlocked at this level yet."
-2431. "No personalized recommendations yet"
-2432. "No portfolio images added"
-2433. "No portfolios available"
-2434. "No posts found for ${widget.artist.displayName}"
-2435. "No posts yet"
-2436. "No public art captures within 15 miles"
-2437. "No public art found"
-2438. "No recent activity"
-2439. "No recent posts available"
-2440. "No recent transactions"
-2441. "No reported art walks"
-2442. "No sales transactions yet"
-2443. "No sales yet"
-2444. "No saved walks yet"
-2445. "No similar artworks found"
-2446. "No soliciting for gifts"
-2447. "No starred messages"
-2448. "No studios available"
-2449. "No studios available yet"
-2450. "No studios match your search"
-2451. "No templates found"
-2452. "No transactions selected"
-2453. "No trending artworks"
-2454. "No trending content found"
-2455. "No upcoming events"
-2456. "No user found with this email."
-2457. "No user logged in, cannot load activities"
-2458. "No users found"
-2459. "No verified artists found"
-2460. "No viewer data available yet"
-2461. "No walks created yet"
-2462. "No walks in progress"
-2463. "No weekly goals yet"
-2464. "Non-Fiction"
-2465. "Not Accepting Commissions"
-2466. "Not Following Anyone"
-2467. "Not accepting commissions"
-2468. "Not authenticated"
-2469. "Not following any artists yet"
-2470. "Not following anyone yet"
-2471. "Not for Sale"
-2472. "Not provided"
-2473. "Not satisfied with service"
-2474. "Note: Refunds are processed within 5-7 business days,"
-2475. "Notification"
-2476. "Notification Settings"
-2477. "Notification navigation error: $error"
-2478. "Notifications"
-2479. "Notifications screen coming soon!"
-2480. "Now following user!"
-2481. "Number of Art Pieces"
-2482. "Number of art captures created by users"
-2483. "Number of art walks completed by users"
-2484. "Number of public art walks created"
-2485. "Ocean Waves"
-2486. "Offer Services"
-2487. "Office Network"
-2488. "Oil Painting"
-2489. "Oil Painting Tutorial"
-2490. "Old Collection (${_stats!.oldCollectionName})"
-2491. "On post:"
-2492. "On-Time Deliveries"
-2493. "Once you create your profile, you\"
-2494. "Once you delete this studio, there is no going back. Please be certain."
-2495. "Online"
-2496. "Online (${filteredOnlineUsers.length})"
-2497. "Online Presence"
-2498. "Online Users"
-2499. "Online Users (${users.length})"
-2500. "Online now"
-2501. "Only invited members can join"
-2502. "Oops! Something went wrong"
-2503. "Open Menu"
-2504. "Opening ${item["
-2505. "Opening ${mention["
-2506. "Opening artwork details..."
-2507. "Opening camera..."
-2508. "Opening comment in ${comment["
-2509. "Opening profile of ${item["
-2510. "Optional • Show your excitement! 🎨"
-2511. "Options"
-2512. "Order Summary"
-2513. "Order description cannot be empty"
-2514. "Order title cannot be empty"
-2515. "Original Message"
-2516. "Original amount cannot be negative"
-2517. "Original artworks and creative pieces"
-2518. "Other party"
-2519. "Our support team will review your dispute and help resolve it fairly. Please provide as much detail as possible."
-2520. "Overall Rating"
-2521. "Overall Statistics"
-2522. "Overview"
-2523. "Overwrite"
-2524. "Owner"
-2525. "Package"
-2526. "Package Name"
-2527. "Package Tracking"
-2528. "Package-specific categorization"
-2529. "Part of bulk refund operation"
-2530. "Password"
-2531. "Password Reset Required"
-2532. "Password change functionality coming soon"
-2533. "Password is 6 months old"
-2534. "Password must be at least 6 characters"
-2535. "Password policy updated"
-2536. "Pause Real-time"
-2537. "Pay Deposit (\$${_commission!.depositAmount.toStringAsFixed(2)})"
-2538. "Pay Milestone"
-2539. "Pay \$${_finalAmount.toStringAsFixed(2)}"
-2540. "PayPal"
-2541. "PayPal Account"
-2542. "Payment Completed"
-2543. "Payment Information"
-2544. "Payment Management"
-2545. "Payment Method"
-2546. "Payment Methods"
-2547. "Payment completed successfully"
-2548. "Payment failed: $e"
-2549. "Payment failed: ${e.toString()}"
-2550. "Payment method"
-2551. "Payment processing failed"
-2552. "Payment successful!"
-2553. "Payment will be processed securely through the App Store or Google Play. You can manage your subscription in your device settings."
-2554. "Payments are processed via Stripe.\n\nSubscription tiers, ads, events, and in-app purchases are billed in local currency where supported.\n\nRefunds are governed by event- or ad-specific refund policies.\n\nUsers must provide accurate billing information; fraudulent activity may result in termination."
-2555. "Payout Account"
-2556. "Payout Accounts"
-2557. "Payout Amount"
-2558. "Payout Information"
-2559. "Payout Management"
-2560. "Payout Request"
-2561. "Payout Summary"
-2562. "Payout account added successfully!"
-2563. "Payout request submitted successfully! You will receive \$${amount.toStringAsFixed(2)} in 1-3 business days."
-2564. "Payouts"
-2565. "Payouts are processed securely through our payment partner. You will receive an email confirmation once the payout is initiated."
-2566. "Peak Engagement Day"
-2567. "Peak Today"
-2568. "Peak hour: ${messagingStats["
-2569. "Peak: ${messagingStats["
-2570. "Pencil Drawing"
-2571. "Pending"
-2572. "Pending (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted]).length})"
-2573. "Pending Balance"
-2574. "Pending Flags"
-2575. "Pending Invitations"
-2576. "Pending Payouts"
-2577. "Pending Review"
-2578. "Pending Reviews"
-2579. "Pending Verification"
-2580. "People"
-2581. "Per transaction"
-2582. "Percentage Discount"
-2583. "Percentage must be between 1 and 100"
-2584. "Percentage required upfront"
-2585. "Perfect for a quick discovery"
-2586. "Perfect for entry-level creators"
-2587. "Perfect for getting started with your artistic journey"
-2588. "Perfect plan for you"
-2589. "Perfect! Ready to share your art walk! 🎉"
-2590. "Performance"
-2591. "Performance Analytics"
-2592. "Performance Art"
-2593. "Performance Chart\n(Real-time data visualization)"
-2594. "Performance Metrics"
-2595. "Performance Overview"
-2596. "Performance Summary"
-2597. "Performance issues"
-2598. "Perks"
-2599. "Permission denied"
-2600. "Permission denied. Please check your account permissions."
-2601. "Permission denied. Please check your authentication."
-2602. "Personal Information"
-2603. "Personalized for You"
-2604. "Phone number verified successfully"
-2605. "Phone verification failed"
-2606. "Phone verification failed: ${e.message}"
-2607. "Photo Capture"
-2608. "Photo Captures"
-2609. "Photo Hunter"
-2610. "Photo Post"
-2611. "Photograph art during golden hour"
-2612. "Photographer"
-2613. "Photography"
-2614. "Photorealistic"
-2615. "Physical Print"
-2616. "Physical Shipping"
-2617. "Physical artwork shipped to client"
-2618. "Plan Features"
-2619. "Plan Limits & Features"
-2620. "Playground Art"
-2621. "Please accept the terms and conditions"
-2622. "Please add at least one milestone"
-2623. "Please add some content or images"
-2624. "Please add some content or media"
-2625. "Please allow 5-7 business days for your refund to process after approval."
-2626. "Please complete all milestone details"
-2627. "Please complete milestone ${i + 1}"
-2628. "Please describe the issue"
-2629. "Please describe the issue in detail..."
-2630. "Please describe your commission project"
-2631. "Please enter a base price"
-2632. "Please enter a bio"
-2633. "Please enter a description"
-2634. "Please enter a display name"
-2635. "Please enter a location"
-2636. "Please enter a phone number first"
-2637. "Please enter a price"
-2638. "Please enter a title"
-2639. "Please enter a username"
-2640. "Please enter a valid 5-digit ZIP code"
-2641. "Please enter a valid ZIP code (5 digits)"
-2642. "Please enter a valid amount"
-2643. "Please enter a valid distance"
-2644. "Please enter a valid duration"
-2645. "Please enter a valid email"
-2646. "Please enter a valid number"
-2647. "Please enter a valid phone number with country code (e.g., +1234567890)"
-2648. "Please enter a valid price"
-2649. "Please enter an amount"
-2650. "Please enter an event title"
-2651. "Please enter medium"
-2652. "Please enter size"
-2653. "Please enter some content"
-2654. "Please enter style"
-2655. "Please enter the account holder name"
-2656. "Please enter the account number"
-2657. "Please enter the routing number"
-2658. "Please enter the verification code"
-2659. "Please enter your bio"
-2660. "Please enter your display name"
-2661. "Please enter your email"
-2662. "Please enter your name"
-2663. "Please enter your password"
-2664. "Please enter your terms and conditions"
-2665. "Please fill in all required fields"
-2666. "Please fill in all required fields correctly."
-2667. "Please log in to create a post"
-2668. "Please log in to upload captures."
-2669. "Please log in to view notifications."
-2670. "Please log in to view your art walks"
-2671. "Please log in to view your artwork"
-2672. "Please provide a description"
-2673. "Please provide a reason"
-2674. "Please provide additional details"
-2675. "Please provide any additional information about your refund request"
-2676. "Please provide more detailed information"
-2677. "Please read and accept our guidelines to ensure safe and legal art capturing"
-2678. "Please select a commission type"
-2679. "Please select a medium"
-2680. "Please select a payout account"
-2681. "Please select a reason"
-2682. "Please select an estimated completion date"
-2683. "Please select at least one medium"
-2684. "Please select at least one specialty"
-2685. "Please select at least one style"
-2686. "Please sign in to comment"
-2687. "Please sign in to like posts"
-2688. "Please sign in to view and add comments"
-2689. "Please sign in to view commissions"
-2690. "Please sign in to view your rewards"
-2691. "Please sign in to view your tickets"
-2692. "Please specify a timeline"
-2693. "Please specify..."
-2694. "Please try again later"
-2695. "Please wait while we upload your capture"
-2696. "Please wait while your post is being created..."
-2697. "Please write a comment"
-2698. "Popular Captures"
-2699. "Popular Chats"
-2700. "Popular Content"
-2701. "Popular Events"
-2702. "Popular Routes"
-2703. "Popular and trending posts"
-2704. "Popular artists and trending art"
-2705. "Popular artwork"
-2706. "Popular now"
-2707. "Portfolio"
-2708. "Portfolio Images"
-2709. "Portfolios"
-2710. "Portrait of my dog"
-2711. "Post"
-2712. "Post Ad for \$${price.toStringAsFixed(2)}"
-2713. "Post Engagement"
-2714. "Post Options"
-2715. "Post approved"
-2716. "Post created successfully!"
-2717. "Post deleted successfully"
-2718. "Post featured!"
-2719. "Post not found"
-2720. "Post not found. Please refresh and try again."
-2721. "Post photos of your latest creation"
-2722. "Post removed"
-2723. "Post tapped: ${post.id}"
-2724. "Post to Community"
-2725. "Post to artist groups"
-2726. "Post your first ad to get started"
-2727. "Posted an update • ${item["
-2728. "Posted new artwork • ${DateFormat("
-2729. "Posts"
-2730. "Posts (${_flaggedPosts.length})"
-2731. "Potential XP"
-2732. "Potential scam"
-2733. "Preferences reset successfully"
-2734. "Premium feature: Create engaging ads with your artwork"
-2735. "Premium features for art businesses"
-2736. "Preparing upload..."
-2737. "Price (USD)"
-2738. "Price Breakdown"
-2739. "Price Range"
-2740. "Pricing"
-2741. "Pricing Details"
-2742. "Pricing Modifiers"
-2743. "Primary Color"
-2744. "Print-ready PDF"
-2745. "Printmaking"
-2746. "Priority levels (Low, Medium, High, Critical)"
-2747. "Priority support"
-2748. "Privacy Settings"
-2749. "Privacy and notification preferences"
-2750. "Privacy setting"
-2751. "Private"
-2752. "Pro-rated refunds may be issued for unused subscription time."
-2753. "Process Documentation"
-2754. "Process Refund"
-2755. "Process Video"
-2756. "Processed ${events.length} events"
-2757. "Processed on ${DateTime.now().subtract(Duration(days: index)).toString().split("
-2758. "Processed: ${_formatDate(payout.processedAt!)}"
-2759. "Processing & Security"
-2760. "Processing Fee"
-2761. "Processing Time"
-2762. "Processing document ${doc.id}"
-2763. "Processing gift..."
-2764. "Processing rewards..."
-2765. "Processing..."
-2766. "Professional Artist Gallery"
-2767. "Professional Storefront"
-2768. "Professional tools for serious artists"
-2769. "Profile"
-2770. "Profile Analytics"
-2771. "Profile Customization"
-2772. "Profile Elements"
-2773. "Profile Images"
-2774. "Profile Updated"
-2775. "Profile Views"
-2776. "Profile Views Over Time"
-2777. "Profile Visitors"
-2778. "Profile customization saved!"
-2779. "Profile image must be under 5MB"
-2780. "Profile picture updated successfully"
-2781. "Profile screen coming soon!"
-2782. "Profile updated successfully!"
-2783. "Profile • ${_formatDuration((item["
-2784. "Progress"
-2785. "Progress through 10 levels inspired by famous artists:"
-2786. "Project Details"
-2787. "Project Request"
-2788. "Promo Code"
-2789. "Promote"
-2790. "Promote Artwork"
-2791. "Promote Your Art"
-2792. "Provide Quote"
-2793. "Provide evidence (screenshots, files, messages)"
-2794. "Public"
-2795. "Public Art Capture"
-2796. "Public events query returned ${publicEventsQuery.docs.length} documents"
-2797. "Purchase ${package["
-2798. "Purchase Manager Available: ${_purchaseManager.isAvailable}"
-2799. "Quality Metrics"
-2800. "Quality of Work"
-2801. "Query returned ${query.docs.length} documents"
-2802. "Quest Journal"
-2803. "Quest Master Level"
-2804. "Quest Tips"
-2805. "Quest difficulty scales with your level"
-2806. "Questions or complaints may be directed to:\nARTbeat Support\nPO BOX 232 Kinston NC 28502\nsupport@localartbeat.app"
-2807. "Quick Actions"
-2808. "Quick Insights"
-2809. "Quick Setup Wizard"
-2810. "Quick Start with Template"
-2811. "Quick Tags"
-2812. "Quick action buttons in problem areas"
-2813. "Quiet Mode"
-2814. "Quiet Mode Message"
-2815. "QuietModeScreen"
-2816. "Quote Description"
-2817. "Quote accepted! Proceed to payment."
-2818. "Quote accepted. Waiting for deposit payment"
-2819. "Quote provided successfully!"
-2820. "Quote submitted successfully!"
-2821. "REPORTED CONTENT"
-2822. "Rate"
-2823. "Rate Commission"
-2824. "Rating submitted successfully!"
-2825. "Ratings Received"
-2826. "Reach art lovers in high-traffic areas"
-2827. "Ready for Adventure?"
-2828. "Ready for your next art adventure?"
-2829. "Ready to Capture Art?"
-2830. "Ready to Create an Art Walk?"
-2831. "Ready to Start Your Journey?"
-2832. "Ready to curate your own artistic adventure?"
-2833. "Ready to join the artist community!"
-2834. "Real-time Performance"
-2835. "Real-time updates with filters"
-2836. "Reason for Refund"
-2837. "Reason for cancellation:"
-2838. "Reason for rejection (optional)"
-2839. "Reason for reporting (optional)"
-2840. "Reason: ${connection.connectionReason?["
-2841. "Reason: ${payout.failureReason}"
-2842. "Receive Helpful Vote"
-2843. "Received a gift of \$${amount.toStringAsFixed(2)}"
-2844. "Recent Achievements"
-2845. "Recent Activity"
-2846. "Recent Ad Activity"
-2847. "Recent Alerts"
-2848. "Recent Artwork"
-2849. "Recent Chats"
-2850. "Recent Commissions"
-2851. "Recent Content"
-2852. "Recent Payments"
-2853. "Recent Payouts"
-2854. "Recent Posts"
-2855. "Recent Sales"
-2856. "Recent Security Events"
-2857. "Recent Transactions"
-2858. "Recent Trends"
-2859. "Recent Views: ${artwork["
-2860. "Recent logs will be displayed here...\n\n"
-2861. "Recently joined"
-2862. "Recipients must have completed profile verification"
-2863. "Recording refund in database only."
-2864. "Reference Images (Optional)"
-2865. "Reference image uploaded successfully"
-2866. "Refresh"
-2867. "Refresh Achievements"
-2868. "Refresh Analytics"
-2869. "Refresh App State"
-2870. "Refresh Data"
-2871. "Refresh Status"
-2872. "Refresh captures"
-2873. "Refresh the application state and data"
-2874. "Refund Information"
-2875. "Refund Policy"
-2876. "Refund processed successfully"
-2877. "Refund request failed. Please try again."
-2878. "Refund requests are reviewed on a case-by-case basis."
-2879. "Refunds"
-2880. "Regular Users: May browse, follow, favorite, and engage with content.\n\nArtists: May upload artwork, manage profiles, sell work, host events, and access subscription tiers.\n\nGalleries: Manage multiple artists, exhibitions, and commissions.\n\nModerators/Admins: Enforce policies, moderate content, and manage the platform."
-2881. "Reject"
-2882. "Reject Selected"
-2883. "Rejected by admin"
-2884. "Remaining to Migrate"
-2885. "Remove"
-2886. "Remove Favorite"
-2887. "Remove Like"
-2888. "Remove from favorites"
-2889. "Removed admin privileges for $user"
-2890. "Removed from favorites"
-2891. "Removed from liked content"
-2892. "Repeat Client Rate"
-2893. "Repeat Clients"
-2894. "Reply"
-2895. "Reply functionality coming soon"
-2896. "Reply to thread..."
-2897. "Replying to"
-2898. "Replying to ${_replyingTo!.userName}"
-2899. "Report"
-2900. "Report Count"
-2901. "Report Dispute"
-2902. "Report Issue"
-2903. "Report a bug or technical issue"
-2904. "Report any suspicious gift activity"
-2905. "Reported"
-2906. "Request Commission"
-2907. "Request Commission from ${selectedArtist.displayName}"
-2908. "Request Payout"
-2909. "Request Refund"
-2910. "Request custom artwork from talented artists"
-2911. "Requested"
-2912. "Requested: ${_formatDate(payout.requestedAt)}"
-2913. "Requesting from"
-2914. "Require Email Verification"
-2915. "Resend invitation"
-2916. "Reset"
-2917. "Reset Preferences"
-2918. "Reset User Preferences"
-2919. "Reset all user preferences to default"
-2920. "Resolve"
-2921. "Respect community guidelines when sending gift messages"
-2922. "Respond"
-2923. "Respond to Feedback"
-2924. "Respond to the other party\"
-2925. "Respond to user feedback"
-2926. "Responding to: ${feedback.title}"
-2927. "Response Time"
-2928. "Response added successfully"
-2929. "Retry"
-2930. "Returning Clients"
-2931. "Revenue"
-2932. "Revenue ${_analytics!.financialMetrics.revenueGrowth >= 0 ?"
-2933. "Revenue (÷100)"
-2934. "Revenue Breakdown"
-2935. "Revenue Chart"
-2936. "Revenue Growth"
-2937. "Revenue Tracking"
-2938. "Revenue Trend"
-2939. "Revenue Trends"
-2940. "Revenue and analytics"
-2941. "Revenue growth data will appear here"
-2942. "Review ${widget.walkTitle ??"
-2943. "Review Content"
-2944. "Review Order"
-2945. "Review Your Art Walk"
-2946. "Review Your Settings"
-2947. "Review cleared successfully"
-2948. "Review the quote and accept to proceed"
-2949. "Review the request and provide a quote"
-2950. "Revision Rate"
-2951. "Revisions requested"
-2952. "Revisions: $_revisions"
-2953. "Reward"
-2954. "Rewards & Achievements"
-2955. "Rewards earned:"
-2956. "Role: ${user.userType ??"
-2957. "Rollback Migration"
-2958. "Rollback completed successfully!"
-2959. "Rollback failed: $e"
-2960. "Round Trip Journey"
-2961. "Route Analytics"
-2962. "Route Details"
-2963. "Route Name"
-2964. "Routing Number"
-2965. "Run Migration"
-2966. "SCREEN_TITLE"
-2967. "SLA guarantees"
-2968. "SMS quota exceeded. Please try again later."
-2969. "STATUS_UPDATE"
-2970. "Safety Guidelines"
-2971. "Sales"
-2972. "Sales Summary"
-2973. "Sales revenue in period"
-2974. "Sarah Security"
-2975. "Save"
-2976. "Save & Finish"
-2977. "Save Art Walk"
-2978. "Save Changes"
-2979. "Save Profile"
-2980. "Save Settings"
-2981. "Save button pressed"
-2982. "Save interesting walks to find them easily later"
-2983. "Saved"
-2984. "Saving capture..."
-2985. "Saving..."
-2986. "Scalable and searchable"
-2987. "Scanning for art..."
-2988. "Science Fiction"
-2989. "Screenshot"
-2990. "Screenshots"
-2991. "Sculpture in Central Park"
-2992. "Search"
-2993. "Search $tabName"
-2994. "Search & filter"
-2995. "Search Art"
-2996. "Search Captures"
-2997. "Search Connections"
-2998. "Search Conversations"
-2999. "Search Events"
-3000. "Search Messages"
-3001. "Search Posts"
-3002. "Search Results"
-3003. "Search ads..."
-3004. "Search again"
-3005. "Search art walks..."
-3006. "Search artists by name..."
-3007. "Search artists..."
-3008. "Search by content, artist, location, artwork..."
-3009. "Search by name or location"
-3010. "Search by name, category, or location"
-3011. "Search by name, username, or zip code"
-3012. "Search by name, username, or zip code..."
-3013. "Search by title, description, tags..."
-3014. "Search chats..."
-3015. "Search content by title, author, or description..."
-3016. "Search content..."
-3017. "Search error: $e"
-3018. "Search events, venues, artists..."
-3019. "Search failed. Please try again."
-3020. "Search for artists and community members"
-3021. "Search for artists and their captures"
-3022. "Search functionality coming soon!"
-3023. "Search history cleared"
-3024. "Search in: Content, Artist Name, Location, Artwork Title, Description, Medium, Style, Tags"
-3025. "Search in: Title, Description, Tags, Difficulty, Location"
-3026. "Search logs..."
-3027. "Search messages..."
-3028. "Search people..."
-3029. "Search public art..."
-3030. "Search studios..."
-3031. "Search templates..."
-3032. "Search transactions..."
-3033. "Search users by name, email, or username..."
-3034. "Search users..."
-3035. "Search verified artists..."
-3036. "Search..."
-3037. "SearchResultsScreen"
-3038. "Searches"
-3039. "Searching for"
-3040. "Searching for ZIP code $zipCode..."
-3041. "Searching for: $query"
-3042. "Searching in: $tabName"
-3043. "Searching location..."
-3044. "Searching..."
-3045. "Secondary Color"
-3046. "Secure Image Test"
-3047. "Secure Payments"
-3048. "Security Center"
-3049. "Security Overview"
-3050. "Security Score"
-3051. "Security Settings"
-3052. "Security scan completed"
-3053. "See All"
-3054. "See My Plan"
-3055. "See more works by ${capture.artistName}"
-3056. "See trending art discoveries"
-3057. "See trending conversations"
-3058. "See what others are discovering"
-3059. "See what others are discovering in your area"
-3060. "See what\"
-3061. "Select Account"
-3062. "Select Artist"
-3063. "Select Duration"
-3064. "Select Emoji"
-3065. "Select Image"
-3066. "Select Image Source"
-3067. "Select Medium"
-3068. "Select Size"
-3069. "Select Style"
-3070. "Select Tickets"
-3071. "Select Time Range"
-3072. "Select Zone"
-3073. "Select all that apply to personalize your experience"
-3074. "Select all that apply. What materials or techniques do you use most?"
-3075. "Select all that apply:"
-3076. "Select art medium"
-3077. "Select art type"
-3078. "Select date"
-3079. "Select the type of group post you want to create:"
-3080. "Select the types of commissions you offer"
-3081. "Selected Artwork: ${_artworkIds.length} items"
-3082. "Selected Images"
-3083. "Send"
-3084. "Send ${gift["
-3085. "Send Gift"
-3086. "Send Request"
-3087. "Send Response"
-3088. "Send Tip"
-3089. "Sent connection request to"
-3090. "Serial Story"
-3091. "Server Status"
-3092. "Session Time"
-3093. "Set Up Commissions (Step ${_currentStep + 1}/6)"
-3094. "Set modifiers for different commission types and sizes"
-3095. "Set up commission settings"
-3096. "Set up your commission settings to start receiving requests from clients."
-3097. "Set your pricing"
-3098. "Settings Change"
-3099. "Settings exported successfully"
-3100. "Setup Commission Settings"
-3101. "Share"
-3102. "Share Artwork"
-3103. "Share Your Art"
-3104. "Share Your Art Walk"
-3105. "Share an event you\"
-3106. "Share details about your creative process..."
-3107. "Share discoveries with friends"
-3108. "Share functionality would be implemented here"
-3109. "Share photos and details of your latest creation"
-3110. "Share photos from an art event or exhibition"
-3111. "Share photos from your studio"
-3112. "Share thoughts or updates"
-3113. "Share thoughts, updates, or announcements"
-3114. "Share up to 5 photos from your art walk adventure"
-3115. "Share updates with your community"
-3116. "Share with the community"
-3117. "Share your art with the community"
-3118. "Share your artwork to attract followers who appreciate your creativity."
-3119. "Share your artwork with the community"
-3120. "Share your creative process"
-3121. "Share your experience at this event..."
-3122. "Share your experience working with this artist..."
-3123. "Share your favorite art spots by creating a walk"
-3124. "Share your thoughts (optional)"
-3125. "Share your thoughts and updates"
-3126. "Share your thoughts, artwork, or creative process..."
-3127. "Share your thoughts..."
-3128. "Shared by $senderName"
-3129. "Shared from ARTbeat Community\n"
-3130. "Shared successfully"
-3131. "Short (< 30 min)"
-3132. "Show Achievements"
-3133. "Show Bio"
-3134. "Show Birthday"
-3135. "Show Filters"
-3136. "Show Join Date"
-3137. "Show Location"
-3138. "Show Recent Activity"
-3139. "Show this as professional artwork"
-3140. "Show when you joined ARTbeat"
-3141. "Show your appreciation for this artist"
-3142. "Show your creative process with videos or photos"
-3143. "Show your location to other users"
-3144. "Showcase your art with a beautiful, customizable profile"
-3145. "Showcase your artwork"
-3146. "Showcase your best work to attract clients (optional but recommended)"
-3147. "Showcase your latest creation"
-3148. "Showcase your talent and join a vibrant community of creators!"
-3149. "Showcase your work to potential clients"
-3150. "Showing data for: ${_selectedTimeRange =="
-3151. "Sign In"
-3152. "Sign In Now"
-3153. "Sign in failed: $e"
-3154. "Sign in to get personalized recommendations"
-3155. "Sign in to unlock all features:"
-3156. "Signage Art"
-3157. "Signed in anonymously for testing"
-3158. "Similar interests"
-3159. "Size"
-3160. "Size & Duration"
-3161. "Size Modifiers"
-3162. "Size Pricing (added to base price)"
-3163. "Size: ${_formatFileSize(file.sizeBytes)}"
-3164. "Sketcher (Frida Kahlo)"
-3165. "Skip"
-3166. "Small (up to 8x10"
-3167. "Social"
-3168. "Social Butterfly - Share 5 art walks"
-3169. "Social Engagement"
-3170. "Social Engagement Demo"
-3171. "SocialEngagementDemoScreen"
-3172. "Some images were too large and skipped (max 5MB each)"
-3173. "Some images were too large and skipped: ${invalidFiles.join("
-3174. "Someone"
-3175. "Someone engaged with your content!"
-3176. "Something went wrong"
-3177. "Something went wrong. Please try again."
-3178. "Sort By"
-3179. "Sort:"
-3180. "Source"
-3181. "Special requests or requirements"
-3182. "Specialized fields for ${widget.groupType.title} posts will be implemented here."
-3183. "Specialties"
-3184. "Specifications"
-3185. "Sponsor"
-3186. "Sponsor ${widget.artist.displayName}"
-3187. "Sponsored Walk"
-3188. "Sponsored by Local Brew Co."
-3189. "Sponsorship payment completed successfully"
-3190. "Sponsorship transactions require a valid artistId"
-3191. "Sponsorship transactions require a valid duration"
-3192. "Sponsorship transactions require a valid sponsorshipType"
-3193. "Sponsorship transactions require valid benefits"
-3194. "Sponsorship: ${widget.orderDetails.metadata["
-3195. "Sponsorships"
-3196. "Spray Paint"
-3197. "Stack trace: $stackTrace"
-3198. "Stained Glass"
-3199. "Start Accepting Commissions"
-3200. "Start Art Walk"
-3201. "Start Art Walk with Navigation"
-3202. "Start Campaign"
-3203. "Start Capture"
-3204. "Start Creating"
-3205. "Start Date"
-3206. "Start Discovery"
-3207. "Start My Art Walk"
-3208. "Start My Artist Journey"
-3209. "Start Navigation"
-3210. "Start New Conversation"
-3211. "Start Real-time"
-3212. "Start Time"
-3213. "Start Walk"
-3214. "Start Walking"
-3215. "Start Your Artistic Journey"
-3216. "Start a conversation with an artist"
-3217. "Start a conversation with artists and art enthusiasts"
-3218. "Start a conversation with fellow artists and connect with the creative community"
-3219. "Start a group chat to collaborate with artists"
-3220. "Start a new group conversation"
-3221. "Start a thoughtful discussion about this artwork!"
-3222. "Start by giving your walk a name! 🎨"
-3223. "Start by requesting a commission from an artist"
-3224. "Start by uploading and listing your artwork"
-3225. "Start capturing art to see it here!"
-3226. "Start capturing art to see your collection here"
-3227. "Start discovering art to unlock amazing achievements"
-3228. "Start exploring art walks to see your progress here"
-3229. "Start free and upgrade anytime — plans built for creators in 2025"
-3230. "Start navigation to see turn-by-turn directions to each art piece."
-3231. "Start the conversation by sending a message below"
-3232. "Start the conversation!"
-3233. "Start typing to search for people..."
-3234. "Start your adventure with a smile!"
-3235. "Starter Plan"
-3236. "Starting Point"
-3237. "Starting from"
-3238. "Starting price for commissions"
-3239. "Starting price for your work"
-3240. "Starting..."
-3241. "Statistics"
-3242. "Statistics and analytics"
-3243. "Stats"
-3244. "Status"
-3245. "Status Management"
-3246. "Status change"
-3247. "Status updated to ${newStatus.displayName}"
-3248. "Status: ${capture.status.value}"
-3249. "Status: ${commission.status.displayName} • \$${commission.totalPrice.toStringAsFixed(2)}"
-3250. "Stay active on your art journey"
-3251. "Step Master"
-3252. "Storage issue: Please try again or contact support if the problem persists."
-3253. "Streak Warrior"
-3254. "Street Art"
-3255. "Street Art Captures"
-3256. "Street Master (Jean-Michel Basquiat)"
-3257. "Street art, murals, and public art discoveries"
-3258. "Stripe customer not found"
-3259. "Strong Password"
-3260. "Studio Chat"
-3261. "Studio Management"
-3262. "Studio Name"
-3263. "Studio created successfully!"
-3264. "Studio deleted successfully"
-3265. "Studio name is required"
-3266. "Studio name must be at least 3 characters"
-3267. "Studio not found"
-3268. "Studios"
-3269. "Style"
-3270. "Style Collector"
-3271. "Styles"
-3272. "Submit Capture"
-3273. "Submit Quote"
-3274. "Submit Rating"
-3275. "Submit Request"
-3276. "Submit a Review (50+ words)"
-3277. "Subscribe"
-3278. "Subscribe Now - ${_getPriceString(widget.tier)}"
-3279. "Subscribe to"
-3280. "Subscribe to ${_getTierName(widget.tier)}"
-3281. "Subscribe to ${tier.displayName}"
-3282. "Subscription"
-3283. "Subscription Analytics"
-3284. "Subscription Plans"
-3285. "Subscription Tiers: ${PurchaseHelper.getSubscriptionTiers().length}"
-3286. "Subscription failed: ${e.toString()}"
-3287. "Subscription payment completed successfully"
-3288. "Subscription purchase initiated!"
-3289. "Subscription to ${widget.tier.displayName}"
-3290. "Subscription transactions require a valid billingCycle"
-3291. "Subscription transactions require a valid tier"
-3292. "Subscription: ${widget.orderDetails.metadata["
-3293. "Subscriptions"
-3294. "Subtotal"
-3295. "Success Rate"
-3296. "Successfully processed $successCount refunds"
-3297. "Successfully updated ${_selectedTransactionIds.length} transactions"
-3298. "Suggest edits to any public artwork"
-3299. "Suggestion dismissed"
-3300. "Suggestions"
-3301. "Summer Art Fair"
-3302. "Sunset Dreams"
-3303. "Sunset Painting"
-3304. "Support $artistName"
-3305. "Support ${capture.artistName}"
-3306. "Support this artist\"
-3307. "Suspended Users"
-3308. "Suspended: ${_formatDateTime(_currentUser.suspendedAt!)}"
-3309. "Suspicious Login Activity"
-3310. "Suspicious activity is automatically flagged"
-3311. "Suspicious data access detected"
-3312. "System Alerts"
-3313. "System Health"
-3314. "System Information"
-3315. "System Settings"
-3316. "System Status: ${_systemMetrics["
-3317. "Tagged you in a photo"
-3318. "Tagged you in artwork showcase"
-3319. "Tags"
-3320. "Take new capture"
-3321. "Take our quick guided setup to start accepting commissions"
-3322. "Tap below to start exploring"
-3323. "Tap for details"
-3324. "Tap stars to rate"
-3325. "Tap the + button to create your first post"
-3326. "Tap the + button to share your first artwork!"
-3327. "Tap to Take Your Selfie"
-3328. "Tap to add profile photo"
-3329. "Tap to add profile photo (optional)"
-3330. "Tap to select image"
-3331. "Tap to select images (max 5MB each)"
-3332. "Target: < 5 min"
-3333. "Team collaboration (5 members)"
-3334. "Team collaboration (5 users)"
-3335. "Technical Implementation"
-3336. "Technical Question"
-3337. "Technical issues"
-3338. "Tell clients about your process"
-3339. "Tell people more about your offering"
-3340. "Tell the community about an event you\"
-3341. "Tell us about your art journey..."
-3342. "Tell us about your art..."
-3343. "Tell us about your artistic journey..."
-3344. "Tell us about your event - what, when, where..."
-3345. "Tell us about yourself"
-3346. "Tell us about yourself..."
-3347. "Tell us more"
-3348. "Terms & Conditions"
-3349. "Terms of Service"
-3350. "Test Connectivity"
-3351. "Test Image ${index + 1}"
-3352. "Test Notification"
-3353. "Test network and Firebase connectivity"
-3354. "Test notification created"
-3355. "Testing SecureNetworkImage with Firebase Storage URLs"
-3356. "Text Message"
-3357. "Text Post"
-3358. "Textile Art"
-3359. "Thank you for supporting the artist with $amount!"
-3360. "Thank you for your ${rating.toInt()}-star review!"
-3361. "Thanks for your interest in my latest piece!"
-3362. "The Platform is operated from the United States.\n\nUsers outside the US are responsible for compliance with local laws and regulations.\n\nCertain features (payments, ticketing, ads) may not be available in all jurisdictions."
-3363. "The favorite you\"
-3364. "The images below should handle 403 errors gracefully with retry functionality:"
-3365. "The modern platform where artists thrive.\nPersonalized for your creative journey."
-3366. "The phone number is invalid."
-3367. "The requested art walk could not be found."
-3368. "Theme"
-3369. "These terms will be shown to clients before they request a commission"
-3370. "They walked $distanceMiles miles and visited ${widget.celebrationData.artPiecesVisited} amazing art pieces."
-3371. "This Week\"
-3372. "This Weekend"
-3373. "This account has been disabled."
-3374. "This action cannot be undone."
-3375. "This action cannot be undone. Are you sure you want to clear all your activity history?"
-3376. "This action cannot be undone. Are you sure you want to continue?"
-3377. "This artist hasn\"
-3378. "This coupon cannot be applied to this transaction"
-3379. "This demo showcases the engagement options available for each content type in the ARTbeat platform."
-3380. "This feature is available with the Gallery Plan."
-3381. "This feature is under development and will show:\n"
-3382. "This helps us recommend the right plan for you"
-3383. "This is a test notification to verify the system is working!"
-3384. "This is an estimate. The artist will provide the final quote."
-3385. "This is required for instant discovery to show user captures. Continue?"
-3386. "This is such an inspiring piece! I love how you\"
-3387. "This is test data"
-3388. "This is the amount available for payout after processing fees."
-3389. "This migration adds standardized moderation status fields to all content collections (posts, comments, artwork, captures, ads)."
-3390. "This operation cannot be undone. Continue?"
-3391. "This tool migrates ads from the old"
-3392. "This user hasn\"
-3393. "This will OVERWRITE any existing ads in the localAds collection that have the same ID as ads in the old collection.\n\n"
-3394. "This will add geo fields (geohash and geopoint) to all captures with locations."
-3395. "This will add standardized moderation status fields to all content collections. This operation cannot be undone easily. Continue?"
-3396. "This will be posted as an artist post, showcasing your professional work."
-3397. "This will be sent to all active users"
-3398. "This will remove the new moderation status fields from all collections. This action cannot be undone. Continue?"
-3399. "This will update all posts that currently show"
-3400. "This will upgrade your account to unlock artist features and opportunities."
-3401. "This would initiate a gift purchase for ${gift["
-3402. "This would initiate a subscription purchase for ${tier.displayName}."
-3403. "This would initiate an ad campaign purchase for ${package["
-3404. "Threat Detection"
-3405. "Tickets"
-3406. "Tickets Sold"
-3407. "Time Frame"
-3408. "Time: ${_formatTimestamp(activity.createdAt)}"
-3409. "Timeline"
-3410. "Timeline issues"
-3411. "Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2,"
-3412. "Tips and support for messaging"
-3413. "Tips for Success"
-3414. "Tips for resolving disputes:"
-3415. "Tips help artists continue creating amazing public art"
-3416. "Title"
-3417. "Title *"
-3418. "Title is required"
-3419. "To be determined"
-3420. "Today, ${_formatTime(dateTime)}"
-3421. "Today, 9:30 AM\nNew York, NY"
-3422. "Today: ${messagingStats["
-3423. "Toggle expand for post: ${post.id}"
-3424. "Tomorrow, ${_formatTime(dateTime)}"
-3425. "Too many requests. Please try again later."
-3426. "Too many requests. Please wait a few minutes before trying again."
-3427. "Top Collectors"
-3428. "Top Locations"
-3429. "Top Performing Artwork"
-3430. "Top Performing Events"
-3431. "Top Profile Viewers"
-3432. "Top Referral Sources"
-3433. "Top emoji: ${messagingStats["
-3434. "Topics"
-3435. "Total"
-3436. "Total Activity"
-3437. "Total Artworks"
-3438. "Total Captures"
-3439. "Total Comments"
-3440. "Total Commissions"
-3441. "Total Content"
-3442. "Total Distance"
-3443. "Total Earnings"
-3444. "Total Engagement: ${artwork["
-3445. "Total Engagements"
-3446. "Total Events"
-3447. "Total Feedback"
-3448. "Total Flags"
-3449. "Total Followers"
-3450. "Total Found"
-3451. "Total Goals"
-3452. "Total Interactions"
-3453. "Total Likes"
-3454. "Total Messages"
-3455. "Total Paid Out"
-3456. "Total Posts"
-3457. "Total Price"
-3458. "Total Quests Completed"
-3459. "Total Refunded"
-3460. "Total Refunds"
-3461. "Total Revenue"
-3462. "Total Routes"
-3463. "Total Sales"
-3464. "Total Spent"
-3465. "Total Today"
-3466. "Total Transactions"
-3467. "Total Users"
-3468. "Total Views"
-3469. "Total Views: ${artwork["
-3470. "Total Visits"
-3471. "Total Walks"
-3472. "Total XP"
-3473. "Total XP Earned"
-3474. "Total amount: \$${selectedTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}"
-3475. "Total captures fetched: ${captures.length}"
-3476. "Total experience points earned across all activities"
-3477. "Total gallery commission"
-3478. "Total: \$${refundTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}"
-3479. "Track commission milestones"
-3480. "Track earnings from approved advertisements"
-3481. "Track the performance of your advertisements"
-3482. "Track views, engagement, and sales performance"
-3483. "Track your artwork views, engagement, and sales performance"
-3484. "Track your commission performance"
-3485. "Track your performance"
-3486. "Traditional"
-3487. "Traditional Artist"
-3488. "Traditional Painting"
-3489. "Transaction Export"
-3490. "Transaction ID,User ID,User Name,Type,Amount,Currency,Status,Payment Method,Transaction Date,Description,Item Title"
-3491. "Transaction Type"
-3492. "Transaction Volume"
-3493. "Transaction data will appear here"
-3494. "Transaction data will appear here once payments are processed."
-3495. "Transactions"
-3496. "Transform your ARTbeat experience and unlock powerful tools designed specifically for artists and creators."
-3497. "Transit Art"
-3498. "Trending"
-3499. "Trending Content"
-3500. "Trending Events"
-3501. "Trending Now"
-3502. "Trending now"
-3503. "TrendingContentScreen"
-3504. "Trends"
-3505. "Try Again"
-3506. "Try a different search term"
-3507. "Try adjusting your filters"
-3508. "Try adjusting your filters or check back later"
-3509. "Try adjusting your search terms"
-3510. "Try adjusting your search terms or filters"
-3511. "Try changing your filters or check back later"
-3512. "Try moving to a different location or check back later"
-3513. "Try posting more content to increase engagement"
-3514. "Try searching with a different name, username, or zip code"
-3515. "Turn your captures into an amazing art walk experience!"
-3516. "Turn-by-Turn Navigation"
-3517. "Turnaround Time"
-3518. "Twitter"
-3519. "Twitter / X"
-3520. "Type"
-3521. "Type Pricing (added to base price)"
-3522. "Type a message..."
-3523. "Type to search for artists"
-3524. "Type your message..."
-3525. "Type: ${file.type}"
-3526. "URL: ${testUrls[index].length > 60 ?"
-3527. "Unable to access camera. Please try again."
-3528. "Unable to determine start location"
-3529. "Unable to determine your location"
-3530. "Unable to get your location. Please check permissions."
-3531. "Unable to load artist feed"
-3532. "Unable to load artists"
-3533. "Unable to load artwork"
-3534. "Unable to load events"
-3535. "Unable to load user profile"
-3536. "Unable to send gift. Please try again."
-3537. "Unable to start navigation. Check your location settings."
-3538. "Unblock"
-3539. "Unfollow"
-3540. "Unfollow ${artist.displayName}?"
-3541. "Unfollow ${followedUser.username}?"
-3542. "Unfollowed user"
-3543. "Unique Clients"
-3544. "United States"
-3545. "United States (CCPA/State Privacy Laws):\n• Right to know what personal data we collect.\n• Right to request deletion of your personal data.\n• Right to opt out of sale of personal data (we do not sell data).\n\nEU/EEA/UK (GDPR):\n• Right of access, rectification, and erasure.\n• Right to restrict or object to processing.\n• Right to data portability.\n• Right to withdraw consent at any time.\n• Right to lodge a complaint with your local Data Protection Authority.\n\nOther Regions:\n• We honor local legal rights where applicable."
-3546. "Unknown"
-3547. "Unknown Artist"
-3548. "Unknown Artwork"
-3549. "Unknown Event"
-3550. "Unknown Location"
-3551. "Unknown Server"
-3552. "Unknown User"
-3553. "Unknown action"
-3554. "Unknown alert"
-3555. "Unknown error"
-3556. "Unknown error occurred"
-3557. "Unknown time"
-3558. "Unknown user"
-3559. "Unlimited artworks"
-3560. "Unlimited everything"
-3561. "Unlock at Next Level"
-3562. "Unlock powerful tools and opportunities designed for creators"
-3563. "Unlock special privileges as you level up:"
-3564. "Unnamed Favorite"
-3565. "Unnamed Group"
-3566. "Unsupported artwork selection type: ${selectedArtwork.runtimeType}"
-3567. "Untitled"
-3568. "Untitled Art Piece"
-3569. "Unusual Data Access Pattern"
-3570. "Up to 100 artworks"
-3571. "Up to 25 artworks"
-3572. "Up to 3 artworks"
-3573. "Upcoming Events"
-3574. "Update"
-3575. "Update Event"
-3576. "Update feedback status"
-3577. "Update posts showing"
-3578. "Upgrade Now"
-3579. "Upgrade to Artist Pro for unlimited artwork uploads."
-3580. "Upgrade to PRO for Advanced Analytics"
-3581. "Upgrade your account to unlock premium features"
-3582. "Upload Artwork"
-3583. "Upload Capture"
-3584. "Upload New Artwork"
-3585. "Upload failed"
-3586. "Upload failed: ${e.toString()}"
-3587. "Upload reference images"
-3588. "Upload your first artwork to get started!"
-3589. "Uploaded by: ${file.uploadedBy == _currentUserId ?"
-3590. "Uploading image..."
-3591. "Uploading images..."
-3592. "Uploading media..."
-3593. "Uploading profile image..."
-3594. "Uploading video..."
-3595. "Uploading..."
-3596. "Urban Photographer - Add 5 new public art pieces"
-3597. "Urban Wanderer"
-3598. "Usability feedback"
-3599. "Use a template to fill in common fields automatically"
-3600. "Use the + button to invite artists to your gallery"
-3601. "Use the map or browse features to add artwork to this walk."
-3602. "Use your artist dashboard to manage individual posts."
-3603. "User"
-3604. "User $userId"
-3605. "User ${!_currentUser.isVerified ?"
-3606. "User ${newFeaturedStatus ?"
-3607. "User ${user.statusText =="
-3608. "User ${userId.substring(0, 8)}..."
-3609. "User Blocked"
-3610. "User Created"
-3611. "User Details"
-3612. "User Feedback Form"
-3613. "User Information"
-3614. "User Management"
-3615. "User Profile"
-3616. "User Settings"
-3617. "User Suspended"
-3618. "User Type"
-3619. "User accessing large amounts of user data"
-3620. "User administration tools"
-3621. "User cancelled"
-3622. "User data not found"
-3623. "User email not available. Please update your profile email."
-3624. "User must be authenticated"
-3625. "User not authenticated"
-3626. "User not authenticated. Please log in."
-3627. "User not logged in"
-3628. "User requested refund"
-3629. "User: ${users[index % users.length]} | IP: 192.168.1.${100 + index}"
-3630. "UserPostsScreen"
-3631. "Username"
-3632. "Username can only contain letters, numbers, and underscores"
-3633. "Username must be at least 3 characters"
-3634. "Users"
-3635. "Users Nearby"
-3636. "Users must provide a valid name, email, and password during registration. ZIP code is optional and helps personalize content.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms."
-3637. "Users must provide a valid name, email, password, and ZIP code during registration.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms."
-3638. "Users you block will appear here. They won\"
-3639. "Using saved ZIP code: $_currentZipCode"
-3640. "Vector (SVG)"
-3641. "Venues"
-3642. "Verification Code"
-3643. "Verification code expired. Please request a new one."
-3644. "Verification email sent to ${_user!.email}"
-3645. "Verification email sent to ${user.email}. Please check your inbox."
-3646. "Verification failed"
-3647. "Verification failed: $e"
-3648. "Verification failed: ${e.message}"
-3649. "Verified"
-3650. "Verified Artist"
-3651. "Verified Artists"
-3652. "Verified Badge"
-3653. "Verified Users"
-3654. "Verify"
-3655. "Version 2.0.5"
-3656. "Video file too large (max 50MB)"
-3657. "Video upload failed due to authentication issue. Please try again or contact support."
-3658. "Video upload failed. Please check your connection and try again."
-3659. "View"
-3660. "View All"
-3661. "View All Commissions"
-3662. "View All Subscription Options"
-3663. "View Analytics"
-3664. "View Application Logs"
-3665. "View Conversation"
-3666. "View Details"
-3667. "View Gallery"
-3668. "View Profile"
-3669. "View all feedback with filtering"
-3670. "View and edit your profile"
-3671. "View completed commission artworks"
-3672. "View engagement analytics"
-3673. "View recent application logs and errors"
-3674. "View your captures"
-3675. "View your posts and activity"
-3676. "Views"
-3677. "Views to sales percentage"
-3678. "Views vs Revenue"
-3679. "Visionary Creator (El Anatsui)"
-3680. "Visit Individual Artwork"
-3681. "Visit Route"
-3682. "Visits This Week"
-3683. "Visits Today"
-3684. "Voice Message"
-3685. "Waiting for artist to review and quote"
-3686. "Waiting for client to accept quote"
-3687. "Walk Explorer - Complete 5 different art walks"
-3688. "Walk Master"
-3689. "Walk Master - Complete 20 different art walks"
-3690. "Walk Summary"
-3691. "Walk Used by 5+ Users"
-3692. "Walk resumed. Let\"
-3693. "Walk while exploring art"
-3694. "Warning Alerts"
-3695. "Warning: ${imageUrls.length}/${_selectedImages.length} images uploaded successfully"
-3696. "Watercolor Landscape"
-3697. "We accept all major credit cards and PayPal through our secure Stripe payment processing."
-3698. "We may update this Privacy Policy. Updates will be posted with a new Effective Date, and we will notify users where legally required."
-3699. "We share your data only as needed:\n• With Service Providers: Stripe (payments), Firebase (storage, authentication, analytics).\n• With Other Users: Profile details, artwork, captures, events, ads, or comments you choose to make public.\n• For Moderation/Legal Compliance: To comply with DMCA, law enforcement, or platform security.\n• In Business Transfers: If ARTbeat undergoes a merger, acquisition, or asset sale.\n\nWe do not sell your personal information."
-3700. "We use data to:\n• Provide and improve ARTbeat features (profiles, artwork, events, ads, community).\n• Process payments, subscriptions, and refunds.\n• Enable GPS navigation and location-based discovery.\n• Send notifications (reminders, purchases, account alerts).\n• Moderate content and enforce policies.\n• Provide analytics to artists, galleries, and advertisers.\n• Ensure safety, prevent fraud, and comply with legal requirements."
-3701. "Website"
-3702. "Website (Optional)"
-3703. "Week Warrior"
-3704. "Weekend events"
-3705. "Weekend quests focus on exploration"
-3706. "Weekly Goals Performance"
-3707. "Weekly: ${messagingStats["
-3708. "Welcome back!"
-3709. "Welcome back! Discover amazing art"
-3710. "Welcome to ${_getTierName(widget.tier)}! Your subscription is now active."
-3711. "Welcome to ARTbeat Achievements!"
-3712. "Welcome to ARTbeat as an artist! 🎨"
-3713. "Welcome to ARTbeat for Artists"
-3714. "Welcome to ARTbeat!"
-3715. "Welcome to the Artist Community!"
-3716. "Welcome to the artist community! 🎉"
-3717. "Welcome to\nARTbeat"
-3718. "What Changes in Your Account"
-3719. "What You\"
-3720. "What are you promoting?"
-3721. "What describes you best?"
-3722. "What did you enjoy about this walk?"
-3723. "What is the issue?"
-3724. "What payment methods do you accept?"
-3725. "What stood out? (Select all that apply)"
-3726. "What styles best describe your work? Select as many as you like."
-3727. "What type of art do you create?"
-3728. "What types of commissions do you want to accept?"
-3729. "What would you like to share?"
-3730. "What you\"
-3731. "What\"
-3732. "When:"
-3733. "Where is this artwork displayed/stored?"
-3734. "Where to Display"
-3735. "Why Choose ARTbeat?"
-3736. "Why are you excited about this event?..."
-3737. "Work completed. Awaiting client review"
-3738. "Work is in progress"
-3739. "Would migrate"
-3740. "Write detailed artwork descriptions"
-3741. "Year"
-3742. "Year Legend"
-3743. "Yes! Start with our Free plan and upgrade when you\"
-3744. "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle."
-3745. "Yesterday, 2:15 PM\nNew York, NY"
-3746. "You Might Like"
-3747. "You agree to indemnify and hold harmless ARTbeat, its affiliates, employees, and partners from claims, damages, or expenses arising from your use of the Platform."
-3748. "You are now following ${widget.artistProfile.displayName}"
-3749. "You can add, remove, or set a default payment method for your subscriptions."
-3750. "You can edit your profile and add more details later."
-3751. "You gained a new follower!"
-3752. "You have earned ${achievements.length} out of 13 possible achievements"
-3753. "You have no unread activities"
-3754. "You have unfollowed ${widget.artistProfile.displayName}"
-3755. "You have unsaved changes. Are you sure you want to leave?"
-3756. "You lost a follower"
-3757. "You may not:\n\n• Upload unlawful, infringing, defamatory, or harmful content.\n• Circumvent security systems or attempt to reverse-engineer the app.\n• Use ARTbeat for unauthorized advertising or pyramid schemes.\n• Impersonate others or misrepresent affiliation."
-3758. "You may terminate your account at any time via the Account Settings Screen.\n\nARTbeat may terminate accounts for violations of these Terms.\n\nCertain provisions (IP rights, liability, jurisdiction) survive termination."
-3759. "You must be at least 13 years old (or the minimum digital consent age in your country).\n\nIf you are under 18, you may use the Platform only with the consent of a parent or guardian.\n\nBy registering, you confirm that the information provided is accurate and up-to-date."
-3760. "You must be logged in to create a post"
-3761. "You must be logged in to create a studio"
-3762. "You need to add a payout account before requesting a payout."
-3763. "You need to be signed in to comment"
-3764. "You need to visit at least 80% of art pieces to complete early."
-3765. "You retain ownership of artwork, captures, events, and other content you upload.\n\nBy posting, you grant ARTbeat a worldwide, non-exclusive, royalty-free license to store, display, distribute, and promote your content for Platform operation and marketing.\n\nContent must comply with community standards: no hate speech, harassment, nudity (outside artistic context), or unlawful materials."
-3766. "You unfollowed ${artist.displayName}"
-3767. "You unfollowed ${followedUser.fullName}"
-3768. "You\"
-3769. "Young Adult"
-3770. "Your Badge Collection"
-3771. "Your Current Perks"
-3772. "Your Impact"
-3773. "Your Journey at a Glance"
-3774. "Your Location"
-3775. "Your Own Gallery"
-3776. "Your Payment Methods"
-3777. "Your Progress"
-3778. "Your Recent Captures"
-3779. "Your Specialties"
-3780. "Your Statistics"
-3781. "Your account has been upgraded to ${_getTierName(widget.tier)}. Enjoy your new features!"
-3782. "Your achievement gallery awaits!"
-3783. "Your art has been successfully captured and added to the community."
-3784. "Your art walk milestones"
-3785. "Your captures help build Art Walks for the community!"
-3786. "Your comment received 5 likes"
-3787. "Your commission request form is visible to clients"
-3788. "Your communication preferences"
-3789. "Your content is getting appreciation!"
-3790. "Your current location will be used as the starting point. The app will guide you through each art piece in order."
-3791. "Your follow and connection activity will appear here."
-3792. "Your likes and preferences help us find the perfect artworks for you"
-3793. "Your likes, comments, and shares will appear here."
-3794. "Your most active area is ${summary["
-3795. "Your profile analytics will appear here once you start gaining activity."
-3796. "Your progress will be saved and you can resume this walk later."
-3797. "Your purchases"
-3798. "Your recent activity will appear here"
-3799. "Your refund request has been submitted and will be reviewed."
-3800. "Your response"
-3801. "Your search queries will appear here."
-3802. "Your subscription will automatically renew each month. You can cancel anytime from your account settings."
-3803. "Your viewing activity will appear here."
-3804. "You’ll see updates, messages, and alerts here."
-3805. "ZIP Code"
-3806. "ZIP code $zipCode not found in fallback list"
-3807. "Zip Code"
-3808. "\$${((_artwork!.price ?? 0) * 0.15).toStringAsFixed(2)}"
-3809. "\$${((_artwork!.price ?? 0) * 1.15).toStringAsFixed(2)}"
-3810. "\$${(100 + (index * 50)).toStringAsFixed(2)}"
-3811. "\$${(amount / 100).toStringAsFixed(2)} ${currency.toUpperCase()}"
-3812. "\$${(artist["
-3813. "\$${(gift["
-3814. "\$${(item["
-3815. "\$${(package["
-3816. "\$${(totalPendingCommission + totalPaidCommission).toStringAsFixed(2)}"
-3817. "\$${_artwork!.price?.toStringAsFixed(2) ??"
-3818. "\$${_basePrice.toStringAsFixed(2)}"
-3819. "\$${_earnings!.totalEarnings.toStringAsFixed(2)}"
-3820. "\$${_estimatedPrice!.toStringAsFixed(2)}"
-3821. "\$${_finalAmount.toStringAsFixed(2)}"
-3822. "\$${_formatNumber(value.toInt())}"
-3823. "\$${artwork.price!.toStringAsFixed(0)}"
-3824. "\$${artwork.price!.toStringAsFixed(2)}"
-3825. "\$${artwork.price?.toStringAsFixed(2) ??"
-3826. "\$${commission.totalPrice.toStringAsFixed(0)}"
-3827. "\$${commission.totalPrice.toStringAsFixed(2)}"
-3828. "\$${milestone.amount.toStringAsFixed(2)}"
-3829. "\$${monthlyPrice.toStringAsFixed(2)}/month"
-3830. "\$${payout.amount.toStringAsFixed(2)}"
-3831. "\$${price.toStringAsFixed(2)}"
-3832. "\$${totalAmount.toStringAsFixed(2)}"
-3833. "\$${totalPaidCommission.toStringAsFixed(2)}"
-3834. "\$${totalPendingCommission.toStringAsFixed(2)}"
-3835. "\$${totalSalesRevenue.toStringAsFixed(2)}"
-3836. "\$${transaction.amount.toStringAsFixed(2)}"
-3837. "\$${widget.amount.toStringAsFixed(2)}"
-3838. "\$${widget.availableBalance.toStringAsFixed(2)}"
-3839. "\$${widget.orderDetails.originalAmount.toStringAsFixed(2)}"
-3840. "\n... and ${result.errors.length - 5} more"
-3841. "\n⚠️ Errors:\n${result.errors.take(5).join("
-3842. "] != null &&
+507. "? This action cannot be undone."
+508. "@$username"
+509. "@${comment.userName}"
+510. "@${user.username!}"
+511. "@${user.username}"
+512. "@yourhandle"
+513. "A comprehensive feedback collection and management system designed to improve ARTbeat through user insights and bug reports."
+514. "A payment method is required to subscribe. Please add one to continue."
+515. "A verification code has been sent to $phoneNumber"
+516. "A vibrant abstract painting inspired by the colors of a summer sunset."
+517. "A vibrant digital artwork exploring the intersection of technology and creativity."
+518. "A1B2-C3D4-E5F6\nG7H8-I9J0-K1L2\nM3N4-O5P6-Q7R8"
+519. "AI Recommended"
+520. "API Services"
+521. "ARTbeat Community"
+522. "ARTbeat Dashboard"
+523. "ARTbeat Feedback System"
+524. "ARTbeat Privacy Policy\n"
+525. "ARTbeat Social Engagement System"
+526. "ARTbeat Support Request"
+527. "ARTbeat Terms of Service"
+528. "ARTbeat Terms of Service\n"
+529. "ARTbeat User"
+530. "ARTbeat complies with GDPR (EU), CCPA (California), and other applicable data protection laws.\n\nUsers may request data export or deletion via the Privacy Settings Screen.\n\nData may be transferred internationally; by using ARTbeat, you consent to such transfers."
+531. "ARTbeat is provided"
+532. "ARTbeat may update these Terms from time to time. Notice will be provided via app notification or email. Continued use of the Platform constitutes acceptance of changes."
+533. "ARTbeat reserves the right to remove content, suspend accounts, or ban users at its discretion.\n\nUsers may appeal moderation actions by contacting support@localartbeat.app.\n\nRepeated violations may result in permanent account termination."
+534. "About Migration"
+535. "About This Event"
+536. "About You"
+537. "Absolutely stunning work!"
+538. "Abstract"
+539. "Abstract Painting Class"
+540. "Abstract Sculpture"
+541. "Accept Commissions"
+542. "Accept Quote"
+543. "Acceptance Rate"
+544. "Accepting Commissions"
+545. "Access Control"
+546. "Access denied. Admin privileges required."
+547. "Accessible Only"
+548. "Account Created"
+549. "Account Holder Name"
+550. "Account Information"
+551. "Account Number"
+552. "Account Type"
+553. "Account deleted successfully"
+554. "Account editing functionality coming soon."
+555. "Account verification is pending. You cannot receive payouts until verification is complete."
+556. "Achievement"
+557. "Achievement Progress"
+558. "Achievement Unlocked!"
+559. "Achievements"
+560. "Achievements are awarded in three tiers:"
+561. "Acrylic Paint"
+562. "Acrylic Painting"
+563. "Acrylic painting capturing the power and beauty of ocean waves."
+564. "Actions"
+565. "Active"
+566. "Active (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted, CommissionStatus.accepted, CommissionStatus.inProgress]).length})"
+567. "Active Ads (${activeAds.length})"
+568. "Active Threats"
+569. "Active User"
+570. "Active Users"
+571. "Activity"
+572. "Activity & Progress"
+573. "Activity Summary"
+574. "Activity occurred"
+575. "Activity: ${activity.activityType}"
+576. "Ad Campaign Management"
+577. "Ad Content"
+578. "Ad Management"
+579. "Ad Management Coming Soon"
+580. "Ad Performance Analytics"
+581. "Ad Title"
+582. "Ad campaign purchase would be initiated here"
+583. "Ad payment completed successfully"
+584. "Add"
+585. "Add $label"
+586. "Add Account"
+587. "Add Cover Image"
+588. "Add Location"
+589. "Add Milestone"
+590. "Add More"
+591. "Add Payment Method"
+592. "Add Payout Account"
+593. "Add Portfolio Image"
+594. "Add Post"
+595. "Add a bank account or PayPal account to receive your earnings."
+596. "Add a comment..."
+597. "Add a credit card or other payment method to manage your subscription"
+598. "Add a tag"
+599. "Add any additional details or notes..."
+600. "Add content and help grow the community"
+601. "Add new artwork to your portfolio"
+602. "Add portfolio images"
+603. "Add some art pieces to create your path 🗺️"
+604. "Add tag"
+605. "Add tags"
+606. "Add tags (separate with commas)"
+607. "Add tags to help others find your studio"
+608. "Add test notification"
+609. "Add to Art Walk"
+610. "Add to favorites"
+611. "Add up to 10 images of your artwork:"
+612. "Add your artwork"
+613. "Added on ${_formatDate(createdAt)}"
+614. "Additional Details"
+615. "Additional Fields"
+616. "Additional Information (Optional)"
+617. "Additional Requirements"
+618. "Additional charges for different types and sizes"
+619. "Admin"
+620. "Admin Access Control"
+621. "Admin Actions"
+622. "Admin Command Center"
+623. "Admin Control Center"
+624. "Admin Dashboard"
+625. "Admin Features"
+626. "Admin Flags"
+627. "Admin Information"
+628. "Admin Interface"
+629. "Admin Notes"
+630. "Admin Settings"
+631. "Admin authentication required"
+632. "Admin processed refund"
+633. "AdminMessagingService not initialized"
+634. "Ads"
+635. "Ads must comply with community and legal standards.\n\nARTbeat reserves the right to reject or remove ads at its discretion.\n\nAd performance analytics are aggregated and anonymized."
+636. "Advanced"
+637. "Advanced Filters"
+638. "Advanced Pricing"
+639. "Advanced Search & Filters"
+640. "Advanced achievements for true art enthusiasts"
+641. "Advanced analytics"
+642. "Advanced features for professional artists"
+643. "Advanced insights"
+644. "Advanced reporting"
+645. "Advanced security"
+646. "Advertisement Packages"
+647. "Advertisement transactions require a valid adType"
+648. "Advertisement transactions require a valid duration"
+649. "Advertisement: ${widget.orderDetails.metadata["
+650. "Advertisements"
+651. "After"
+652. "Album: ${_albumTitleController.text}"
+653. "Alerts"
+654. "Alex Johnson"
+655. "Alice Johnson"
+656. "All"
+657. "All (${_allCommissions.length})"
+658. "All Artists"
+659. "All Content"
+660. "All Events"
+661. "All Feedback"
+662. "All Quests"
+663. "All caught up!"
+664. "All dates"
+665. "All events have been reviewed."
+666. "All events query returned ${allEventsQuery.docs.length} documents"
+667. "All gifts are non-refundable"
+668. "All notifications marked as read"
+669. "All transactions are processed securely through Apple Pay"
+670. "Allow commercial use of artwork"
+671. "Allow others to see and register for this event"
+672. "Allow others to see your email address"
+673. "Allow others to see your phone number"
+674. "Almost Full"
+675. "Almost there! Finalize your route 🎯"
+676. "Already signed in: ${user.uid}"
+677. "Amazing Street Art"
+678. "Amazing art scene around you"
+679. "Amazing artwork on ARTbeat"
+680. "Amazing collaboration with @$userId on this piece!"
+681. "Amount"
+682. "Amount (USD)"
+683. "Amount (\$)"
+684. "Amount Range"
+685. "Amount exceeds available balance"
+686. "Amount must be greater than 0"
+687. "Amount: \$${milestone.amount.toStringAsFixed(2)}"
+688. "An error occurred"
+689. "An unexpected error occurred. Please try again."
+690. "An unexpected error occurred: $e"
+691. "Analytics"
+692. "Analytics & Insights"
+693. "Analytics Dashboard"
+694. "Analytics data not available"
+695. "Announce upcoming events"
+696. "Anonymous User"
+697. "Anonymous Walker"
+698. "Anonymous posts fix completed! Check logs for details."
+699. "Any additional details, references, or special requests..."
+700. "Anyone can find and join this studio"
+701. "App Check"
+702. "App Description"
+703. "App Version"
+704. "Apple Sign-In failed: $errorMessage"
+705. "Apple Sign-In is not available on this device."
+706. "Apple Sign-In was cancelled."
+707. "Apply"
+708. "Apply Filters"
+709. "Appreciation"
+710. "Approval Status Tracking"
+711. "Approve"
+712. "Approve Selected"
+713. "Approved by admin"
+714. "Architecture"
+715. "Are you an artist?"
+716. "Are you sure you want to $action? This action cannot be undone."
+717. "Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered."
+718. "Are you sure you want to abandon this walk? Your progress will be lost."
+719. "Are you sure you want to cancel the invitation to ${invitation.artistName}?"
+720. "Are you sure you want to cancel this commission? This action cannot be undone."
+721. "Are you sure you want to clear all ${capture.reportCount} report(s) from this capture?"
+722. "Are you sure you want to clear all chat history? This action cannot be undone."
+723. "Are you sure you want to clear the application cache?"
+724. "Are you sure you want to create a backup of the database?"
+725. "Are you sure you want to delete"
+726. "Are you sure you want to delete the account"
+727. "Are you sure you want to delete the coupon"
+728. "Are you sure you want to delete this ${content.type}?"
+729. "Are you sure you want to delete this art walk? This action cannot be undone."
+730. "Are you sure you want to delete this feedback? This action cannot be undone."
+731. "Are you sure you want to delete this payout account? This action cannot be undone."
+732. "Are you sure you want to delete this post?"
+733. "Are you sure you want to delete this studio? This action cannot be undone."
+734. "Are you sure you want to permanently delete"
+735. "Are you sure you want to permanently delete this capture? This action cannot be undone."
+736. "Are you sure you want to process refunds for all selected transactions?"
+737. "Are you sure you want to remove this from your favorites?"
+738. "Are you sure you want to remove this user\"
+739. "Are you sure you want to reset all settings to default values?"
+740. "Are you sure you want to reset all user preferences to default?"
+741. "Are you sure you want to unblock ${user.displayName}? They will be able to message you again."
+742. "Art Capture"
+743. "Art Collector"
+744. "Art Collector - View 10 different art pieces"
+745. "Art Commentator - Leave 10 comments on art walks"
+746. "Art Community"
+747. "Art Curator - Create 3 art walks"
+748. "Art Discovery"
+749. "Art Discussion"
+750. "Art Enthusiast"
+751. "Art Exhibition"
+752. "Art Expert - View 50 different art pieces"
+753. "Art Explorer"
+754. "Art Gallery"
+755. "Art Information"
+756. "Art Legend (Leonardo da Vinci)"
+757. "Art Lovers Group"
+758. "Art Medium"
+759. "Art Mediums"
+760. "Art Styles"
+761. "Art Type"
+762. "Art Walk"
+763. "Art Walk Adventure"
+764. "Art Walk Analytics"
+765. "Art Walk Details"
+766. "Art Walk Experience"
+767. "Art Walk Influencer"
+768. "Art Walk Map"
+769. "Art Walk Map Preview"
+770. "Art Walk Not Found"
+771. "Art Walks"
+772. "Art enthusiast and creative explorer"
+773. "Art events and spaces near you"
+774. "Art exhibitions, workshops, and community events"
+775. "Art hotspot! $_nearbyArtCount artworks nearby!"
+776. "Art hotspots loading..."
+777. "Art in this Walk"
+778. "Art walk not found"
+779. "Art walks in your area"
+780. "Art-related: 78%"
+781. "ArtWalkCelebrationScreen"
+782. "ArtWalkEditScreen"
+783. "Artist"
+784. "Artist (optional)"
+785. "Artist Approved Ads"
+786. "Artist Bio"
+787. "Artist Community"
+788. "Artist Dashboard"
+789. "Artist Discovery"
+790. "Artist Features"
+791. "Artist Feed"
+792. "Artist John Doe followed you"
+793. "Artist Management Hub"
+794. "Artist Marketing"
+795. "Artist Onboarding"
+796. "Artist Performance"
+797. "Artist Post"
+798. "Artist Profile"
+799. "Artist Profile Engagement"
+800. "Artist Tools & Analytics"
+801. "Artist Update"
+802. "Artist and creator"
+803. "Artist selection will be implemented soon. For now, this feature requires selecting a specific artist."
+804. "Artist: ${capture.artistName}"
+805. "Artist: ${commission.artistName}"
+806. "ArtistCommunityFeedScreen"
+807. "ArtistOnboardingScreen"
+808. "Artists"
+809. "Artists Gallery"
+810. "Artists Nearby"
+811. "Artists Online"
+812. "Artists and galleries may create public or private events.\n\nTickets (free, paid, VIP) are sold through Stripe.\n\nRefunds depend on the event\"
+813. "Artists are working on amazing pieces. Check back soon!"
+814. "Artists near you"
+815. "Artists will appear here as they join the community"
+816. "Artwork"
+817. "Artwork Analytics"
+818. "Artwork Count"
+819. "Artwork Details"
+820. "Artwork Engagement"
+821. "Artwork Management"
+822. "Artwork Nearby"
+823. "Artwork Post"
+824. "Artwork Sales"
+825. "Artwork Sales Revenue"
+826. "Artwork Selection"
+827. "Artwork Sold"
+828. "Artwork Views"
+829. "Artwork deleted"
+830. "Artwork deleted successfully"
+831. "Artwork for commercial use"
+832. "Artwork not found"
+833. "Artwork status updated to $newStatus"
+834. "Artwork updated successfully"
+835. "Artwork views in period"
+836. "Artwork • ${_formatDuration((item["
+837. "Artworks"
+838. "Artworks Sold"
+839. "Artworks sold in period"
+840. "Attending Event"
+841. "Audio Content"
+842. "Audio Details"
+843. "Audio Preview"
+844. "Audio content not found"
+845. "Audio file selected"
+846. "Audio file too large (max 10MB)"
+847. "Authentication"
+848. "Authentication failed: ${e.message}"
+849. "Author Note: ${_authorNoteController.text}"
+850. "Auto-approve Content"
+851. "Auto-renew: ${_subscription!.autoRenew ?"
+852. "Automatic device & app version capture"
+853. "Available Ad Packages"
+854. "Available Ad Packages: ${PurchaseHelper.getAvailableAdPackages().length}"
+855. "Available Art Pieces (${_availableArtPieces.length})"
+856. "Available Balance"
+857. "Available Gifts"
+858. "Available Gifts: ${PurchaseHelper.getAvailableGifts().length}"
+859. "Available Subscription Tiers"
+860. "Available Types: ${_artistSettings!.availableTypes.map((t) => t.displayName).join("
+861. "Available balance"
+862. "Available for sale"
+863. "Available with Artist Pro Plan"
+864. "Avant-Garde Explorer (Zarina Hashmi)"
+865. "Avant-garde"
+866. "Average Commission"
+867. "Average Commission Value"
+868. "Average Rating"
+869. "Average Revenue"
+870. "Average Turnaround: $_averageTurnaroundDays days"
+871. "Average Views per Day"
+872. "Average commission rate"
+873. "Average revenue data will appear here"
+874. "Average revenue per transaction: ${_formatCurrency(_analytics!.financialMetrics.averageRevenuePerUser)}"
+875. "Avg Level"
+876. "Avg Session"
+877. "Avg Transaction"
+878. "Avg Turnaround"
+879. "Avg members: 8.5"
+880. "Avg. Commission"
+881. "Avg: ${messagingStats["
+882. "Back"
+883. "Backend"
+884. "Badges"
+885. "Ban Selected"
+886. "Bank Account"
+887. "Bank Name"
+888. "Banned Words (comma-separated)"
+889. "Base Price"
+890. "Base Price (\$)"
+891. "Base Price: \$${_artistSettings!.basePrice.toStringAsFixed(2)}"
+892. "Base Pricing"
+893. "Based on your interests: ${_selectedInterests.take(2).join("
+894. "Basic Features"
+895. "Basic Information"
+896. "Basic Profile"
+897. "Basic Settings"
+898. "Basic analytics"
+899. "Basic community access"
+900. "Basic features for artists"
+901. "Basic features to get started"
+902. "Be professional and respectful"
+903. "Be specific and factual about the issue"
+904. "Be the first to earn points in this category!"
+905. "Be the first to post!"
+906. "Be the first to share your creative work and connect with the community."
+907. "Be the first to share your creative work!"
+908. "Become an Art Walk Influencer with featured profile"
+909. "Become an Artist"
+910. "Before"
+911. "Before You Capture"
+912. "Begin exploring art walks to earn your first achievements and start climbing the levels!"
+913. "Best Streak"
+914. "Billing Cycle"
+915. "Bio"
+916. "Bio must be less than 500 characters"
+917. "Black & White"
+918. "Blocked IPs"
+919. "Blocked Users"
+920. "Blocked on ${_formatBlockedDate(user.blockedAt ?? DateTime.now())}"
+921. "Blocked user report"
+922. "Blocked: ${messagingStats["
+923. "Bob Gallery"
+924. "Bold"
+925. "Book"
+926. "Boost Your Post"
+927. "Bounce Rate"
+928. "Browse"
+929. "Browse All Art Walks"
+930. "Browse All Artists"
+931. "Browse All Artwork"
+932. "Browse All Captures"
+933. "Browse Artists"
+934. "Browse Artwork"
+935. "Browse Templates"
+936. "Browse Walks"
+937. "Browse artists and request custom artwork tailored to your needs."
+938. "Browse by Category"
+939. "Browse by art categories"
+940. "Browse commissions & requests"
+941. "Browse template artworks and styles"
+942. "Brush Pack (\$5) - Show greater support"
+943. "Brush Trailblazer (Yayoi Kusama)"
+944. "Budget (USD)"
+945. "Budget constraints"
+946. "Bug reports with screenshots"
+947. "Build Number"
+948. "Build Your Portfolio"
+949. "Building Art"
+950. "Built-in payment processing with Stripe integration"
+951. "Bulk Actions"
+952. "Bulk action functionality coming soon"
+953. "Bulk admin refund"
+954. "Bulk management actions"
+955. "Business Plan"
+956. "Business Settings"
+957. "By ${content.authorName}"
+958. "By ${post.userName}"
+959. "By ${review.authorName}"
+960. "By Priority"
+961. "By accessing or using ARTbeat (the"
+962. "By: ${noteData["
+963. "CPU Usage"
+964. "Cache Duration (hours)"
+965. "Calculate Price"
+966. "Camera"
+967. "Camera capture failed: $e"
+968. "Camera capture was cancelled."
+969. "Camera not available on this device."
+970. "Camera permission required. Please enable camera access in settings."
+971. "Can I change my plan later?"
+972. "Cancel"
+973. "Cancel Commission"
+974. "Cancel invitation"
+975. "Cancelled"
+976. "Cannot open ${contentType} content"
+977. "Canvas Print"
+978. "Capture"
+979. "Capture Analytics"
+980. "Capture Details"
+981. "Capture Engagement"
+982. "Capture illuminated artworks"
+983. "Capture not found"
+984. "Capture photos of artworks"
+985. "Capture saved successfully!"
+986. "Capture uploaded successfully! Rewards are being processed."
+987. "CaptureUpload: Art mediums available: ${_artMediums.length}"
+988. "CaptureUpload: Art types available: ${_artTypes.length}"
+989. "CaptureUpload: Disclaimer not accepted"
+990. "CaptureUpload: Form validation failed"
+991. "CaptureUpload: Selected art medium: $_selectedArtMedium"
+992. "CaptureUpload: Selected art type: $_selectedArtType"
+993. "CaptureUpload: Submit button tapped"
+994. "CaptureUploadScreen: Art mediums count: ${_artMediums.length}"
+995. "CaptureUploadScreen: Art types count: ${_artTypes.length}"
+996. "Captured"
+997. "Captured 2 hours ago"
+998. "Captured Art"
+999. "Captures"
+1000. "Carol Davis"
+1001. "Categories"
+1002. "Category"
+1003. "Category assignment"
+1004. "Category:"
+1005. "Center on my location"
+1006. "Century Club"
+1007. "Change Password"
+1008. "Change Photo"
+1009. "Changed my mind"
+1010. "Changes to these settings will apply to all your chats."
+1011. "Chapter ${_currentChapterIndex + 1} of ${_chapters.length}"
+1012. "Chapter ${chapter.chapterNumber}"
+1013. "Chapters"
+1014. "Chapters: ${_chaptersController.text}"
+1015. "Charlie Davis"
+1016. "Chart visualization will be implemented\nwith real Firebase data using fl_chart"
+1017. "Chat"
+1018. "Chat Settings"
+1019. "Chat archived"
+1020. "Check back later for featured artists"
+1021. "Check back later for new artwork!"
+1022. "Check back later for new events"
+1023. "Check back later for trending content!"
+1024. "Check back later to see who\"
+1025. "Check back soon for amazing featured artists"
+1026. "Check back soon for new challenges!"
+1027. "Check debug console for details"
+1028. "Check out this Art Walk:"
+1029. "Check out this art capture on ArtBeat!\n\n$title\n$text"
+1030. "Check out this event on ARTbeat! $eventUrl"
+1031. "Check out who\"
+1032. "Check your goals daily to track progress"
+1033. "Checking initialization..."
+1034. "Choose Image Source"
+1035. "Choose Plan"
+1036. "Choose Your Artist Plan"
+1037. "Choose a plan"
+1038. "Choose a sponsorship tier:"
+1039. "Choose a unique username"
+1040. "Choose an artist for your commission"
+1041. "Choose the perfect plan to showcase and sell your art"
+1042. "City, State"
+1043. "Clear"
+1044. "Clear ${walk.reportCount} report(s) from"
+1045. "Clear All History"
+1046. "Clear Filters"
+1047. "Clear History"
+1048. "Clear Reports"
+1049. "Clear Search History"
+1050. "Clear application cache and temporary files"
+1051. "Client Metrics"
+1052. "Client: ${commission.clientName}"
+1053. "Clients can now request commissions from you"
+1054. "Clients cannot request new commissions from you"
+1055. "Clients will be able to request work"
+1056. "Close"
+1057. "Close All Open Feedback"
+1058. "Coffee Shop Art Tour"
+1059. "Coffee Shop Tour"
+1060. "Color Blender (Jacob Lawrence)"
+1061. "Color Scheme"
+1062. "Comment"
+1063. "Comment Engagement"
+1064. "Comment Type: ${comment.type}"
+1065. "Comment approved"
+1066. "Comment deleted"
+1067. "Comment removed"
+1068. "Commented on"
+1069. "Comments"
+1070. "Comments (${_flaggedComments.length})"
+1071. "Commercial Use"
+1072. "Commission ${widget.artist.displayName}"
+1073. "Commission Analytics"
+1074. "Commission Artists"
+1075. "Commission Details"
+1076. "Commission Dispute"
+1077. "Commission Earned"
+1078. "Commission Earnings"
+1079. "Commission Gallery"
+1080. "Commission Hub"
+1081. "Commission ID"
+1082. "Commission Progress"
+1083. "Commission Request"
+1084. "Commission Request from ${FirebaseAuth.instance.currentUser?.displayName ??"
+1085. "Commission Settings"
+1086. "Commission Summary"
+1087. "Commission Templates"
+1088. "Commission Timeline"
+1089. "Commission Title"
+1090. "Commission Type"
+1091. "Commission Type Modifiers"
+1092. "Commission Types"
+1093. "Commission Wizard"
+1094. "Commission accepted! Proceed to payment."
+1095. "Commission cancelled successfully"
+1096. "Commission delivered successfully"
+1097. "Commission has been cancelled"
+1098. "Commission is under dispute"
+1099. "Commission marked as completed!"
+1100. "Commission payment completed successfully"
+1101. "Commission request created: $commissionId"
+1102. "Commission request sent to ${selectedArtist.displayName}!"
+1103. "Commission request submitted successfully!"
+1104. "Commission settings saved successfully!"
+1105. "Commission transactions require a valid artistId"
+1106. "Commission transactions require a valid commissionType"
+1107. "Commission transactions require a valid description"
+1108. "Commission: ${widget.orderDetails.metadata["
+1109. "CommissionHubScreen"
+1110. "Commissions"
+1111. "Commissions by Type"
+1112. "Communication"
+1113. "Communication problems"
+1114. "Community"
+1115. "Community Activity"
+1116. "Community Analytics"
+1117. "Community Art"
+1118. "Community Capture"
+1119. "Community Connector"
+1120. "Community Contribution"
+1121. "Community Features"
+1122. "Community Feed"
+1123. "Community Guidelines"
+1124. "Community Inspiration"
+1125. "Community Member"
+1126. "Community Posts"
+1127. "Community Views"
+1128. "Community features"
+1129. "Community posts and discussions"
+1130. "CommunityProvider access failed: $e"
+1131. "Complete"
+1132. "Complete $count quests"
+1133. "Complete Art Walk"
+1134. "Complete Order (Free)"
+1135. "Complete Your Walk"
+1136. "Complete an Art Walk"
+1137. "Complete art walks and explore new routes"
+1138. "Complete daily quests to progress weekly goals"
+1139. "Complete quests daily to build your streak"
+1140. "Complete solution for growing businesses"
+1141. "Complete this quest for rewards"
+1142. "Complete your commission setup"
+1143. "Complete your first art walk to see it here"
+1144. "Completed"
+1145. "Completed (${_getCommissionsByStatus([CommissionStatus.completed, CommissionStatus.delivered]).length})"
+1146. "Completing early means:"
+1147. "Completing..."
+1148. "Completion Rate"
+1149. "Comprehensive admin interface for managing feedback"
+1150. "Configure platform settings"
+1151. "Configure your commission preferences"
+1152. "Confirm"
+1153. "Confirm Bulk Action"
+1154. "Congratulations to ${user.displayName ??"
+1155. "Congratulations!"
+1156. "Congratulations! You\"
+1157. "Connect"
+1158. "Connect with artists"
+1159. "Connect with artists and creators"
+1160. "Connect with artists and explore their work"
+1161. "Connect with fellow artists"
+1162. "Connect with fellow artists and participate in exclusive events"
+1163. "Connect with other artists and art enthusiasts"
+1164. "Connect with talented artists in your community"
+1165. "Connected with"
+1166. "Connections"
+1167. "Constructive Critique"
+1168. "Contact Information"
+1169. "Contemporary"
+1170. "Contemporary Art Exhibition"
+1171. "Content"
+1172. "Content Deleted"
+1173. "Content Moderation"
+1174. "Content Not Found"
+1175. "Content Quality"
+1176. "Content Settings"
+1177. "Content moderation failed: ${moderationResult.reason}"
+1178. "Content not found"
+1179. "Contributions"
+1180. "Conversion Rate"
+1181. "Core System"
+1182. "Could not load image"
+1183. "Could not load nearby activities: $e"
+1184. "Could not open URL: $sourceUrl"
+1185. "Could not record view, probably offline: ${e.toString()}"
+1186. "Coupon ${newStatus == CouponStatus.active ?"
+1187. "Coupon Type"
+1188. "Coupon applied! You saved \$${discountAmount.toStringAsFixed(2)}"
+1189. "Cover Image"
+1190. "Create ${widget.groupType.title} Post"
+1191. "Create & Share"
+1192. "Create Art Walk"
+1193. "Create Artist Post"
+1194. "Create Artist Profile"
+1195. "Create Coupon"
+1196. "Create Event"
+1197. "Create Group"
+1198. "Create Group Post"
+1199. "Create New Post"
+1200. "Create Post"
+1201. "Create Profile"
+1202. "Create Studio"
+1203. "Create Walk"
+1204. "Create Your Art Walk Journey"
+1205. "Create Your Profile"
+1206. "Create a New Art Walk"
+1207. "Create a new art walking route for others to follow"
+1208. "Create a professional profile to showcase and sell your artwork"
+1209. "Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city."
+1210. "Create ads featuring your artwork to reach more art lovers"
+1211. "Create and manage your advertising campaigns"
+1212. "Create and promote your exhibitions and art shows"
+1213. "Create your artist profile and showcase your work to art enthusiasts worldwide."
+1214. "Create your first art walk to get started"
+1215. "Create your first coupon to get started"
+1216. "Create your first event by tapping the + button"
+1217. "Create your first group to connect with other artists"
+1218. "CreateArtWalkScreen"
+1219. "CreateGroupPostScreen"
+1220. "CreatePostScreen"
+1221. "Created"
+1222. "Created new event • ${DateFormat("
+1223. "Created: ${artwork.createdAt.toString().split("
+1224. "Created: ${capture.createdAt.toLocal().toString().split("
+1225. "Creating art as a hobby"
+1226. "Creating unique pieces that blend traditional and digital techniques."
+1227. "Creative Process"
+1228. "Creative Studio"
+1229. "Creator Plan"
+1230. "Credits can be used to purchase ad products"
+1231. "Credits can be used to purchase subscriptions"
+1232. "Credits support artists indirectly through platform engagement"
+1233. "Critical Alerts"
+1234. "Cultural Art"
+1235. "Cultural Curator (Shirin Neshat)"
+1236. "Curated experiences"
+1237. "Curated selections"
+1238. "Current"
+1239. "Current Artists"
+1240. "Current Location"
+1241. "Current Location (${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)})"
+1242. "Current Streak"
+1243. "Current Week"
+1244. "Current location: $latitude, $longitude"
+1245. "Current time: $now"
+1246. "Currently accepting commissions"
+1247. "Custom"
+1248. "Custom Colors"
+1249. "Custom Palette"
+1250. "Custom Requirements"
+1251. "Custom Size"
+1252. "Custom branding"
+1253. "Custom integrations"
+1254. "Custom portraits of people or pets"
+1255. "Customer not found"
+1256. "DEBUG: $message"
+1257. "DEBUG: Achievement - ${achievement.type.name}: ${achievement.title}"
+1258. "DEBUG: Adding ${validFiles.length} valid images to selection"
+1259. "DEBUG: Audio file size: ${audioFile.lengthSync()} bytes"
+1260. "DEBUG: Audio file too large"
+1261. "DEBUG: Audio picker result: ${result?.files.single.path}"
+1262. "DEBUG: Audio selected successfully"
+1263. "DEBUG: Audio upload complete. URL: $audioUrl"
+1264. "DEBUG: Error loading achievements: $e"
+1265. "DEBUG: Error loading pre-filled image: $e"
+1266. "DEBUG: Error picking audio: $e"
+1267. "DEBUG: Error picking video: $e"
+1268. "DEBUG: Found ${achievements.length} achievements"
+1269. "DEBUG: GestureDetector tapped!"
+1270. "DEBUG: Including pre-filled discovery image: $_prefilledImageUrl"
+1271. "DEBUG: Loading achievements for user..."
+1272. "DEBUG: Loading pre-filled image from discovery: ${widget.prefilledImageUrl}"
+1273. "DEBUG: No audio file selected"
+1274. "DEBUG: No audio selected for upload"
+1275. "DEBUG: No valid images found"
+1276. "DEBUG: No video file selected"
+1277. "DEBUG: No video selected for upload"
+1278. "DEBUG: Post creation already in progress, ignoring duplicate request"
+1279. "DEBUG: Post submission already in progress, ignoring duplicate tap"
+1280. "DEBUG: Starting audio selection"
+1281. "DEBUG: Starting media upload. Selected images: ${_selectedImages.length}"
+1282. "DEBUG: Starting video selection"
+1283. "DEBUG: Total selected images now: ${_selectedImages.length}"
+1284. "DEBUG: Upload complete. Image URLs: $imageUrls"
+1285. "DEBUG: Uploading ${_selectedImages.length} images"
+1286. "DEBUG: Uploading audio file: ${_selectedAudio!.path}"
+1287. "DEBUG: Uploading video file: ${_selectedVideo!.path}"
+1288. "DEBUG: Video file size: ${videoFile.lengthSync()} bytes"
+1289. "DEBUG: Video file too large"
+1290. "DEBUG: Video picker result: ${pickedFile?.path}"
+1291. "DEBUG: Video selected successfully"
+1292. "DEBUG: Video upload complete. URL: $videoUrl"
+1293. "DEBUG: Video upload failed: $e"
+1294. "Daily Views"
+1295. "Danger Zone"
+1296. "Dangerous Actions"
+1297. "Dashboard"
+1298. "Data Access"
+1299. "Data Export"
+1300. "Data Structure"
+1301. "Date"
+1302. "Date Range"
+1303. "Date: ${intl.DateFormat("
+1304. "Deadline"
+1305. "Deadline: ${_deadline!.toLocal().toString().split("
+1306. "Debug Information"
+1307. "Debug Information:"
+1308. "Dedicated account manager"
+1309. "Dedicated support"
+1310. "Default"
+1311. "Delete"
+1312. "Delete Account"
+1313. "Delete All Resolved"
+1314. "Delete Artwork"
+1315. "Delete Comment"
+1316. "Delete Content"
+1317. "Delete Feedback"
+1318. "Delete Post"
+1319. "Delete Studio"
+1320. "Delete all resolved feedback"
+1321. "Delete capture"
+1322. "Delivery Format"
+1323. "Demo Artist"
+1324. "Demo Artwork"
+1325. "Deposit %"
+1326. "Deposit Percentage: ${_depositPercentage.round()}%"
+1327. "Deposit Required"
+1328. "Deposit payment for commission: ${_commission!.title}"
+1329. "Deposit payment processed successfully!"
+1330. "Deposit: ${_depositPercentage.round()}%"
+1331. "Deposit: \$${depositAmount.toStringAsFixed(2)}"
+1332. "Describe the artwork..."
+1333. "Describe the route, highlights, and difficulty..."
+1334. "Describe this milestone"
+1335. "Describe what you want in detail..."
+1336. "Describe what you want..."
+1337. "Describe your art walk experience"
+1338. "Describe your art walk route and discoveries..."
+1339. "Describe your artwork, inspiration, or technique..."
+1340. "Describe your commission project, style preferences, size, timeline, and budget..."
+1341. "Describe your project and what kind of artist you need"
+1342. "Describe your project, timeline, and requirements..."
+1343. "Describe your skills, experience, and availability..."
+1344. "Describe your studio and its purpose"
+1345. "Describe your work and approach"
+1346. "Description"
+1347. "Description (optional)"
+1348. "Description *"
+1349. "Description is required"
+1350. "Description: ${_descriptionController.text}"
+1351. "Description: ${file.description}"
+1352. "Design your own walk"
+1353. "Detailed Analytics"
+1354. "Detailed Description"
+1355. "Detailed Ratings"
+1356. "Detailed Settings"
+1357. "Details"
+1358. "Details:"
+1359. "Detection Settings"
+1360. "Developer Admin Panel"
+1361. "Developer Feedback Admin"
+1362. "Developer Response"
+1363. "Developer Tools"
+1364. "Developer menu: Feedback System section"
+1365. "Development"
+1366. "Device Info"
+1367. "Difficulty"
+1368. "Digital Art"
+1369. "Digital Art Discussion"
+1370. "Digital Art Workshop"
+1371. "Digital Artist"
+1372. "Digital Dreams"
+1373. "Digital File"
+1374. "Digital Illustration"
+1375. "Digital Photo + Physical"
+1376. "Digital Portrait"
+1377. "Digital artwork delivered as files"
+1378. "Digital, Physical, Portraits, or Commercial"
+1379. "Digital/LED"
+1380. "Direct Commissions"
+1381. "Direct Traffic"
+1382. "Direct navigation from any screen"
+1383. "Disabled account for $user"
+1384. "Discount (${_appliedCoupon!.code})"
+1385. "Discount Amount"
+1386. "Discount Percentage"
+1387. "Discount value is required"
+1388. "Discover & Browse"
+1389. "Discover & Explore"
+1390. "Discover 3 pieces of public art today"
+1391. "Discover Art Events"
+1392. "Discover Events"
+1393. "Discover More"
+1394. "Discover Studios"
+1395. "Discover all available art walking experiences"
+1396. "Discover amazing artists"
+1397. "Discover amazing artwork, connect with artists, and explore your creative side."
+1398. "Discover amazing photo captures from the community"
+1399. "Discover amazing street art and public installations"
+1400. "Discover amazing street art while exploring the best coffee shops in town. Complete this walk and get 10% off your next coffee!"
+1401. "Discover and appreciate public art"
+1402. "Discover and document public art to help build our community map"
+1403. "Discover and follow artists whose work inspires you."
+1404. "Discover and join art communities"
+1405. "Discover and join existing groups"
+1406. "Discover art captures near you"
+1407. "Discover art in the morning"
+1408. "Discover art, earn experience, and unlock achievements as you explore the world of public art."
+1409. "Discover beautiful artwork from our community"
+1410. "Discover events in your area"
+1411. "Discover exceptional artists making waves in the community"
+1412. "Discover exhibitions, workshops, and art community events"
+1413. "Discover featured artists and their amazing work"
+1414. "Discover local and featured artists"
+1415. "Discover new pieces of public art"
+1416. "Discover public art in your area or create your own custom art walks"
+1417. "Discover talented artists in your community"
+1418. "Discoveries"
+1419. "Discovery"
+1420. "Discussing ${widget.post.userName}\"
+1421. "Display Name"
+1422. "Display Name *"
+1423. "Display name is required"
+1424. "Display name must be at least 2 characters"
+1425. "Display your birthday on your profile"
+1426. "Display your recent activity feed"
+1427. "Dispute Resolution"
+1428. "Dispute created. Support team will review soon."
+1429. "Distance (miles)"
+1430. "Document data: $data"
+1431. "Documentary"
+1432. "Don\"
+1433. "Downloading ${file.name}..."
+1434. "Dry Run Results"
+1435. "Dry run completed"
+1436. "Due Date"
+1437. "Due: ${_formatDate(commission.deadline!)}"
+1438. "Due: ${_formatDate(milestone.dueDate)}"
+1439. "Due: ${_formatDateTime(milestone.dueDate)}"
+1440. "Duration (minutes)"
+1441. "Duration: ${_formatDuration(_audioDuration)}"
+1442. "Each approved capture becomes part of curated routes that guide other users to discover"
+1443. "Early Adopter"
+1444. "Early Adopter - Join during the first month"
+1445. "Early Bird Explorer"
+1446. "Early access to beta features"
+1447. "Earn XP by participating in ARTbeat activities:"
+1448. "Earned on ${_formatDate(achievement.earnedAt)}"
+1449. "Earnings Breakdown"
+1450. "Earnings Dashboard"
+1451. "Easy Access"
+1452. "Edit"
+1453. "Edit (Wizard)"
+1454. "Edit Account"
+1455. "Edit Art Walk"
+1456. "Edit Artist Profile"
+1457. "Edit Artwork"
+1458. "Edit Content"
+1459. "Edit Coupon"
+1460. "Edit Profile"
+1461. "Edit capture"
+1462. "Edit permissions for $user"
+1463. "Edit post - Coming Soon"
+1464. "Edit/Update Walk"
+1465. "Effective Date: September 1, 2025"
+1466. "Effective Date: September 1, 2025\n"
+1467. "Email"
+1468. "Email Verified"
+1469. "Email is already verified"
+1470. "Email support"
+1471. "Emerging Artist"
+1472. "Enable Admin Alerts"
+1473. "Enable Analytics"
+1474. "Enable Artwork Ratings"
+1475. "Enable Comments"
+1476. "Enable Content Reporting"
+1477. "Enable Email Notifications"
+1478. "Enable Error Logging"
+1479. "Enable IP Blocking"
+1480. "Enable Performance Monitoring"
+1481. "Enable Push Notifications"
+1482. "Enable Quiet Mode"
+1483. "Enable Registration"
+1484. "Enable Two-Factor Authentication"
+1485. "End Date"
+1486. "End Time"
+1487. "End time cannot be before start time"
+1488. "Engage with comments and replies"
+1489. "Engage with other art lovers"
+1490. "Engage with the ARTbeat community"
+1491. "Engagement"
+1492. "Engagement Over Time"
+1493. "Engagement Rate"
+1494. "Engagement Rate: ${artwork["
+1495. "Engagement Score"
+1496. "Engagement score: ${(summary["
+1497. "Enhanced Art Walk"
+1498. "EnhancedArtWalkCreateScreen"
+1499. "EnhancedArtWalkExperienceScreen"
+1500. "EnhancedMyArtWalksScreen"
+1501. "Enter Selection Mode"
+1502. "Enter Verification Code"
+1503. "Enter ZIP code"
+1504. "Enter ZIP code (current: $_currentZipCode)"
+1505. "Enter capture description"
+1506. "Enter capture title"
+1507. "Enter coupon code"
+1508. "Enter description"
+1509. "Enter feed name"
+1510. "Enter location name"
+1511. "Enter name or username..."
+1512. "Enter studio name"
+1513. "Enter the amount you want to withdraw"
+1514. "Enter title"
+1515. "Enter your broadcast message..."
+1516. "Enter your commission terms..."
+1517. "Enter your full name"
+1518. "Enter your quote amount"
+1519. "Enter zip code or city"
+1520. "Enterprise features with unlimited access"
+1521. "Enterprise-grade features and support"
+1522. "Environment"
+1523. "Error"
+1524. "Error ${isFollowing ?"
+1525. "Error ${widget.artWalkId != null ?"
+1526. "Error accepting commission: $e"
+1527. "Error accepting quote: $e"
+1528. "Error adding payment method: ${error.toString()}"
+1529. "Error approving comment: $e"
+1530. "Error approving post: $e"
+1531. "Error blocking user: $e"
+1532. "Error calculating analytics: $e"
+1533. "Error calculating distance for capture ${capture.title}: $e"
+1534. "Error calculating personal bests: $e"
+1535. "Error calculating price: $e"
+1536. "Error cancelling commission: $e"
+1537. "Error checking completion status: ${e.toString()}"
+1538. "Error checking for duplicate content: $e"
+1539. "Error checking subscription status: ${e.toString()}"
+1540. "Error checking upload limit: $e"
+1541. "Error clearing badge: $e"
+1542. "Error completing commission: $e"
+1543. "Error creating artist profile: $e"
+1544. "Error creating chat: ${e.toString()}"
+1545. "Error creating commission request: $e"
+1546. "Error creating post: $e"
+1547. "Error creating studio: $e"
+1548. "Error deleting art walk: $e"
+1549. "Error deleting artwork: $e"
+1550. "Error deleting capture: $e"
+1551. "Error deleting studio: $e"
+1552. "Error dismissing flag: ${e.toString()}"
+1553. "Error dismissing suggestion: $e"
+1554. "Error downloading CSV file: $e"
+1555. "Error editing image: $e"
+1556. "Error enriching post ${post.id} user data: $e"
+1557. "Error exporting transactions: $e"
+1558. "Error featuring post: $e"
+1559. "Error fixing posts: $e"
+1560. "Error following user: $e"
+1561. "Error getting coordinates for ZIP code $zipCode: $e"
+1562. "Error getting current location: $e"
+1563. "Error getting follower count for artist $artistProfileId: $e"
+1564. "Error getting location: $e"
+1565. "Error getting location: ${e.toString().split("
+1566. "Error getting total distance: $e"
+1567. "Error getting total walks completed: $e"
+1568. "Error getting user profile for artist: $e"
+1569. "Error getting zip code from location: $e"
+1570. "Error handling like: $e"
+1571. "Error loading achievements: $e"
+1572. "Error loading active walkers: $e"
+1573. "Error loading activity"
+1574. "Error loading analytics data: ${e.toString()}"
+1575. "Error loading analytics: $e"
+1576. "Error loading analytics: $error"
+1577. "Error loading art pieces: $e"
+1578. "Error loading art walk: $e"
+1579. "Error loading artist feed: $e"
+1580. "Error loading artist posts: $e"
+1581. "Error loading artists: $e"
+1582. "Error loading artwork for purchase: $e"
+1583. "Error loading artwork items: $e"
+1584. "Error loading artwork: $e"
+1585. "Error loading artworks: $e"
+1586. "Error loading audio content: $e"
+1587. "Error loading capture dashboard data: $e"
+1588. "Error loading capture: $e"
+1589. "Error loading captures: $e"
+1590. "Error loading chats"
+1591. "Error loading comments for post $postId: $e"
+1592. "Error loading commission details: $e"
+1593. "Error loading commissions: $e"
+1594. "Error loading community items: $e"
+1595. "Error loading connections: $e"
+1596. "Error loading content: $e"
+1597. "Error loading current user: $e"
+1598. "Error loading customization: $e"
+1599. "Error loading dashboard"
+1600. "Error loading data: $e"
+1601. "Error loading details: $e"
+1602. "Error loading engagement data: $e"
+1603. "Error loading event items: $e"
+1604. "Error loading event: ${e.toString()}"
+1605. "Error loading events"
+1606. "Error loading events: $e"
+1607. "Error loading favorite: ${e.toString()}"
+1608. "Error loading featured artists: $e"
+1609. "Error loading featured artists: ${e.toString()}"
+1610. "Error loading featured artworks: $e"
+1611. "Error loading featured walk: $e"
+1612. "Error loading feedback: ${snapshot.error}"
+1613. "Error loading followed artists: ${e.toString()}"
+1614. "Error loading following: ${e.toString()}"
+1615. "Error loading friends recent walks: $e"
+1616. "Error loading gallery data: ${e.toString()}"
+1617. "Error loading gifts: $e"
+1618. "Error loading groups"
+1619. "Error loading history: $e"
+1620. "Error loading initial content: $e"
+1621. "Error loading leaderboards: $e"
+1622. "Error loading liked content: ${e.toString()}"
+1623. "Error loading local captures: $e"
+1624. "Error loading locations: $e"
+1625. "Error loading mentions: $e"
+1626. "Error loading messages"
+1627. "Error loading messaging data: $e"
+1628. "Error loading moderation queue: $e"
+1629. "Error loading more artworks: $e"
+1630. "Error loading more posts: $e"
+1631. "Error loading more trending content: $e"
+1632. "Error loading nearby artists: $e"
+1633. "Error loading nearby artworks: $e"
+1634. "Error loading nearby content: $e"
+1635. "Error loading nearby events: $e"
+1636. "Error loading nearby posts: $e"
+1637. "Error loading nearby users: $e"
+1638. "Error loading online artists: $e"
+1639. "Error loading online users"
+1640. "Error loading package info: $e"
+1641. "Error loading payment data: $e"
+1642. "Error loading payment history: $e"
+1643. "Error loading payment methods: ${error.toString()}"
+1644. "Error loading portfolios: $e"
+1645. "Error loading posts: $e"
+1646. "Error loading profile: $e"
+1647. "Error loading progress: $e"
+1648. "Error loading quest data: $e"
+1649. "Error loading recent artworks: $e"
+1650. "Error loading recent posts: $e"
+1651. "Error loading rewards data: $e"
+1652. "Error loading saved searches: $e"
+1653. "Error loading search suggestions: $e"
+1654. "Error loading settings"
+1655. "Error loading settings: $e"
+1656. "Error loading starred messages"
+1657. "Error loading studio: $e"
+1658. "Error loading studios: $e"
+1659. "Error loading suggested users: ${e.toString()}"
+1660. "Error loading thread: $e"
+1661. "Error loading trending artworks: $e"
+1662. "Error loading trending captures: $e"
+1663. "Error loading trending content: $e"
+1664. "Error loading unread activities"
+1665. "Error loading user achievements: $e"
+1666. "Error loading user data: $e"
+1667. "Error loading user model: $e"
+1668. "Error loading user profile: $e"
+1669. "Error loading user settings: $e"
+1670. "Error loading user streak: $e"
+1671. "Error loading users"
+1672. "Error loading verified artists: $e"
+1673. "Error loading weekly goals: $e"
+1674. "Error marking as read: $e"
+1675. "Error navigating to user profile: $e"
+1676. "Error parsing artist: $e"
+1677. "Error parsing post ${doc.id}: $e"
+1678. "Error performing advanced search: $e"
+1679. "Error picking audio: $e"
+1680. "Error picking image: $e"
+1681. "Error picking images: $e"
+1682. "Error picking portfolio images: $e"
+1683. "Error picking profile image: $e"
+1684. "Error picking video: $e"
+1685. "Error processing audio file: $e"
+1686. "Error processing bulk refund: $e"
+1687. "Error processing content file: $e"
+1688. "Error processing deposit payment: $e"
+1689. "Error processing milestone payment: $e"
+1690. "Error processing purchase: $e"
+1691. "Error processing refund: $e"
+1692. "Error processing video file: $e"
+1693. "Error providing quote: $e"
+1694. "Error recording share to challenge: $e"
+1695. "Error removing comment: $e"
+1696. "Error removing favorite: ${e.toString()}"
+1697. "Error removing member: $e"
+1698. "Error removing payment method: ${error.toString()}"
+1699. "Error removing post: $e"
+1700. "Error saving capture: $e"
+1701. "Error saving capture: ${e.toString()}"
+1702. "Error saving customization: $e"
+1703. "Error saving event: ${e.toString()}"
+1704. "Error saving profile: ${e.toString()}"
+1705. "Error saving settings: $e"
+1706. "Error searching artists: $e"
+1707. "Error searching chats"
+1708. "Error searching users: ${e.toString()}"
+1709. "Error selecting audio file: $e"
+1710. "Error selecting content file: $e"
+1711. "Error selecting cover image: $e"
+1712. "Error selecting image: ${e.toString()}"
+1713. "Error selecting thumbnail: $e"
+1714. "Error selecting video file: $e"
+1715. "Error sending message: $e"
+1716. "Error sending reply: $e"
+1717. "Error sending request: $e"
+1718. "Error setting default payment method: ${error.toString()}"
+1719. "Error sharing media: $e"
+1720. "Error sharing post: $e"
+1721. "Error sharing: ${e.toString()}"
+1722. "Error starting recording: $e"
+1723. "Error stopping recording: $e"
+1724. "Error submitting capture: $e"
+1725. "Error submitting quote: $e"
+1726. "Error submitting refund request: ${e.toString()}"
+1727. "Error submitting request: $e"
+1728. "Error tracking share: $e"
+1729. "Error unfollowing artist: ${e.toString()}"
+1730. "Error unfollowing user: $e"
+1731. "Error unfollowing user: ${e.toString()}"
+1732. "Error unliking content: ${e.toString()}"
+1733. "Error updating artwork: $e"
+1734. "Error updating like. Please try again."
+1735. "Error updating profile: $e"
+1736. "Error updating transaction statuses: $e"
+1737. "Error uploading audio content: $e"
+1738. "Error uploading content: $e"
+1739. "Error uploading video content: $e"
+1740. "Error: $e"
+1741. "Error: ${data["
+1742. "Error: ${e.toString()}"
+1743. "Error: ${snapshot.error}"
+1744. "Errors (${_lastResult!.errors.length}):"
+1745. "Essential features for emerging artists"
+1746. "Established artist seeking growth"
+1747. "Estimated Completion"
+1748. "Estimated Distance (miles)"
+1749. "Estimated Duration (hours)"
+1750. "Estimated Earnings"
+1751. "Estimated Price"
+1752. "Etsy"
+1753. "Etsy Shop"
+1754. "Event ${approved ?"
+1755. "Event Banner"
+1756. "Event Creation"
+1757. "Event Details"
+1758. "Event Engagement"
+1759. "Event Management"
+1760. "Event Photos"
+1761. "Event Post"
+1762. "Event Title"
+1763. "Event Venues"
+1764. "Event created successfully! (Reminder notifications require permission)"
+1765. "Event creation"
+1766. "Event creation is available with Artist Pro or Gallery Plan."
+1767. "Event: ${event.title} at ${event.dateTime}"
+1768. "Events"
+1769. "Events Near You"
+1770. "Events Nearby"
+1771. "Events by Category"
+1772. "Events nearby"
+1773. "Example: painting, abstract, oil"
+1774. "Exhausted"
+1775. "Existing content will be marked as"
+1776. "Exit Selection Mode"
+1777. "Experimental"
+1778. "Expiration Date"
+1779. "Expiration Date (optional)"
+1780. "Expired"
+1781. "Expired Ads (${expiredAds.length})"
+1782. "Expires ${card.expMonth}/${card.expYear}"
+1783. "Expires: ${_formatDate(coupon.expiresAt!)}"
+1784. "Explore More"
+1785. "Explore Walks"
+1786. "Explore art clusters near you"
+1787. "Explore art collections and galleries"
+1788. "Explore art in different neighborhoods"
+1789. "Explore artists who have been verified for authenticity and quality"
+1790. "Explore curated art walking experiences"
+1791. "Explore different engagement options for various content types"
+1792. "Explore galleries, workshops, and exhibitions"
+1793. "Explore more artworks to see similar recommendations!"
+1794. "Explore more features"
+1795. "Explore our community of talented artists"
+1796. "Explore the complete artwork collection"
+1797. "Explore the full collection of community captures"
+1798. "Explore the latest works from emerging local artists in this exciting exhibition."
+1799. "Explore, create, connect"
+1800. "Export History"
+1801. "Export Selected"
+1802. "Export Settings"
+1803. "Export capabilities"
+1804. "Export completed successfully (${_filteredTransactions.length} records)"
+1805. "Export completed successfully (${selectedTransactions.length} records)"
+1806. "Export current application settings"
+1807. "Export functionality coming soon"
+1808. "Exported ${exportData.length} characters of data"
+1809. "Exported transaction data"
+1810. "Expressionism"
+1811. "Extra Large (30x40"
+1812. "Facebook"
+1813. "Failed Logins"
+1814. "Failed login attempt blocked"
+1815. "Failed to add comment"
+1816. "Failed to add response: $e"
+1817. "Failed to appreciate: $e"
+1818. "Failed to check migration status: $e"
+1819. "Failed to create ad payment intent: ${response.body}"
+1820. "Failed to create art walk"
+1821. "Failed to create artist profile"
+1822. "Failed to create commission payment intent: ${response.body}"
+1823. "Failed to create commission request: $e"
+1824. "Failed to create coupon: $e"
+1825. "Failed to create gift payment intent: ${response.body}"
+1826. "Failed to create post"
+1827. "Failed to create post: ${e.toString()}"
+1828. "Failed to create profile: ${e.toString()}"
+1829. "Failed to create sponsorship payment intent: ${response.body}"
+1830. "Failed to create subscription payment intent: ${response.body}"
+1831. "Failed to delete account: $e"
+1832. "Failed to delete coupon: $e"
+1833. "Failed to delete feedback: $e"
+1834. "Failed to delete post: $e"
+1835. "Failed to download CSV file"
+1836. "Failed to download file: $e"
+1837. "Failed to download file: ${response.statusCode}"
+1838. "Failed to export transactions"
+1839. "Failed to feature post: $e"
+1840. "Failed to follow artist"
+1841. "Failed to get location: $e"
+1842. "Failed to initialize voice recorder: ${snapshot.error}"
+1843. "Failed to initiate subscription purchase"
+1844. "Failed to load admin data: $e"
+1845. "Failed to load analytics data"
+1846. "Failed to load analytics: $e"
+1847. "Failed to load artist info: $e"
+1848. "Failed to load artworks: ${e.toString()}"
+1849. "Failed to load capture: $e"
+1850. "Failed to load captures: $e"
+1851. "Failed to load comments: ${e.toString()}"
+1852. "Failed to load commissions: $e"
+1853. "Failed to load dashboard data: $e"
+1854. "Failed to load earnings data"
+1855. "Failed to load event: $e"
+1856. "Failed to load events: ${e.toString()}"
+1857. "Failed to load gallery artists. Please try again."
+1858. "Failed to load image"
+1859. "Failed to load more results."
+1860. "Failed to load payment data"
+1861. "Failed to load payout accounts"
+1862. "Failed to load posts: $e"
+1863. "Failed to load posts: ${e.toString()}"
+1864. "Failed to load sales data"
+1865. "Failed to load stats: $e"
+1866. "Failed to load templates: $e"
+1867. "Failed to load user profile"
+1868. "Failed to pick images: $e"
+1869. "Failed to post walk completed activity: $e"
+1870. "Failed to process bulk refunds"
+1871. "Failed to process free gift: ${e.toString()}"
+1872. "Failed to process refund: ${e.toString()}"
+1873. "Failed to refund transaction ${transaction.id}: $e"
+1874. "Failed to schedule reminders: $notificationError"
+1875. "Failed to send verification code: $e"
+1876. "Failed to send verification email"
+1877. "Failed to send verification email. Please try again."
+1878. "Failed to send verification email: $e"
+1879. "Failed to send verification email: ${e.message}"
+1880. "Failed to set free plan"
+1881. "Failed to share artwork"
+1882. "Failed to share location: ${e.toString()}"
+1883. "Failed to share post. Please try again."
+1884. "Failed to share: $e"
+1885. "Failed to submit commission request: $e"
+1886. "Failed to trigger capture approval rewards: $e"
+1887. "Failed to unfollow artist"
+1888. "Failed to update coupon: $e"
+1889. "Failed to update like"
+1890. "Failed to update like. Please try again."
+1891. "Failed to update profile picture: $e"
+1892. "Failed to update share count: $e"
+1893. "Failed to update status: $e"
+1894. "Failed to update transaction statuses"
+1895. "Failed to upload image"
+1896. "Failed to upload image. Please check your internet connection."
+1897. "Failed to upload image: $e"
+1898. "Failed to upload images: $e"
+1899. "Failed to upload portfolio image: $e"
+1900. "Failed to upload profile image: ${e.toString()}"
+1901. "Failed to verify phone number: $e"
+1902. "Favorite Detail"
+1903. "Favorite not found"
+1904. "Feature requests"
+1905. "Featured"
+1906. "Featured Artists"
+1907. "Featured Events"
+1908. "Featured Users"
+1909. "Featured Walks"
+1910. "Featured placement"
+1911. "Features Coming Soon:"
+1912. "Features not as expected"
+1913. "Features such as Art Walks rely on GPS and mapping.\n\nYou consent to ARTbeat\"
+1914. "Features:"
+1915. "Featuring work by @$userId in our latest collection"
+1916. "Feed"
+1917. "Feedback System"
+1918. "Feedback deleted successfully"
+1919. "Feedback will appear here when users submit it"
+1920. "Fellow Artist"
+1921. "File Storage"
+1922. "File Upload"
+1923. "File downloaded successfully: ${localFile.path}"
+1924. "File saved at: ${localFile.path}"
+1925. "File: ${_audioFile!.path.split("
+1926. "File: ${_contentFile!.path.split("
+1927. "Files"
+1928. "Filter Trending Content"
+1929. "Filtered captures within 30 miles: ${finalCaptureArt.length}"
+1930. "Financial"
+1931. "Financial Analytics"
+1932. "Financial Insights"
+1933. "Financial Overview"
+1934. "Financial Reports"
+1935. "Financial Summary"
+1936. "Financial reasons"
+1937. "Find Artists"
+1938. "Find Events"
+1939. "Find Groups"
+1940. "Find People"
+1941. "Find art around you in real-time"
+1942. "Find art captures and locations"
+1943. "Find art captures by location or type"
+1944. "Find artists accepting work"
+1945. "Find captures near you"
+1946. "Find conversations and contacts"
+1947. "Find diverse art styles"
+1948. "Find event venues and locations"
+1949. "Find events, venues, and organizers"
+1950. "Find messages and chat history"
+1951. "Find your next creative experience"
+1952. "Firebase Auth integration"
+1953. "Firebase Firestore & Storage"
+1954. "Firebase Project"
+1955. "FirebaseAuthException: [33m${e.message}[0m"
+1956. "First Quest"
+1957. "First Steps - Complete your first art walk"
+1958. "First Walk"
+1959. "First Walk Completed! 🎉"
+1960. "First stop: ${_artPieces.first.title}"
+1961. "First-time achievements and early milestones"
+1962. "Fix Anonymous Post Authors"
+1963. "Fix Images"
+1964. "Fix Posts"
+1965. "Fixed Amount Discount"
+1966. "Fixing anonymous post authors..."
+1967. "Flag"
+1968. "Flag Resolution Rate"
+1969. "Flag dismissed successfully"
+1970. "Flagged Events"
+1971. "Flagged by admin"
+1972. "Flagged for: Potential inappropriate content"
+1973. "Flagged for: Potential offensive language"
+1974. "Focus on one category at a time"
+1975. "Focus on this area to maximize engagement"
+1976. "Follow Back"
+1977. "Follow Ratio"
+1978. "Followers"
+1979. "Following"
+1980. "For Sale"
+1981. "For US users: governed by the laws of North Carolina, United States.\n\nFor international users: governed by applicable mandatory local law, otherwise North Carolina law applies.\n\nDisputes shall be resolved through binding arbitration in the United States, unless prohibited by law."
+1982. "For direct artist support, subscribe to an artist subscription"
+1983. "For established artists growing their business"
+1984. "For galleries and professional art businesses"
+1985. "For questions or data requests:\nLocal ARTbeat, LLC\nPO BOX 232 Kinston, NC 28502\nEmail: support@localartbeat.app"
+1986. "For: ${widget.commission.clientName}"
+1987. "Form validation failed"
+1988. "Form validation passed, proceeding with save"
+1989. "Format: $_audioFormat"
+1990. "Found another artist"
+1991. "Found better alternative"
+1992. "Found this incredible mural while exploring the arts district. The colors and detail are absolutely stunning!"
+1993. "Free Plan"
+1994. "Free Plan Artwork Limit Reached"
+1995. "Free gift sent successfully! (100% coupon applied)"
+1996. "Frequently Asked Questions"
+1997. "From ${widget.artistName}"
+1998. "Full Access"
+1999. "Full Access (Free)"
+2000. "Full Color"
+2001. "Full Name"
+2002. "Full Rights Package"
+2003. "Full name is required"
+2004. "Gallery"
+2005. "Gallery Analytics"
+2006. "Gallery Analytics Dashboard"
+2007. "Gallery Business"
+2008. "Gallery Frame (\$20) - Significant recognition"
+2009. "Gallery Invitation"
+2010. "Gallery Invitation Reminder"
+2011. "Gallery Opening"
+2012. "Gallery Opening Night"
+2013. "Gallery Owner"
+2014. "Gallery analytics requires a Gallery Plan subscription."
+2015. "Gallery or institution"
+2016. "Gallery profile not found"
+2017. "Gallery • ${item["
+2018. "General Discussion"
+2019. "General Settings"
+2020. "General/Other"
+2021. "Generating report PDF. Check your downloads folder."
+2022. "Genres: ${_genres.join("
+2023. "Geo field migration completed successfully!"
+2024. "Geo field migration failed: $e"
+2025. "Get Art Capture Approved"
+2026. "Get Location"
+2027. "Get Started"
+2028. "Get a verified artist badge to build trust with buyers"
+2029. "Get access to location breakdown, top artwork performance, referral sources, and more detailed insights."
+2030. "Get detailed insights about your subscription performance"
+2031. "Get discovered by art collectors and enthusiasts worldwide"
+2032. "Get turn-by-turn directions to each art piece"
+2033. "Getting Started"
+2034. "Getting Started with Commissions"
+2035. "Gift Earnings"
+2036. "Gift Guidelines"
+2037. "Gift Guidelines & Regulations"
+2038. "Gift Received"
+2039. "Gift history is permanently recorded"
+2040. "Gift purchase initiated! 🎁"
+2041. "Gift purchase would be initiated here"
+2042. "Gift recipients receive in-app credits"
+2043. "Gift transactions require a valid giftType"
+2044. "Gift transactions require a valid recipientId"
+2045. "Gift: ${widget.orderDetails.metadata["
+2046. "Gifts"
+2047. "Gifts are non-refundable per App Store guidelines"
+2048. "Gifts can only be sent to active artists"
+2049. "Give your art walk a creative name"
+2050. "Go Back"
+2051. "Golden Canvas (\$50) - Premium support"
+2052. "Golden Hour"
+2053. "Golden Hour Artist"
+2054. "Good Afternoon"
+2055. "Good Evening"
+2056. "Good Morning"
+2057. "Good afternoon"
+2058. "Good evening"
+2059. "Good morning"
+2060. "Google Sign-In failed: ${e.toString()}"
+2061. "Graffiti Mural Downtown"
+2062. "Graphic Design"
+2063. "Great job exploring our community\"
+2064. "Great opportunity for discovery"
+2065. "Great title! Now describe your artistic journey ✍️"
+2066. "Grid"
+2067. "Group Activity"
+2068. "Group Chat"
+2069. "Group Info"
+2070. "Group name"
+2071. "Growth Trend"
+2072. "Header"
+2073. "Healthy"
+2074. "Here\"
+2075. "Hey @$userId, what do you think about this technique?"
+2076. "Hide Filters"
+2077. "High Engagement"
+2078. "High-res JPEG"
+2079. "High-res PNG"
+2080. "Higher streaks unlock bonus challenges"
+2081. "Highest Rated"
+2082. "Highest level achieved based on experience"
+2083. "Highest rated art capture (5-star rating system)"
+2084. "Highest rated art walk (5-star rating system)"
+2085. "Highlighted creators"
+2086. "Historical Marker"
+2087. "Host exhibitions and gatherings"
+2088. "Hosting Event"
+2089. "How Gift Credits Work"
+2090. "How long commissions typically take"
+2091. "How long projects typically take"
+2092. "How would you rate this art walk?"
+2093. "How you want to be known as an artist"
+2094. "I accept the"
+2095. "I confirm this is public art in a safe, accessible location. No private property, unsafe areas, nudity, or derogatory content."
+2096. "I have read and agree to all the safety guidelines, legal guidelines, and community standards listed above."
+2097. "I would recommend this artist to others"
+2098. "IP Address/Range"
+2099. "IP Whitelist"
+2100. "Ideal for artists ready to sell their first pieces"
+2101. "If you\"
+2102. "Illustration"
+2103. "Image (Optional)"
+2104. "Image Management"
+2105. "Image picker with compression"
+2106. "Image skipped due to size limit"
+2107. "Image skipped: ${file.path} - Size: ${imageFile.lengthSync()}, Valid: false"
+2108. "Important Dates"
+2109. "Impressionism"
+2110. "In Progress"
+2111. "In-App Purchase Demo"
+2112. "In-app purchases not initialized"
+2113. "In-app purchases ready!"
+2114. "Inappropriate content"
+2115. "Includes:"
+2116. "Increased Visibility"
+2117. "Industry-standard feedback form with categorization"
+2118. "Inspiration"
+2119. "Instagram"
+2120. "Instagram Handle"
+2121. "Installation"
+2122. "Installation Art"
+2123. "Instant Discovery"
+2124. "Interacted with"
+2125. "Interactions"
+2126. "Interactive"
+2127. "Interactive Art"
+2128. "Interactive Map"
+2129. "Interactive map available on mobile devices"
+2130. "Interactive map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
+2131. "Invalid client secret from advertisement payment intent"
+2132. "Invalid client secret from commission payment intent"
+2133. "Invalid client secret from payment intent"
+2134. "Invalid client secret from sponsorship payment intent"
+2135. "Invalid client secret from subscription payment intent"
+2136. "Invalid email address."
+2137. "Invalid metadata types for advertisement: adType must be string, duration must be int"
+2138. "Invalid metadata types for commission: artistId, commissionType, and description must be strings"
+2139. "Invalid metadata types for free gift: recipientId and giftType must be strings"
+2140. "Invalid metadata types for gift payment: recipientId and giftType must be strings"
+2141. "Invalid metadata types for sponsorship: artistId and sponsorshipType must be strings, duration must be int, benefits must be List<String>"
+2142. "Invalid metadata types for subscription: tier and billingCycle must be strings"
+2143. "Invalid number"
+2144. "Invalid or expired coupon code"
+2145. "Invalid password."
+2146. "Invalid verification code. Please try again."
+2147. "Invitation already sent to this artist"
+2148. "Invited ${_formatDate(invitation.createdAt)}"
+2149. "Is there a free trial?"
+2150. "Italic"
+2151. "Item"
+2152. "Jane Artist"
+2153. "John Admin"
+2154. "Join Groups"
+2155. "Join Studio"
+2156. "Join groups to connect with the art community"
+2157. "Join our artist community and share your creative work with the world"
+2158. "Join the artist community"
+2159. "Join the conversation with fellow art enthusiasts"
+2160. "Join thousands of artists and galleries on ARTbeat"
+2161. "Join us for the opening of our contemporary art exhibition."
+2162. "Joined ${_formatDate(user.createdAt)}"
+2163. "Joined the platform"
+2164. "Just finished my latest painting! What do you think about using bold colors in abstract art?"
+2165. "Just starting my artistic journey"
+2166. "Keep Commission"
+2167. "Key Metrics"
+2168. "Key Performance Indicators"
+2169. "Large (18x24"
+2170. "Last 12 Months"
+2171. "Last 3 months"
+2172. "Last 30 Days"
+2173. "Last 30 days"
+2174. "Last 7 Days"
+2175. "Last 7 days"
+2176. "Last 90 Days"
+2177. "Last Active"
+2178. "Last Migration Result"
+2179. "Last Sign In"
+2180. "Last Updated: September 1, 2025"
+2181. "Last Updated: September 1, 2025\n"
+2182. "Last Visited"
+2183. "Last seen: ${_formatLastSeen(_participants.first.lastSeen)}"
+2184. "Last seen: ${_formatLastSeen(user.lastSeen)}"
+2185. "Last updated: ${DateTime.now().toString().substring(0, 19)}"
+2186. "Last used: Today"
+2187. "Last used: Yesterday"
+2188. "Late Deliveries"
+2189. "Latest posts from artists"
+2190. "Latest uploads"
+2191. "Layout Style"
+2192. "Lead Clicks"
+2193. "Learn More"
+2194. "Learn digital painting techniques with professional artists."
+2195. "Leave"
+2196. "Leave a message for your followers"
+2197. "Leave blank if unknown"
+2198. "Leave empty for unlimited"
+2199. "Legal Guidelines"
+2200. "Let others know about your availability and skills"
+2201. "Let the adventure begin! 🚀"
+2202. "Let your followers hire you for custom artwork. This quick setup will get you started."
+2203. "Let\"
+2204. "Level ${entry.level} • ${_rewardsService.getLevelTitle(entry.level)}"
+2205. "Level ${userData.level}"
+2206. "Level up your art journey!"
+2207. "Like"
+2208. "Like some artworks to get better recommendations!"
+2209. "Limelight"
+2210. "Link"
+2211. "List"
+2212. "Load more error: $e"
+2213. "Loaded ${_featuredArtworks.length} featured artworks"
+2214. "Loaded ${_recentArtworks.length} recent artworks"
+2215. "Loaded ${_trendingArtworks.length} trending artworks"
+2216. "Loaded ${allEvents.length} events: ${featured.length} featured, ${todayEvents.length} today, ${thisWeekEvents.length} this week"
+2217. "Loaded ${state.items.length} more featured artworks"
+2218. "Loaded ${state.items.length} more recent artworks"
+2219. "Loaded ${state.items.length} more trending artworks"
+2220. "Loaded ZIP code from profile: $profileZipCode"
+2221. "Loading admin data..."
+2222. "Loading art walk details..."
+2223. "Loading art walks..."
+2224. "Loading artist posts..."
+2225. "Loading audio..."
+2226. "Loading conversations..."
+2227. "Loading events..."
+2228. "Loading images..."
+2229. "Loading map..."
+2230. "Loading messages..."
+2231. "Loading your artistic journey..."
+2232. "Loading..."
+2233. "Local ARTbeat ("
+2234. "Local Art"
+2235. "Local Art Map"
+2236. "Local Artists"
+2237. "Local Captures"
+2238. "Local Galleries & Museums"
+2239. "Local Pickup"
+2240. "Local Scene"
+2241. "Location"
+2242. "Location & Details"
+2243. "Location (optional)"
+2244. "Location added"
+2245. "Location must be less than 100 characters"
+2246. "Location not available. Please enable location services for navigation."
+2247. "Location not specified"
+2248. "Location permission denied. Navigation features will be limited."
+2249. "Location permission denied. Using saved location or default."
+2250. "Location permission permanently denied. Please enable in app settings."
+2251. "Location permissions are denied"
+2252. "Location permissions are permanently denied"
+2253. "Location permissions are permanently denied, we cannot request permissions."
+2254. "Location services are disabled. Please enable them in settings."
+2255. "Location services are disabled. Using saved location or default."
+2256. "Location services timed out. Using saved location or default."
+2257. "Location: $latitude,$longitude"
+2258. "Login Attempt Window (minutes)"
+2259. "Login failed"
+2260. "Long (> 60 min)"
+2261. "Long press on any message and tap the star icon to add it here"
+2262. "Looking to sell my first pieces"
+2263. "Los Angeles"
+2264. "Lv.$level"
+2265. "Lyrics: Available"
+2266. "MM/DD/YYYY"
+2267. "MM/dd"
+2268. "MMM d, yyyy"
+2269. "MMM d, yyyy • h:mm a"
+2270. "MMM dd"
+2271. "MMM dd, HH:mm"
+2272. "MMM dd, yyyy"
+2273. "MMM dd, yyyy HH:mm"
+2274. "MacBook Pro"
+2275. "Main drawer: Settings > Send Feedback"
+2276. "Maintain your daily streak"
+2277. "Maintenance Message"
+2278. "Maintenance Mode"
+2279. "Maintenance Settings"
+2280. "Major Contributor - Add 20 new public art pieces"
+2281. "Manage ${_studio!.name}"
+2282. "Manage Accounts"
+2283. "Manage Listings"
+2284. "Manage Users"
+2285. "Manage active commissions"
+2286. "Manage blocked contacts"
+2287. "Manage notifications"
+2288. "Manage your approved advertisements and promotional content here. This feature is currently under development."
+2289. "Manage your commission requests"
+2290. "Manage your commission requests and settings"
+2291. "Manage your commissions"
+2292. "Management"
+2293. "Map"
+2294. "Map View"
+2295. "Map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces."
+2296. "Map view available on mobile"
+2297. "Map-based art walk creation is optimized for mobile devices.\nUse the list view below to select art pieces for your walk."
+2298. "Marathon Walker - Complete a walk of at least 5km"
+2299. "March 15-30, 2024 • Downtown Gallery"
+2300. "Marcus Rodriguez"
+2301. "Mark Complete"
+2302. "Mark all as read"
+2303. "Mark all open as closed"
+2304. "Mark as Artist Post"
+2305. "Mark as read"
+2306. "Mark as unread"
+2307. "Master Curator - Create 10 art walks"
+2308. "Materials Used"
+2309. "Max"
+2310. "Max Active Commissions"
+2311. "Max Active Commissions: $_maxActiveCommissions"
+2312. "Max Active: $_maxActiveCommissions"
+2313. "Max Artworks per User"
+2314. "Max Login Attempts"
+2315. "Max Upload Size (MB)"
+2316. "Maximum Amount"
+2317. "Maximum Uses"
+2318. "Maximum Uses (optional)"
+2319. "Maximum concurrent commissions"
+2320. "Maximum of 10 gifts per day per user"
+2321. "Maybe Later"
+2322. "Media"
+2323. "Media Preview"
+2324. "Media Viewer"
+2325. "Medium"
+2326. "Medium (11x14"
+2327. "Medium (30-60 min)"
+2328. "Member removed successfully"
+2329. "Members"
+2330. "Memory Usage"
+2331. "Message"
+2332. "Message Artist"
+2333. "Message Settings"
+2334. "Message Volume"
+2335. "Message to Client (Optional)"
+2336. "Messages"
+2337. "Messaging Dashboard"
+2338. "Messaging Help"
+2339. "Messaging Profile"
+2340. "Messaging is provided for personal and professional communication.\n\nUsers must not engage in spam, harassment, illegal solicitation, or unauthorized data collection.\n\nARTbeat may monitor reported messages for violations but does not read private messages by default."
+2341. "Metric"
+2342. "Mid-level achievements showing dedication"
+2343. "Migrate Geo Fields"
+2344. "Migrating..."
+2345. "Migration Actions"
+2346. "Migration Results"
+2347. "Migration Statistics"
+2348. "Migration completed"
+2349. "Migration completed successfully!"
+2350. "Migration failed: $e"
+2351. "Mike Manager"
+2352. "Milestone ${widget.index + 1}"
+2353. "Milestone Title"
+2354. "Milestone payment for ${milestone.description}"
+2355. "Milestone payment processed successfully!"
+2356. "Milestones"
+2357. "Min"
+2358. "Mini Palette (\$1) - Small token of appreciation"
+2359. "Minimum Amount"
+2360. "Minimum account age of 7 days to send gifts"
+2361. "Minimum payout amount is \$10"
+2362. "Misleading information"
+2363. "Missing payment information for refund."
+2364. "Missing required metadata for advertisement: adType or duration is null"
+2365. "Missing required metadata for commission: artistId, commissionType, or description is null"
+2366. "Missing required metadata for free gift: recipientId or giftType is null"
+2367. "Missing required metadata for gift payment: recipientId or giftType is null"
+2368. "Missing required metadata for sponsorship: artistId, sponsorshipType, duration, or benefits is null"
+2369. "Missing required metadata for subscription: tier or billingCycle is null"
+2370. "Mixed Media"
+2371. "Mixed Media Artist"
+2372. "Mobile app access"
+2373. "Moderate pending submissions"
+2374. "Moderate reviews (report abuse, vote quality)"
+2375. "Moderation Notes"
+2376. "Moderation Notes (optional)"
+2377. "Moderation Overview"
+2378. "Moderation Queue"
+2379. "Moderation Status Migration"
+2380. "Modern Art Gallery"
+2381. "Modern Art Workshop"
+2382. "Modern Creator"
+2383. "Module-specific categorization"
+2384. "Monitor the approval status of your ads"
+2385. "Month Master"
+2386. "Monthly"
+2387. "Monthly Recurring"
+2388. "Monthly Revenue"
+2389. "Monthly Subscription"
+2390. "Monthly Trends"
+2391. "More Featured Artists"
+2392. "Mosaic Tile"
+2393. "Most Active Area"
+2394. "Most Popular"
+2395. "Most Viewed"
+2396. "Most liked captures"
+2397. "Move around to discover amazing art in your area!"
+2398. "Move around to discover art in your area"
+2399. "Move around to discover art nearby"
+2400. "Moving map to ZIP code $_currentZipCode coordinates: ${coordinates.latitude}, ${coordinates.longitude}"
+2401. "Multiple failed login attempts from IP 192.168.1.100"
+2402. "Multiple ways to access the feedback system"
+2403. "Mural"
+2404. "Mural Maven (Faith Ringgold)"
+2405. "Music"
+2406. "Music Video"
+2407. "Must be > 0"
+2408. "Must be logged in to follow/unfollow users"
+2409. "Mutual"
+2410. "My Art Walks"
+2411. "My Artwalks"
+2412. "My Artwork"
+2413. "My Captures"
+2414. "My Posts"
+2415. "My Profile"
+2416. "My Tickets"
+2417. "My Walks"
+2418. "N/A"
+2419. "NFT Creation"
+2420. "NSURLFileProtectionComplete"
+2421. "Nature Artist"
+2422. "Navigate to comments for post: $postId"
+2423. "Navigate to user profile: $userId"
+2424. "Navigating to $moduleName module"
+2425. "Navigating to manage listings..."
+2426. "Navigating to upload artwork..."
+2427. "Navigation"
+2428. "Navigation Mode:"
+2429. "Navigation started! Follow the turn-by-turn instructions."
+2430. "Navigation to splash failed: $e"
+2431. "Near Me"
+2432. "Nearby Art"
+2433. "Nearby Art Hotspots"
+2434. "Nearby Art Map"
+2435. "Nearby Captures"
+2436. "Nearby Captures (${_nearbyCaptures.length})"
+2437. "Nearby Events"
+2438. "Nearby Walks"
+2439. "Neighborhood"
+2440. "Neighborhood Scout"
+2441. "Network error - please check your internet connection"
+2442. "Network error. Please check your connection."
+2443. "Network error. Please check your internet connection."
+2444. "Network error. Using saved location or default."
+2445. "New"
+2446. "New Achievements Unlocked!"
+2447. "New Artists"
+2448. "New Artwork"
+2449. "New Collection (${_stats!.newCollectionName})"
+2450. "New Commission"
+2451. "New Event Created"
+2452. "New Followers"
+2453. "New Followers Over Time"
+2454. "New Message"
+2455. "New admin user added"
+2456. "New artwork added to your favorites"
+2457. "New commission inquiry received"
+2458. "New goals refresh every Monday"
+2459. "New message reported"
+2460. "Next"
+2461. "Next Billing Date"
+2462. "Night Owl Artist"
+2463. "No ${_selectedTab} captures found"
+2464. "No ${title.toLowerCase()} available"
+2465. "No Analytics Data"
+2466. "No Artwork Yet"
+2467. "No Comment Mentions"
+2468. "No Connection History"
+2469. "No Events Found"
+2470. "No Featured Artists Yet"
+2471. "No Followers Yet"
+2472. "No Group Chats"
+2473. "No Interaction History"
+2474. "No Mentions"
+2475. "No Mutual Connections"
+2476. "No Payout Accounts"
+2477. "No Recent Transactions"
+2478. "No Search History"
+2479. "No Suggestions Available"
+2480. "No View History"
+2481. "No additional perks at the next level."
+2482. "No ads in ${_selectedZone.displayName}"
+2483. "No ads yet"
+2484. "No analytics data available"
+2485. "No analytics data available yet"
+2486. "No art clusters nearby"
+2487. "No art nearby right now"
+2488. "No art walks available"
+2489. "No art walks found"
+2490. "No art walks found for"
+2491. "No artist profile found. Please create an artist profile first."
+2492. "No artists found"
+2493. "No artists online right now"
+2494. "No artists yet"
+2495. "No artwork ID provided"
+2496. "No artwork found"
+2497. "No artwork found matching your criteria"
+2498. "No artworks available"
+2499. "No artworks yet"
+2500. "No audio file selected"
+2501. "No bio available"
+2502. "No bio provided"
+2503. "No blocked users"
+2504. "No captures found for"
+2505. "No captures found nearby"
+2506. "No captures yet"
+2507. "No chats found"
+2508. "No collectors yet"
+2509. "No comments"
+2510. "No commissions found"
+2511. "No commissions yet"
+2512. "No completed commissions yet"
+2513. "No completed walks yet"
+2514. "No content provided"
+2515. "No conversations yet"
+2516. "No coupons found"
+2517. "No daily view data available yet"
+2518. "No data available"
+2519. "No deadline set"
+2520. "No description"
+2521. "No details available"
+2522. "No discussion yet"
+2523. "No eligible transactions for refund"
+2524. "No events found"
+2525. "No events match your filters"
+2526. "No exchanging gifts for services outside the platform"
+2527. "No expiration"
+2528. "No featured artists available"
+2529. "No featured templates"
+2530. "No feedback found"
+2531. "No flagged comments to review"
+2532. "No flagged posts to review"
+2533. "No gallery profile found. Please create one first."
+2534. "No gifts yet"
+2535. "No groups created yet"
+2536. "No groups joined yet"
+2537. "No location"
+2538. "No messages yet"
+2539. "No milestones added. Add milestones to break down the work and payments."
+2540. "No notifications yet"
+2541. "No one is online right now"
+2542. "No payment methods added"
+2543. "No paymentIntentId found for transaction ${transaction.id}."
+2544. "No pending events"
+2545. "No pending invitations"
+2546. "No perks unlocked at this level yet."
+2547. "No personalized recommendations yet"
+2548. "No portfolio images added"
+2549. "No portfolios available"
+2550. "No posts found for ${widget.artist.displayName}"
+2551. "No posts yet"
+2552. "No public art captures within 15 miles"
+2553. "No public art found"
+2554. "No reason provided"
+2555. "No recent activity"
+2556. "No recent posts available"
+2557. "No recent transactions"
+2558. "No reported art walks"
+2559. "No reports"
+2560. "No sales transactions yet"
+2561. "No sales yet"
+2562. "No saved walks yet"
+2563. "No similar artworks found"
+2564. "No soliciting for gifts"
+2565. "No starred messages"
+2566. "No studios available"
+2567. "No studios available yet"
+2568. "No studios match your search"
+2569. "No templates found"
+2570. "No transactions selected"
+2571. "No trending artworks"
+2572. "No trending content found"
+2573. "No upcoming events"
+2574. "No user found with this email."
+2575. "No user logged in, cannot load activities"
+2576. "No users found"
+2577. "No verified artists found"
+2578. "No viewer data available yet"
+2579. "No walks created yet"
+2580. "No walks in progress"
+2581. "No weekly goals yet"
+2582. "Non-Fiction"
+2583. "Not Accepting Commissions"
+2584. "Not Following Anyone"
+2585. "Not accepting commissions"
+2586. "Not authenticated"
+2587. "Not following any artists yet"
+2588. "Not following anyone yet"
+2589. "Not for Sale"
+2590. "Not provided"
+2591. "Not satisfied with service"
+2592. "Note: Refunds are processed within 5-7 business days,"
+2593. "Notification"
+2594. "Notification Settings"
+2595. "Notification navigation error: $error"
+2596. "Notifications"
+2597. "Notifications screen coming soon!"
+2598. "Now following user!"
+2599. "Number of Art Pieces"
+2600. "Number of art captures created by users"
+2601. "Number of art walks completed by users"
+2602. "Number of public art walks created"
+2603. "Ocean Waves"
+2604. "Offer Services"
+2605. "Office Network"
+2606. "Oil Painting"
+2607. "Oil Painting Tutorial"
+2608. "Old Collection (${_stats!.oldCollectionName})"
+2609. "On post:"
+2610. "On-Time Deliveries"
+2611. "Once you create your profile, you\"
+2612. "Once you delete this studio, there is no going back. Please be certain."
+2613. "Ongoing"
+2614. "Online"
+2615. "Online (${filteredOnlineUsers.length})"
+2616. "Online Presence"
+2617. "Online Users"
+2618. "Online Users (${users.length})"
+2619. "Online now"
+2620. "Only invited members can join"
+2621. "Oops! Something went wrong"
+2622. "Open Menu"
+2623. "Opening ${item["
+2624. "Opening ${mention["
+2625. "Opening artwork details..."
+2626. "Opening camera..."
+2627. "Opening comment in ${comment["
+2628. "Opening profile of ${item["
+2629. "Optional • Show your excitement! 🎨"
+2630. "Options"
+2631. "Order Summary"
+2632. "Order description cannot be empty"
+2633. "Order title cannot be empty"
+2634. "Original Message"
+2635. "Original amount cannot be negative"
+2636. "Original artworks and creative pieces"
+2637. "Other party"
+2638. "Our support team will review your dispute and help resolve it fairly. Please provide as much detail as possible."
+2639. "Overall Rating"
+2640. "Overall Statistics"
+2641. "Overview"
+2642. "Overwrite"
+2643. "Owner"
+2644. "Package"
+2645. "Package Name"
+2646. "Package Tracking"
+2647. "Package-specific categorization"
+2648. "Part of bulk refund operation"
+2649. "Password"
+2650. "Password Reset Required"
+2651. "Password change functionality coming soon"
+2652. "Password is 6 months old"
+2653. "Password must be at least 6 characters"
+2654. "Password policy updated"
+2655. "Pause Real-time"
+2656. "Pay Deposit (\$${_commission!.depositAmount.toStringAsFixed(2)})"
+2657. "Pay Milestone"
+2658. "Pay \$${_finalAmount.toStringAsFixed(2)}"
+2659. "PayPal"
+2660. "PayPal Account"
+2661. "Payment Completed"
+2662. "Payment Information"
+2663. "Payment Management"
+2664. "Payment Method"
+2665. "Payment Methods"
+2666. "Payment completed successfully"
+2667. "Payment failed: $e"
+2668. "Payment failed: ${e.toString()}"
+2669. "Payment method"
+2670. "Payment processing failed"
+2671. "Payment successful!"
+2672. "Payment will be processed securely through the App Store. You can manage your subscription in your device settings."
+2673. "Payments are processed via Stripe.\n\nSubscription tiers, ads, events, and in-app purchases are billed in local currency where supported.\n\nRefunds are governed by event- or ad-specific refund policies.\n\nUsers must provide accurate billing information; fraudulent activity may result in termination."
+2674. "Payout Account"
+2675. "Payout Accounts"
+2676. "Payout Amount"
+2677. "Payout Information"
+2678. "Payout Management"
+2679. "Payout Request"
+2680. "Payout Summary"
+2681. "Payout account added successfully!"
+2682. "Payout request submitted successfully! You will receive \$${amount.toStringAsFixed(2)} in 1-3 business days."
+2683. "Payouts"
+2684. "Payouts are processed securely through our payment partner. You will receive an email confirmation once the payout is initiated."
+2685. "Peak Engagement Day"
+2686. "Peak Today"
+2687. "Peak hour: ${messagingStats["
+2688. "Peak: ${messagingStats["
+2689. "Pencil Drawing"
+2690. "Pending"
+2691. "Pending (${_getCommissionsByStatus([CommissionStatus.pending, CommissionStatus.quoted]).length})"
+2692. "Pending Balance"
+2693. "Pending Flags"
+2694. "Pending Invitations"
+2695. "Pending Payouts"
+2696. "Pending Review"
+2697. "Pending Reviews"
+2698. "Pending Verification"
+2699. "People"
+2700. "Per transaction"
+2701. "Percentage Discount"
+2702. "Percentage must be between 1 and 100"
+2703. "Percentage required upfront"
+2704. "Perfect for a quick discovery"
+2705. "Perfect for entry-level creators"
+2706. "Perfect for getting started with your artistic journey"
+2707. "Perfect plan for you"
+2708. "Perfect! Ready to share your art walk! 🎉"
+2709. "Performance"
+2710. "Performance Analytics"
+2711. "Performance Art"
+2712. "Performance Chart\n(Real-time data visualization)"
+2713. "Performance Metrics"
+2714. "Performance Overview"
+2715. "Performance Summary"
+2716. "Performance issues"
+2717. "Perks"
+2718. "Permission denied"
+2719. "Permission denied. Please check your account permissions."
+2720. "Permission denied. Please check your authentication."
+2721. "Personal Information"
+2722. "Personalized for You"
+2723. "Phone number verified successfully"
+2724. "Phone verification failed"
+2725. "Phone verification failed: ${e.message}"
+2726. "Photo Capture"
+2727. "Photo Captures"
+2728. "Photo Hunter"
+2729. "Photo Post"
+2730. "Photograph art during golden hour"
+2731. "Photographer"
+2732. "Photography"
+2733. "Photorealistic"
+2734. "Physical Print"
+2735. "Physical Shipping"
+2736. "Physical artwork shipped to client"
+2737. "Plan Features"
+2738. "Plan Limits & Features"
+2739. "Playground Art"
+2740. "Please accept the terms and conditions"
+2741. "Please add at least one milestone"
+2742. "Please add some content or images"
+2743. "Please add some content or media"
+2744. "Please allow 5-7 business days for your refund to process after approval."
+2745. "Please complete all milestone details"
+2746. "Please complete milestone ${i + 1}"
+2747. "Please describe the issue"
+2748. "Please describe the issue in detail..."
+2749. "Please describe your commission project"
+2750. "Please enter a base price"
+2751. "Please enter a bio"
+2752. "Please enter a description"
+2753. "Please enter a display name"
+2754. "Please enter a location"
+2755. "Please enter a phone number first"
+2756. "Please enter a price"
+2757. "Please enter a title"
+2758. "Please enter a username"
+2759. "Please enter a valid 5-digit ZIP code"
+2760. "Please enter a valid ZIP code (5 digits)"
+2761. "Please enter a valid amount"
+2762. "Please enter a valid distance"
+2763. "Please enter a valid duration"
+2764. "Please enter a valid email"
+2765. "Please enter a valid number"
+2766. "Please enter a valid phone number with country code (e.g., +1234567890)"
+2767. "Please enter a valid price"
+2768. "Please enter an amount"
+2769. "Please enter an event title"
+2770. "Please enter medium"
+2771. "Please enter size"
+2772. "Please enter some content"
+2773. "Please enter style"
+2774. "Please enter the account holder name"
+2775. "Please enter the account number"
+2776. "Please enter the routing number"
+2777. "Please enter the verification code"
+2778. "Please enter your bio"
+2779. "Please enter your display name"
+2780. "Please enter your email"
+2781. "Please enter your name"
+2782. "Please enter your password"
+2783. "Please enter your terms and conditions"
+2784. "Please fill in all required fields"
+2785. "Please fill in all required fields correctly."
+2786. "Please log in again to access privacy settings"
+2787. "Please log in to create a post"
+2788. "Please log in to upload captures."
+2789. "Please log in to view notifications."
+2790. "Please log in to view your art walks"
+2791. "Please log in to view your artwork"
+2792. "Please provide a description"
+2793. "Please provide a reason"
+2794. "Please provide additional details"
+2795. "Please provide any additional information about your refund request"
+2796. "Please provide more detailed information"
+2797. "Please read and accept our guidelines to ensure safe and legal art capturing"
+2798. "Please select a commission type"
+2799. "Please select a medium"
+2800. "Please select a payout account"
+2801. "Please select a reason"
+2802. "Please select an estimated completion date"
+2803. "Please select at least one medium"
+2804. "Please select at least one specialty"
+2805. "Please select at least one style"
+2806. "Please sign in to comment"
+2807. "Please sign in to like posts"
+2808. "Please sign in to view and add comments"
+2809. "Please sign in to view commissions"
+2810. "Please sign in to view your rewards"
+2811. "Please sign in to view your tickets"
+2812. "Please specify a timeline"
+2813. "Please specify..."
+2814. "Please try again later"
+2815. "Please wait while we upload your capture"
+2816. "Please wait while your post is being created..."
+2817. "Please write a comment"
+2818. "Popular Captures"
+2819. "Popular Chats"
+2820. "Popular Content"
+2821. "Popular Events"
+2822. "Popular Routes"
+2823. "Popular and trending posts"
+2824. "Popular artists and trending art"
+2825. "Popular artwork"
+2826. "Popular now"
+2827. "Portfolio"
+2828. "Portfolio Images"
+2829. "Portfolios"
+2830. "Portrait of my dog"
+2831. "Post"
+2832. "Post Ad for \$${price.toStringAsFixed(2)}"
+2833. "Post Engagement"
+2834. "Post Options"
+2835. "Post approved"
+2836. "Post created successfully!"
+2837. "Post deleted successfully"
+2838. "Post featured!"
+2839. "Post not found"
+2840. "Post not found. Please refresh and try again."
+2841. "Post photos of your latest creation"
+2842. "Post removed"
+2843. "Post tapped: ${post.id}"
+2844. "Post to Community"
+2845. "Post to artist groups"
+2846. "Post your first ad to get started"
+2847. "Posted an update • ${item["
+2848. "Posted new artwork • ${DateFormat("
+2849. "Posts"
+2850. "Posts (${_flaggedPosts.length})"
+2851. "Potential XP"
+2852. "Potential scam"
+2853. "Preferences reset successfully"
+2854. "Premium Content"
+2855. "Premium feature: Create engaging ads with your artwork"
+2856. "Premium features for art businesses"
+2857. "Preparing upload..."
+2858. "Price (USD)"
+2859. "Price Breakdown"
+2860. "Price Range"
+2861. "Price: \$${_priceController.text}"
+2862. "Pricing"
+2863. "Pricing Details"
+2864. "Pricing Modifiers"
+2865. "Primary Color"
+2866. "Print-ready PDF"
+2867. "Printmaking"
+2868. "Priority levels (Low, Medium, High, Critical)"
+2869. "Priority support"
+2870. "Privacy Settings"
+2871. "Privacy and notification preferences"
+2872. "Privacy setting"
+2873. "Private"
+2874. "Pro-rated refunds may be issued for unused subscription time."
+2875. "Process Documentation"
+2876. "Process Refund"
+2877. "Process Video"
+2878. "Processed ${events.length} events"
+2879. "Processed on ${DateTime.now().subtract(Duration(days: index)).toString().split("
+2880. "Processed: ${_formatDate(payout.processedAt!)}"
+2881. "Processing & Security"
+2882. "Processing Fee"
+2883. "Processing Time"
+2884. "Processing document ${doc.id}"
+2885. "Processing gift..."
+2886. "Processing rewards..."
+2887. "Processing..."
+2888. "Professional Artist Gallery"
+2889. "Professional Storefront"
+2890. "Professional tools for serious artists"
+2891. "Profile"
+2892. "Profile Analytics"
+2893. "Profile Customization"
+2894. "Profile Elements"
+2895. "Profile Images"
+2896. "Profile Updated"
+2897. "Profile Views"
+2898. "Profile Views Over Time"
+2899. "Profile Visitors"
+2900. "Profile customization saved!"
+2901. "Profile image must be under 5MB"
+2902. "Profile picture updated successfully"
+2903. "Profile screen coming soon!"
+2904. "Profile updated successfully!"
+2905. "Profile • ${_formatDuration((item["
+2906. "Progress"
+2907. "Progress through 10 levels inspired by famous artists:"
+2908. "Project Details"
+2909. "Project Request"
+2910. "Promo Code"
+2911. "Promote"
+2912. "Promote Artwork"
+2913. "Promote Your Art"
+2914. "Provide Quote"
+2915. "Provide evidence (screenshots, files, messages)"
+2916. "Public"
+2917. "Public Art Capture"
+2918. "Public events query returned ${publicEventsQuery.docs.length} documents"
+2919. "Purchase ${package["
+2920. "Purchase Manager Available: ${_purchaseManager.isAvailable}"
+2921. "Purchase for \$${_artwork?.price?.toStringAsFixed(2) ??"
+2922. "Purchase functionality coming soon!"
+2923. "Purchase required to listen"
+2924. "Quality Metrics"
+2925. "Quality of Work"
+2926. "Query returned ${query.docs.length} documents"
+2927. "Quest Journal"
+2928. "Quest Master Level"
+2929. "Quest Tips"
+2930. "Quest difficulty scales with your level"
+2931. "Questions or complaints may be directed to:\nARTbeat Support\nPO BOX 232 Kinston NC 28502\nsupport@localartbeat.app"
+2932. "Quick Actions"
+2933. "Quick Insights"
+2934. "Quick Setup Wizard"
+2935. "Quick Start with Template"
+2936. "Quick Tags"
+2937. "Quick action buttons in problem areas"
+2938. "Quiet Mode"
+2939. "Quiet Mode Message"
+2940. "QuietModeScreen"
+2941. "Quote Description"
+2942. "Quote accepted! Proceed to payment."
+2943. "Quote accepted. Waiting for deposit payment"
+2944. "Quote provided successfully!"
+2945. "Quote submitted successfully!"
+2946. "REPORTED CONTENT"
+2947. "Rate"
+2948. "Rate Commission"
+2949. "Rating submitted successfully!"
+2950. "Ratings Received"
+2951. "Reach art lovers in high-traffic areas"
+2952. "Ready for Adventure?"
+2953. "Ready for your next art adventure?"
+2954. "Ready to Capture Art?"
+2955. "Ready to Create an Art Walk?"
+2956. "Ready to Start Your Journey?"
+2957. "Ready to curate your own artistic adventure?"
+2958. "Ready to join the artist community!"
+2959. "Real-time Performance"
+2960. "Real-time updates with filters"
+2961. "Reason for Refund"
+2962. "Reason for cancellation:"
+2963. "Reason for deletion"
+2964. "Reason for rejection"
+2965. "Reason for rejection (optional)"
+2966. "Reason for reporting (optional)"
+2967. "Reason: ${connection.connectionReason?["
+2968. "Reason: ${payout.failureReason}"
+2969. "Receive Helpful Vote"
+2970. "Received a gift of \$${amount.toStringAsFixed(2)}"
+2971. "Recent Achievements"
+2972. "Recent Activity"
+2973. "Recent Ad Activity"
+2974. "Recent Alerts"
+2975. "Recent Artwork"
+2976. "Recent Chats"
+2977. "Recent Commissions"
+2978. "Recent Content"
+2979. "Recent Payments"
+2980. "Recent Payouts"
+2981. "Recent Posts"
+2982. "Recent Sales"
+2983. "Recent Security Events"
+2984. "Recent Transactions"
+2985. "Recent Trends"
+2986. "Recent Views: ${artwork["
+2987. "Recent logs will be displayed here...\n\n"
+2988. "Recently joined"
+2989. "Recipients must have completed profile verification"
+2990. "Recording refund in database only."
+2991. "Reference Images (Optional)"
+2992. "Reference image uploaded successfully"
+2993. "Refresh"
+2994. "Refresh Achievements"
+2995. "Refresh Analytics"
+2996. "Refresh App State"
+2997. "Refresh Data"
+2998. "Refresh Status"
+2999. "Refresh captures"
+3000. "Refresh the application state and data"
+3001. "Refund Information"
+3002. "Refund Policy"
+3003. "Refund processed successfully"
+3004. "Refund request failed. Please try again."
+3005. "Refund requests are reviewed on a case-by-case basis."
+3006. "Refunds"
+3007. "Regular Users: May browse, follow, favorite, and engage with content.\n\nArtists: May upload artwork, manage profiles, sell work, host events, and access subscription tiers.\n\nGalleries: Manage multiple artists, exhibitions, and commissions.\n\nModerators/Admins: Enforce policies, moderate content, and manage the platform."
+3008. "Reject"
+3009. "Reject Artwork"
+3010. "Reject Selected"
+3011. "Rejected by admin"
+3012. "Remaining to Migrate"
+3013. "Remove"
+3014. "Remove Favorite"
+3015. "Remove Like"
+3016. "Remove from favorites"
+3017. "Removed admin privileges for $user"
+3018. "Removed from favorites"
+3019. "Removed from liked content"
+3020. "Repeat Client Rate"
+3021. "Repeat Clients"
+3022. "Reply"
+3023. "Reply functionality coming soon"
+3024. "Reply to thread..."
+3025. "Replying to"
+3026. "Replying to ${_replyingTo!.userName}"
+3027. "Report"
+3028. "Report Count"
+3029. "Report Dispute"
+3030. "Report Issue"
+3031. "Report a bug or technical issue"
+3032. "Report any suspicious gift activity"
+3033. "Reported"
+3034. "Reported by: ${(report["
+3035. "Reports"
+3036. "Request Commission"
+3037. "Request Commission from ${selectedArtist.displayName}"
+3038. "Request Payout"
+3039. "Request Refund"
+3040. "Request custom artwork from talented artists"
+3041. "Requested"
+3042. "Requested: ${_formatDate(payout.requestedAt)}"
+3043. "Requesting from"
+3044. "Require Email Verification"
+3045. "Resend invitation"
+3046. "Reset"
+3047. "Reset Preferences"
+3048. "Reset User Preferences"
+3049. "Reset all user preferences to default"
+3050. "Resolve"
+3051. "Respect community guidelines when sending gift messages"
+3052. "Respond"
+3053. "Respond to Feedback"
+3054. "Respond to the other party\"
+3055. "Respond to user feedback"
+3056. "Responding to: ${feedback.title}"
+3057. "Response Time"
+3058. "Response added successfully"
+3059. "Retry"
+3060. "Returning Clients"
+3061. "Revenue"
+3062. "Revenue ${_analytics!.financialMetrics.revenueGrowth >= 0 ?"
+3063. "Revenue (÷100)"
+3064. "Revenue Breakdown"
+3065. "Revenue Chart"
+3066. "Revenue Growth"
+3067. "Revenue Tracking"
+3068. "Revenue Trend"
+3069. "Revenue Trends"
+3070. "Revenue and analytics"
+3071. "Revenue growth data will appear here"
+3072. "Review ${widget.walkTitle ??"
+3073. "Review Content"
+3074. "Review Order"
+3075. "Review Your Art Walk"
+3076. "Review Your Settings"
+3077. "Review cleared successfully"
+3078. "Review the quote and accept to proceed"
+3079. "Review the request and provide a quote"
+3080. "Revision Rate"
+3081. "Revisions requested"
+3082. "Revisions: $_revisions"
+3083. "Reward"
+3084. "Rewards & Achievements"
+3085. "Rewards earned:"
+3086. "Role: ${user.userType ??"
+3087. "Rollback Migration"
+3088. "Rollback completed successfully!"
+3089. "Rollback failed: $e"
+3090. "Round Trip Journey"
+3091. "Route Analytics"
+3092. "Route Details"
+3093. "Route Name"
+3094. "Routing Number"
+3095. "Run Migration"
+3096. "SCREEN_TITLE"
+3097. "SLA guarantees"
+3098. "SMS quota exceeded. Please try again later."
+3099. "STATUS_UPDATE"
+3100. "Safety Guidelines"
+3101. "Sales"
+3102. "Sales Summary"
+3103. "Sales revenue in period"
+3104. "Sarah Security"
+3105. "Save"
+3106. "Save & Finish"
+3107. "Save Art Walk"
+3108. "Save Changes"
+3109. "Save Profile"
+3110. "Save Settings"
+3111. "Save button pressed"
+3112. "Save interesting walks to find them easily later"
+3113. "Saved"
+3114. "Saving capture..."
+3115. "Saving..."
+3116. "Scalable and searchable"
+3117. "Scanning for art..."
+3118. "Schedule: ${_releaseSchedule.replaceAll("
+3119. "Science Fiction"
+3120. "Screenshot"
+3121. "Screenshots"
+3122. "Sculpture in Central Park"
+3123. "Search"
+3124. "Search $tabName"
+3125. "Search & filter"
+3126. "Search Art"
+3127. "Search Captures"
+3128. "Search Connections"
+3129. "Search Conversations"
+3130. "Search Events"
+3131. "Search Messages"
+3132. "Search Posts"
+3133. "Search Results"
+3134. "Search ads..."
+3135. "Search again"
+3136. "Search art walks..."
+3137. "Search artists by name..."
+3138. "Search artists..."
+3139. "Search artwork..."
+3140. "Search by content, artist, location, artwork..."
+3141. "Search by name or location"
+3142. "Search by name, category, or location"
+3143. "Search by name, username, or zip code"
+3144. "Search by name, username, or zip code..."
+3145. "Search by title, description, tags..."
+3146. "Search chats..."
+3147. "Search content by title, author, or description..."
+3148. "Search content..."
+3149. "Search error: $e"
+3150. "Search events, venues, artists..."
+3151. "Search failed. Please try again."
+3152. "Search for artists and community members"
+3153. "Search for artists and their captures"
+3154. "Search functionality coming soon!"
+3155. "Search history cleared"
+3156. "Search in: Content, Artist Name, Location, Artwork Title, Description, Medium, Style, Tags"
+3157. "Search in: Title, Description, Tags, Difficulty, Location"
+3158. "Search logs..."
+3159. "Search messages..."
+3160. "Search people..."
+3161. "Search public art..."
+3162. "Search studios..."
+3163. "Search templates..."
+3164. "Search transactions..."
+3165. "Search users by name, email, or username..."
+3166. "Search users..."
+3167. "Search verified artists..."
+3168. "Search..."
+3169. "SearchResultsScreen"
+3170. "Searches"
+3171. "Searching for"
+3172. "Searching for ZIP code $zipCode..."
+3173. "Searching for: $query"
+3174. "Searching in: $tabName"
+3175. "Searching location..."
+3176. "Searching..."
+3177. "Secondary Color"
+3178. "Secure Image Test"
+3179. "Secure Payments"
+3180. "Security Center"
+3181. "Security Overview"
+3182. "Security Score"
+3183. "Security Settings"
+3184. "Security scan completed"
+3185. "See All"
+3186. "See My Plan"
+3187. "See more works by ${capture.artistName}"
+3188. "See trending art discoveries"
+3189. "See trending conversations"
+3190. "See what others are discovering"
+3191. "See what others are discovering in your area"
+3192. "See what\"
+3193. "Select Account"
+3194. "Select Artist"
+3195. "Select Duration"
+3196. "Select Emoji"
+3197. "Select Image"
+3198. "Select Image Source"
+3199. "Select Medium"
+3200. "Select Size"
+3201. "Select Style"
+3202. "Select Tickets"
+3203. "Select Time Range"
+3204. "Select Zone"
+3205. "Select all that apply to personalize your experience"
+3206. "Select all that apply. What materials or techniques do you use most?"
+3207. "Select all that apply:"
+3208. "Select art medium"
+3209. "Select art type"
+3210. "Select artwork to view details"
+3211. "Select date"
+3212. "Select the type of group post you want to create:"
+3213. "Select the types of commissions you offer"
+3214. "Selected Artwork: ${_artworkIds.length} items"
+3215. "Selected Images"
+3216. "Send"
+3217. "Send ${gift["
+3218. "Send Gift"
+3219. "Send Request"
+3220. "Send Response"
+3221. "Send Tip"
+3222. "Sent connection request to"
+3223. "Serial Story"
+3224. "Server Status"
+3225. "Session Time"
+3226. "Set Up Commissions (Step ${_currentStep + 1}/6)"
+3227. "Set modifiers for different commission types and sizes"
+3228. "Set up commission settings"
+3229. "Set up your commission settings to start receiving requests from clients."
+3230. "Set your pricing"
+3231. "Settings Change"
+3232. "Settings exported successfully"
+3233. "Setup Commission Settings"
+3234. "Share"
+3235. "Share Artwork"
+3236. "Share Your Art"
+3237. "Share Your Art Walk"
+3238. "Share an event you\"
+3239. "Share details about your creative process..."
+3240. "Share discoveries with friends"
+3241. "Share functionality would be implemented here"
+3242. "Share photos and details of your latest creation"
+3243. "Share photos from an art event or exhibition"
+3244. "Share photos from your studio"
+3245. "Share thoughts or updates"
+3246. "Share thoughts, updates, or announcements"
+3247. "Share up to 5 photos from your art walk adventure"
+3248. "Share updates with your community"
+3249. "Share with the community"
+3250. "Share your art with the community"
+3251. "Share your artwork to attract followers who appreciate your creativity."
+3252. "Share your artwork with the community"
+3253. "Share your creative process"
+3254. "Share your experience at this event..."
+3255. "Share your experience working with this artist..."
+3256. "Share your favorite art spots by creating a walk"
+3257. "Share your thoughts (optional)"
+3258. "Share your thoughts and updates"
+3259. "Share your thoughts, artwork, or creative process..."
+3260. "Share your thoughts..."
+3261. "Shared by $senderName"
+3262. "Shared from ARTbeat Community\n"
+3263. "Shared successfully"
+3264. "Short (< 30 min)"
+3265. "Show Achievements"
+3266. "Show Bio"
+3267. "Show Birthday"
+3268. "Show Filters"
+3269. "Show Join Date"
+3270. "Show Location"
+3271. "Show Recent Activity"
+3272. "Show this as professional artwork"
+3273. "Show when you joined ARTbeat"
+3274. "Show your appreciation for this artist"
+3275. "Show your creative process with videos or photos"
+3276. "Show your location to other users"
+3277. "Showcase your art with a beautiful, customizable profile"
+3278. "Showcase your artwork"
+3279. "Showcase your best work to attract clients (optional but recommended)"
+3280. "Showcase your latest creation"
+3281. "Showcase your talent and join a vibrant community of creators!"
+3282. "Showcase your work to potential clients"
+3283. "Showing data for: ${_selectedTimeRange =="
+3284. "Sign In"
+3285. "Sign In Now"
+3286. "Sign in failed: $e"
+3287. "Sign in to get personalized recommendations"
+3288. "Sign in to unlock all features:"
+3289. "Signage Art"
+3290. "Signed in anonymously for testing"
+3291. "Similar interests"
+3292. "Size"
+3293. "Size & Duration"
+3294. "Size Modifiers"
+3295. "Size Pricing (added to base price)"
+3296. "Size: ${_formatFileSize(_fileSize)}"
+3297. "Size: ${_formatFileSize(file.sizeBytes)}"
+3298. "Sketcher (Frida Kahlo)"
+3299. "Skip"
+3300. "Small (up to 8x10"
+3301. "Social"
+3302. "Social Butterfly - Share 5 art walks"
+3303. "Social Engagement"
+3304. "Social Engagement Demo"
+3305. "SocialEngagementDemoScreen"
+3306. "Some images were too large and skipped (max 5MB each)"
+3307. "Some images were too large and skipped: ${invalidFiles.join("
+3308. "Someone"
+3309. "Someone engaged with your content!"
+3310. "Something went wrong"
+3311. "Something went wrong. Please try again."
+3312. "Sort By"
+3313. "Sort:"
+3314. "Source"
+3315. "Special requests or requirements"
+3316. "Specialized fields for ${widget.groupType.title} posts will be implemented here."
+3317. "Specialties"
+3318. "Specifications"
+3319. "Spoken Word"
+3320. "Sponsor"
+3321. "Sponsor ${widget.artist.displayName}"
+3322. "Sponsored Walk"
+3323. "Sponsored by Local Brew Co."
+3324. "Sponsorship payment completed successfully"
+3325. "Sponsorship transactions require a valid artistId"
+3326. "Sponsorship transactions require a valid duration"
+3327. "Sponsorship transactions require a valid sponsorshipType"
+3328. "Sponsorship transactions require valid benefits"
+3329. "Sponsorship: ${widget.orderDetails.metadata["
+3330. "Sponsorships"
+3331. "Spray Paint"
+3332. "Stack trace: $stackTrace"
+3333. "Stained Glass"
+3334. "Start Accepting Commissions"
+3335. "Start Art Walk"
+3336. "Start Art Walk with Navigation"
+3337. "Start Campaign"
+3338. "Start Capture"
+3339. "Start Creating"
+3340. "Start Date"
+3341. "Start Discovery"
+3342. "Start My Art Walk"
+3343. "Start My Artist Journey"
+3344. "Start Navigation"
+3345. "Start New Conversation"
+3346. "Start Real-time"
+3347. "Start Time"
+3348. "Start Walk"
+3349. "Start Walking"
+3350. "Start Your Artistic Journey"
+3351. "Start a conversation with an artist"
+3352. "Start a conversation with artists and art enthusiasts"
+3353. "Start a conversation with fellow artists and connect with the creative community"
+3354. "Start a group chat to collaborate with artists"
+3355. "Start a new group conversation"
+3356. "Start a thoughtful discussion about this artwork!"
+3357. "Start by giving your walk a name! 🎨"
+3358. "Start by requesting a commission from an artist"
+3359. "Start by uploading and listing your artwork"
+3360. "Start capturing art to see it here!"
+3361. "Start capturing art to see your collection here"
+3362. "Start discovering art to unlock amazing achievements"
+3363. "Start exploring art walks to see your progress here"
+3364. "Start free and upgrade anytime — plans built for creators in 2025"
+3365. "Start navigation to see turn-by-turn directions to each art piece."
+3366. "Start the conversation by sending a message below"
+3367. "Start the conversation!"
+3368. "Start typing to search for people..."
+3369. "Start writing your content..."
+3370. "Start your adventure with a smile!"
+3371. "Starter Plan"
+3372. "Starting Point"
+3373. "Starting from"
+3374. "Starting price for commissions"
+3375. "Starting price for your work"
+3376. "Starting..."
+3377. "Statistics"
+3378. "Statistics and analytics"
+3379. "Stats"
+3380. "Status"
+3381. "Status Management"
+3382. "Status change"
+3383. "Status updated to ${newStatus.displayName}"
+3384. "Status: ${capture.status.value}"
+3385. "Status: ${commission.status.displayName} • \$${commission.totalPrice.toStringAsFixed(2)}"
+3386. "Stay active on your art journey"
+3387. "Step Master"
+3388. "Storage issue: Please try again or contact support if the problem persists."
+3389. "Streak Warrior"
+3390. "Street Art"
+3391. "Street Art Captures"
+3392. "Street Master (Jean-Michel Basquiat)"
+3393. "Street art, murals, and public art discoveries"
+3394. "Stripe customer not found"
+3395. "Strong Password"
+3396. "Studio Chat"
+3397. "Studio Management"
+3398. "Studio Name"
+3399. "Studio created successfully!"
+3400. "Studio deleted successfully"
+3401. "Studio name is required"
+3402. "Studio name must be at least 3 characters"
+3403. "Studio not found"
+3404. "Studios"
+3405. "Style"
+3406. "Style Collector"
+3407. "Styles"
+3408. "Submit Capture"
+3409. "Submit Quote"
+3410. "Submit Rating"
+3411. "Submit Request"
+3412. "Submit a Review (50+ words)"
+3413. "Subscribe"
+3414. "Subscribe Now - ${_getPriceString(widget.tier)}"
+3415. "Subscribe to"
+3416. "Subscribe to ${_getTierName(widget.tier)}"
+3417. "Subscribe to ${tier.displayName}"
+3418. "Subscription"
+3419. "Subscription Analytics"
+3420. "Subscription Plans"
+3421. "Subscription Tiers: ${PurchaseHelper.getSubscriptionTiers().length}"
+3422. "Subscription failed: ${e.toString()}"
+3423. "Subscription payment completed successfully"
+3424. "Subscription purchase initiated!"
+3425. "Subscription to ${widget.tier.displayName}"
+3426. "Subscription transactions require a valid billingCycle"
+3427. "Subscription transactions require a valid tier"
+3428. "Subscription: ${widget.orderDetails.metadata["
+3429. "Subscriptions"
+3430. "Subtotal"
+3431. "Success Rate"
+3432. "Successfully processed $successCount refunds"
+3433. "Successfully updated ${_selectedTransactionIds.length} transactions"
+3434. "Suggest edits to any public artwork"
+3435. "Suggestion dismissed"
+3436. "Suggestions"
+3437. "Summer Art Fair"
+3438. "Sunset Dreams"
+3439. "Sunset Painting"
+3440. "Support $artistName"
+3441. "Support ${capture.artistName}"
+3442. "Support this artist\"
+3443. "Suspended Users"
+3444. "Suspended: ${_formatDateTime(_currentUser.suspendedAt!)}"
+3445. "Suspicious Login Activity"
+3446. "Suspicious activity is automatically flagged"
+3447. "Suspicious data access detected"
+3448. "System Alerts"
+3449. "System Health"
+3450. "System Information"
+3451. "System Settings"
+3452. "System Status: ${_systemMetrics["
+3453. "Tagged you in a photo"
+3454. "Tagged you in artwork showcase"
+3455. "Tags"
+3456. "Tags: ${artwork.tags?.join("
+3457. "Take new capture"
+3458. "Take our quick guided setup to start accepting commissions"
+3459. "Tap below to start exploring"
+3460. "Tap for details"
+3461. "Tap stars to rate"
+3462. "Tap the + button to create your first post"
+3463. "Tap the + button to share your first artwork!"
+3464. "Tap to Take Your Selfie"
+3465. "Tap to add profile photo"
+3466. "Tap to add profile photo (optional)"
+3467. "Tap to select image"
+3468. "Tap to select images (max 5MB each)"
+3469. "Target: < 5 min"
+3470. "Team collaboration (5 members)"
+3471. "Team collaboration (5 users)"
+3472. "Technical Implementation"
+3473. "Technical Question"
+3474. "Technical issues"
+3475. "Tell clients about your process"
+3476. "Tell people more about your offering"
+3477. "Tell the community about an event you\"
+3478. "Tell us about your art journey..."
+3479. "Tell us about your art..."
+3480. "Tell us about your artistic journey..."
+3481. "Tell us about your event - what, when, where..."
+3482. "Tell us about yourself"
+3483. "Tell us about yourself..."
+3484. "Tell us more"
+3485. "Terms & Conditions"
+3486. "Terms of Service"
+3487. "Test Connectivity"
+3488. "Test Image ${index + 1}"
+3489. "Test Notification"
+3490. "Test network and Firebase connectivity"
+3491. "Test notification created"
+3492. "Testing SecureNetworkImage with Firebase Storage URLs"
+3493. "Text Message"
+3494. "Text Post"
+3495. "Textile Art"
+3496. "Thank you for supporting the artist with $amount!"
+3497. "Thank you for your ${rating.toInt()}-star review!"
+3498. "Thanks for your interest in my latest piece!"
+3499. "The Platform is operated from the United States.\n\nUsers outside the US are responsible for compliance with local laws and regulations.\n\nCertain features (payments, ticketing, ads) may not be available in all jurisdictions."
+3500. "The favorite you\"
+3501. "The images below should handle 403 errors gracefully with retry functionality:"
+3502. "The modern platform where artists thrive.\nPersonalized for your creative journey."
+3503. "The phone number is invalid."
+3504. "The requested art walk could not be found."
+3505. "Theme"
+3506. "These terms will be shown to clients before they request a commission"
+3507. "They walked $distanceMiles miles and visited ${widget.celebrationData.artPiecesVisited} amazing art pieces."
+3508. "This Week\"
+3509. "This Weekend"
+3510. "This account has been disabled."
+3511. "This action cannot be undone."
+3512. "This action cannot be undone. Are you sure you want to clear all your activity history?"
+3513. "This action cannot be undone. Are you sure you want to continue?"
+3514. "This artist hasn\"
+3515. "This artwork is not audio content"
+3516. "This artwork is not written content"
+3517. "This content requires purchase to read"
+3518. "This coupon cannot be applied to this transaction"
+3519. "This demo showcases the engagement options available for each content type in the ARTbeat platform."
+3520. "This feature is available with the Gallery Plan."
+3521. "This feature is under development and will show:\n"
+3522. "This helps us recommend the right plan for you"
+3523. "This is a test notification to verify the system is working!"
+3524. "This is an estimate. The artist will provide the final quote."
+3525. "This is required for instant discovery to show user captures. Continue?"
+3526. "This is such an inspiring piece! I love how you\"
+3527. "This is test data"
+3528. "This is the amount available for payout after processing fees."
+3529. "This migration adds standardized moderation status fields to all content collections (posts, comments, artwork, captures, ads)."
+3530. "This operation cannot be undone. Continue?"
+3531. "This tool migrates ads from the old"
+3532. "This user hasn\"
+3533. "This will OVERWRITE any existing ads in the localAds collection that have the same ID as ads in the old collection.\n\n"
+3534. "This will add geo fields (geohash and geopoint) to all captures with locations."
+3535. "This will add standardized moderation status fields to all content collections. This operation cannot be undone easily. Continue?"
+3536. "This will be posted as an artist post, showcasing your professional work."
+3537. "This will be sent to all active users"
+3538. "This will remove the new moderation status fields from all collections. This action cannot be undone. Continue?"
+3539. "This will update all posts that currently show"
+3540. "This will upgrade your account to unlock artist features and opportunities."
+3541. "This would initiate a gift purchase for ${gift["
+3542. "This would initiate a subscription purchase for ${tier.displayName}."
+3543. "This would initiate an ad campaign purchase for ${package["
+3544. "Threat Detection"
+3545. "Tickets"
+3546. "Tickets Sold"
+3547. "Time Frame"
+3548. "Time: ${_formatTimestamp(activity.createdAt)}"
+3549. "Timeline"
+3550. "Timeline issues"
+3551. "Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2,"
+3552. "Tips and support for messaging"
+3553. "Tips for Success"
+3554. "Tips for resolving disputes:"
+3555. "Tips help artists continue creating amazing public art"
+3556. "Title"
+3557. "Title *"
+3558. "Title is required"
+3559. "Title: ${_titleController.text}"
+3560. "To be determined"
+3561. "Today, ${_formatTime(dateTime)}"
+3562. "Today, 9:30 AM\nNew York, NY"
+3563. "Today: ${messagingStats["
+3564. "Toggle expand for post: ${post.id}"
+3565. "Tomorrow, ${_formatTime(dateTime)}"
+3566. "Too many requests. Please try again later."
+3567. "Too many requests. Please wait a few minutes before trying again."
+3568. "Top Collectors"
+3569. "Top Locations"
+3570. "Top Performing Artwork"
+3571. "Top Performing Events"
+3572. "Top Profile Viewers"
+3573. "Top Referral Sources"
+3574. "Top emoji: ${messagingStats["
+3575. "Topics"
+3576. "Total"
+3577. "Total Activity"
+3578. "Total Artworks"
+3579. "Total Captures"
+3580. "Total Comments"
+3581. "Total Commissions"
+3582. "Total Content"
+3583. "Total Distance"
+3584. "Total Earnings"
+3585. "Total Engagement: ${artwork["
+3586. "Total Engagements"
+3587. "Total Events"
+3588. "Total Feedback"
+3589. "Total Flags"
+3590. "Total Followers"
+3591. "Total Found"
+3592. "Total Goals"
+3593. "Total Interactions"
+3594. "Total Likes"
+3595. "Total Messages"
+3596. "Total Paid Out"
+3597. "Total Posts"
+3598. "Total Price"
+3599. "Total Quests Completed"
+3600. "Total Refunded"
+3601. "Total Refunds"
+3602. "Total Revenue"
+3603. "Total Routes"
+3604. "Total Sales"
+3605. "Total Spent"
+3606. "Total Today"
+3607. "Total Transactions"
+3608. "Total Users"
+3609. "Total Views"
+3610. "Total Views: ${artwork["
+3611. "Total Visits"
+3612. "Total Walks"
+3613. "Total XP"
+3614. "Total XP Earned"
+3615. "Total amount: \$${selectedTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}"
+3616. "Total captures fetched: ${captures.length}"
+3617. "Total experience points earned across all activities"
+3618. "Total gallery commission"
+3619. "Total: \$${refundTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}"
+3620. "Track commission milestones"
+3621. "Track earnings from approved advertisements"
+3622. "Track the performance of your advertisements"
+3623. "Track views, engagement, and sales performance"
+3624. "Track your artwork views, engagement, and sales performance"
+3625. "Track your commission performance"
+3626. "Track your performance"
+3627. "Track: ${_trackNumberController.text}"
+3628. "Traditional"
+3629. "Traditional Artist"
+3630. "Traditional Painting"
+3631. "Transaction Export"
+3632. "Transaction ID,User ID,User Name,Type,Amount,Currency,Status,Payment Method,Transaction Date,Description,Item Title"
+3633. "Transaction Type"
+3634. "Transaction Volume"
+3635. "Transaction data will appear here"
+3636. "Transaction data will appear here once payments are processed."
+3637. "Transactions"
+3638. "Transform your ARTbeat experience and unlock powerful tools designed specifically for artists and creators."
+3639. "Transit Art"
+3640. "Trending"
+3641. "Trending Content"
+3642. "Trending Events"
+3643. "Trending Now"
+3644. "Trending now"
+3645. "TrendingContentScreen"
+3646. "Trends"
+3647. "Try Again"
+3648. "Try a different search term"
+3649. "Try adjusting your filters"
+3650. "Try adjusting your filters or check back later"
+3651. "Try adjusting your search terms"
+3652. "Try adjusting your search terms or filters"
+3653. "Try changing your filters or check back later"
+3654. "Try moving to a different location or check back later"
+3655. "Try posting more content to increase engagement"
+3656. "Try searching with a different name, username, or zip code"
+3657. "Turn your captures into an amazing art walk experience!"
+3658. "Turn-by-Turn Navigation"
+3659. "Turnaround Time"
+3660. "Twitter"
+3661. "Twitter / X"
+3662. "Type"
+3663. "Type Pricing (added to base price)"
+3664. "Type a message..."
+3665. "Type to search for artists"
+3666. "Type your message..."
+3667. "Type: $_contentType"
+3668. "Type: ${file.type}"
+3669. "URL: ${testUrls[index].length > 60 ?"
+3670. "Unable to access camera. Please try again."
+3671. "Unable to determine start location"
+3672. "Unable to determine your location"
+3673. "Unable to get your location. Please check permissions."
+3674. "Unable to load artist feed"
+3675. "Unable to load artists"
+3676. "Unable to load artwork"
+3677. "Unable to load events"
+3678. "Unable to load privacy settings - permission denied. Please check your privacy settings in Firestore."
+3679. "Unable to load user profile"
+3680. "Unable to send gift. Please try again."
+3681. "Unable to start navigation. Check your location settings."
+3682. "Unblock"
+3683. "Unfollow"
+3684. "Unfollow ${artist.displayName}?"
+3685. "Unfollow ${followedUser.username}?"
+3686. "Unfollowed user"
+3687. "Unique Clients"
+3688. "United States"
+3689. "United States (CCPA/State Privacy Laws):\n• Right to know what personal data we collect.\n• Right to request deletion of your personal data.\n• Right to opt out of sale of personal data (we do not sell data).\n\nEU/EEA/UK (GDPR):\n• Right of access, rectification, and erasure.\n• Right to restrict or object to processing.\n• Right to data portability.\n• Right to withdraw consent at any time.\n• Right to lodge a complaint with your local Data Protection Authority.\n\nOther Regions:\n• We honor local legal rights where applicable."
+3690. "Unknown"
+3691. "Unknown Artist"
+3692. "Unknown Artwork"
+3693. "Unknown Author"
+3694. "Unknown Event"
+3695. "Unknown Location"
+3696. "Unknown Server"
+3697. "Unknown User"
+3698. "Unknown action"
+3699. "Unknown alert"
+3700. "Unknown error"
+3701. "Unknown error occurred"
+3702. "Unknown time"
+3703. "Unknown user"
+3704. "Unlimited artworks"
+3705. "Unlimited everything"
+3706. "Unlock at Next Level"
+3707. "Unlock powerful tools and opportunities designed for creators"
+3708. "Unlock special privileges as you level up:"
+3709. "Unnamed Favorite"
+3710. "Unnamed Group"
+3711. "Unsupported artwork selection type: ${selectedArtwork.runtimeType}"
+3712. "Untitled"
+3713. "Untitled Art Piece"
+3714. "Unusual Data Access Pattern"
+3715. "Up to 100 artworks"
+3716. "Up to 25 artworks"
+3717. "Up to 3 artworks"
+3718. "Upcoming Events"
+3719. "Update"
+3720. "Update Event"
+3721. "Update feedback status"
+3722. "Update posts showing"
+3723. "Upgrade Now"
+3724. "Upgrade to Artist Pro for unlimited artwork uploads."
+3725. "Upgrade to PRO for Advanced Analytics"
+3726. "Upgrade your account to unlock premium features"
+3727. "Upload Artwork"
+3728. "Upload Capture"
+3729. "Upload New Artwork"
+3730. "Upload failed"
+3731. "Upload failed: ${e.toString()}"
+3732. "Upload reference images"
+3733. "Upload your first artwork to get started!"
+3734. "Uploaded by: ${file.uploadedBy == _currentUserId ?"
+3735. "Uploading image..."
+3736. "Uploading images..."
+3737. "Uploading media..."
+3738. "Uploading profile image..."
+3739. "Uploading video..."
+3740. "Uploading..."
+3741. "Urban Photographer - Add 5 new public art pieces"
+3742. "Urban Wanderer"
+3743. "Usability feedback"
+3744. "Use a template to fill in common fields automatically"
+3745. "Use the + button to invite artists to your gallery"
+3746. "Use the map or browse features to add artwork to this walk."
+3747. "Use your artist dashboard to manage individual posts."
+3748. "User"
+3749. "User $userId"
+3750. "User ${!_currentUser.isVerified ?"
+3751. "User ${newFeaturedStatus ?"
+3752. "User ${user.statusText =="
+3753. "User ${userId.substring(0, 8)}..."
+3754. "User Blocked"
+3755. "User Created"
+3756. "User Details"
+3757. "User Feedback Form"
+3758. "User Information"
+3759. "User Management"
+3760. "User Profile"
+3761. "User Settings"
+3762. "User Suspended"
+3763. "User Type"
+3764. "User accessing large amounts of user data"
+3765. "User administration tools"
+3766. "User cancelled"
+3767. "User data not found"
+3768. "User email not available. Please update your profile email."
+3769. "User must be authenticated"
+3770. "User not authenticated"
+3771. "User not authenticated. Please log in."
+3772. "User not logged in"
+3773. "User requested refund"
+3774. "User: ${users[index % users.length]} | IP: 192.168.1.${100 + index}"
+3775. "UserPostsScreen"
+3776. "Username"
+3777. "Username can only contain letters, numbers, and underscores"
+3778. "Username is required"
+3779. "Username must be at least 3 characters"
+3780. "Users"
+3781. "Users Nearby"
+3782. "Users must provide a valid name, email, and password during registration. ZIP code is optional and helps personalize content.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms."
+3783. "Users must provide a valid name, email, password, and ZIP code during registration.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms."
+3784. "Users you block will appear here. They won\"
+3785. "Using saved ZIP code: $_currentZipCode"
+3786. "Vector (SVG)"
+3787. "Venues"
+3788. "Verification Code"
+3789. "Verification code expired. Please request a new one."
+3790. "Verification email sent to ${_user!.email}"
+3791. "Verification email sent to ${user.email}. Please check your inbox."
+3792. "Verification failed"
+3793. "Verification failed: $e"
+3794. "Verification failed: ${e.message}"
+3795. "Verified"
+3796. "Verified Artist"
+3797. "Verified Artists"
+3798. "Verified Badge"
+3799. "Verified Users"
+3800. "Verify"
+3801. "Version 2.0.5"
+3802. "Video Art"
+3803. "Video file too large (max 50MB)"
+3804. "Video upload failed due to authentication issue. Please try again or contact support."
+3805. "Video upload failed. Please check your connection and try again."
+3806. "View"
+3807. "View All"
+3808. "View All Commissions"
+3809. "View All Subscription Options"
+3810. "View Analytics"
+3811. "View Application Logs"
+3812. "View Conversation"
+3813. "View Details"
+3814. "View Gallery"
+3815. "View Profile"
+3816. "View all feedback with filtering"
+3817. "View and edit your profile"
+3818. "View completed commission artworks"
+3819. "View engagement analytics"
+3820. "View recent application logs and errors"
+3821. "View your captures"
+3822. "View your posts and activity"
+3823. "Views"
+3824. "Views to sales percentage"
+3825. "Views vs Revenue"
+3826. "Visionary Creator (El Anatsui)"
+3827. "Visit Individual Artwork"
+3828. "Visit Route"
+3829. "Visits This Week"
+3830. "Visits Today"
+3831. "Voice Message"
+3832. "Volume: ${_volumeController.text}, Chapter: ${_chapterController.text}, Series: ${_seriesController.text}"
+3833. "Waiting for artist to review and quote"
+3834. "Waiting for client to accept quote"
+3835. "Walk Explorer - Complete 5 different art walks"
+3836. "Walk Master"
+3837. "Walk Master - Complete 20 different art walks"
+3838. "Walk Summary"
+3839. "Walk Used by 5+ Users"
+3840. "Walk resumed. Let\"
+3841. "Walk while exploring art"
+3842. "Warning Alerts"
+3843. "Warning: ${imageUrls.length}/${_selectedImages.length} images uploaded successfully"
+3844. "Watercolor Landscape"
+3845. "Waveform visualization placeholder"
+3846. "We accept all major credit cards and PayPal through our secure Stripe payment processing."
+3847. "We may update this Privacy Policy. Updates will be posted with a new Effective Date, and we will notify users where legally required."
+3848. "We share your data only as needed:\n• With Service Providers: Stripe (payments), Firebase (storage, authentication, analytics).\n• With Other Users: Profile details, artwork, captures, events, ads, or comments you choose to make public.\n• For Moderation/Legal Compliance: To comply with DMCA, law enforcement, or platform security.\n• In Business Transfers: If ARTbeat undergoes a merger, acquisition, or asset sale.\n\nWe do not sell your personal information."
+3849. "We use data to:\n• Provide and improve ARTbeat features (profiles, artwork, events, ads, community).\n• Process payments, subscriptions, and refunds.\n• Enable GPS navigation and location-based discovery.\n• Send notifications (reminders, purchases, account alerts).\n• Moderate content and enforce policies.\n• Provide analytics to artists, galleries, and advertisers.\n• Ensure safety, prevent fraud, and comply with legal requirements."
+3850. "Website"
+3851. "Website (Optional)"
+3852. "Week Warrior"
+3853. "Weekend events"
+3854. "Weekend quests focus on exploration"
+3855. "Weekly Goals Performance"
+3856. "Weekly: ${messagingStats["
+3857. "Welcome back!"
+3858. "Welcome back! Discover amazing art"
+3859. "Welcome to ${_getTierName(widget.tier)}! Your subscription is now active."
+3860. "Welcome to ARTbeat Achievements!"
+3861. "Welcome to ARTbeat as an artist! 🎨"
+3862. "Welcome to ARTbeat for Artists"
+3863. "Welcome to ARTbeat!"
+3864. "Welcome to the Artist Community!"
+3865. "Welcome to the artist community! 🎉"
+3866. "Welcome to\nARTbeat"
+3867. "What Changes in Your Account"
+3868. "What You\"
+3869. "What are you promoting?"
+3870. "What describes you best?"
+3871. "What did you enjoy about this walk?"
+3872. "What is the issue?"
+3873. "What payment methods do you accept?"
+3874. "What stood out? (Select all that apply)"
+3875. "What styles best describe your work? Select as many as you like."
+3876. "What type of art do you create?"
+3877. "What types of commissions do you want to accept?"
+3878. "What would you like to share?"
+3879. "What you\"
+3880. "What\"
+3881. "When:"
+3882. "Where is this artwork displayed/stored?"
+3883. "Where to Display"
+3884. "Why Choose ARTbeat?"
+3885. "Why are you excited about this event?..."
+3886. "Work completed. Awaiting client review"
+3887. "Work is in progress"
+3888. "World Music"
+3889. "Would migrate"
+3890. "Write detailed artwork descriptions"
+3891. "Written Content"
+3892. "Written Work"
+3893. "Year"
+3894. "Year Legend"
+3895. "Yes! Start with our Free plan and upgrade when you\"
+3896. "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle."
+3897. "Yesterday, 2:15 PM\nNew York, NY"
+3898. "You Might Like"
+3899. "You agree to indemnify and hold harmless ARTbeat, its affiliates, employees, and partners from claims, damages, or expenses arising from your use of the Platform."
+3900. "You are now following ${widget.artistProfile.displayName}"
+3901. "You can add, remove, or set a default payment method for your subscriptions."
+3902. "You can edit your profile and add more details later."
+3903. "You gained a new follower!"
+3904. "You have earned ${achievements.length} out of 13 possible achievements"
+3905. "You have no unread activities"
+3906. "You have unfollowed ${widget.artistProfile.displayName}"
+3907. "You have unsaved changes. Are you sure you want to leave?"
+3908. "You lost a follower"
+3909. "You may not:\n\n• Upload unlawful, infringing, defamatory, or harmful content.\n• Circumvent security systems or attempt to reverse-engineer the app.\n• Use ARTbeat for unauthorized advertising or pyramid schemes.\n• Impersonate others or misrepresent affiliation."
+3910. "You may terminate your account at any time via the Account Settings Screen.\n\nARTbeat may terminate accounts for violations of these Terms.\n\nCertain provisions (IP rights, liability, jurisdiction) survive termination."
+3911. "You must be at least 13 years old (or the minimum digital consent age in your country).\n\nIf you are under 18, you may use the Platform only with the consent of a parent or guardian.\n\nBy registering, you confirm that the information provided is accurate and up-to-date."
+3912. "You must be logged in to create a post"
+3913. "You must be logged in to create a studio"
+3914. "You need to add a payout account before requesting a payout."
+3915. "You need to be signed in to comment"
+3916. "You need to visit at least 80% of art pieces to complete early."
+3917. "You retain ownership of artwork, captures, events, and other content you upload.\n\nBy posting, you grant ARTbeat a worldwide, non-exclusive, royalty-free license to store, display, distribute, and promote your content for Platform operation and marketing.\n\nContent must comply with community standards: no hate speech, harassment, nudity (outside artistic context), or unlawful materials."
+3918. "You unfollowed ${artist.displayName}"
+3919. "You unfollowed ${followedUser.fullName}"
+3920. "You\"
+3921. "Young Adult"
+3922. "Your Badge Collection"
+3923. "Your Current Perks"
+3924. "Your Impact"
+3925. "Your Journey at a Glance"
+3926. "Your Location"
+3927. "Your Own Gallery"
+3928. "Your Payment Methods"
+3929. "Your Progress"
+3930. "Your Recent Captures"
+3931. "Your Specialties"
+3932. "Your Statistics"
+3933. "Your account has been upgraded to ${_getTierName(widget.tier)}. Enjoy your new features!"
+3934. "Your achievement gallery awaits!"
+3935. "Your art has been successfully captured and added to the community."
+3936. "Your art walk milestones"
+3937. "Your captures help build Art Walks for the community!"
+3938. "Your city/region"
+3939. "Your comment received 5 likes"
+3940. "Your commission request form is visible to clients"
+3941. "Your communication preferences"
+3942. "Your content is getting appreciation!"
+3943. "Your current location will be used as the starting point. The app will guide you through each art piece in order."
+3944. "Your follow and connection activity will appear here."
+3945. "Your likes and preferences help us find the perfect artworks for you"
+3946. "Your likes, comments, and shares will appear here."
+3947. "Your most active area is ${summary["
+3948. "Your profile analytics will appear here once you start gaining activity."
+3949. "Your progress will be saved and you can resume this walk later."
+3950. "Your purchases"
+3951. "Your recent activity will appear here"
+3952. "Your refund request has been submitted and will be reviewed."
+3953. "Your response"
+3954. "Your search queries will appear here."
+3955. "Your subscription will automatically renew each month. You can cancel anytime from your account settings."
+3956. "Your viewing activity will appear here."
+3957. "You’ll see updates, messages, and alerts here."
+3958. "ZIP Code"
+3959. "ZIP code $zipCode not found in fallback list"
+3960. "Zip Code"
+3961. "\$${((_artwork!.price ?? 0) * 0.15).toStringAsFixed(2)}"
+3962. "\$${((_artwork!.price ?? 0) * 1.15).toStringAsFixed(2)}"
+3963. "\$${(100 + (index * 50)).toStringAsFixed(2)}"
+3964. "\$${(amount / 100).toStringAsFixed(2)} ${currency.toUpperCase()}"
+3965. "\$${(artist["
+3966. "\$${(gift["
+3967. "\$${(item["
+3968. "\$${(package["
+3969. "\$${(totalPendingCommission + totalPaidCommission).toStringAsFixed(2)}"
+3970. "\$${_artwork!.price?.toStringAsFixed(2) ??"
+3971. "\$${_basePrice.toStringAsFixed(2)}"
+3972. "\$${_earnings!.totalEarnings.toStringAsFixed(2)}"
+3973. "\$${_estimatedPrice!.toStringAsFixed(2)}"
+3974. "\$${_finalAmount.toStringAsFixed(2)}"
+3975. "\$${_formatNumber(value.toInt())}"
+3976. "\$${_priceController.text}"
+3977. "\$${artwork.price!.toStringAsFixed(0)}"
+3978. "\$${artwork.price!.toStringAsFixed(2)}"
+3979. "\$${artwork.price?.toStringAsFixed(2) ??"
+3980. "\$${commission.totalPrice.toStringAsFixed(0)}"
+3981. "\$${commission.totalPrice.toStringAsFixed(2)}"
+3982. "\$${milestone.amount.toStringAsFixed(2)}"
+3983. "\$${monthlyPrice.toStringAsFixed(2)}/month"
+3984. "\$${payout.amount.toStringAsFixed(2)}"
+3985. "\$${price.toStringAsFixed(2)}"
+3986. "\$${totalAmount.toStringAsFixed(2)}"
+3987. "\$${totalPaidCommission.toStringAsFixed(2)}"
+3988. "\$${totalPendingCommission.toStringAsFixed(2)}"
+3989. "\$${totalSalesRevenue.toStringAsFixed(2)}"
+3990. "\$${transaction.amount.toStringAsFixed(2)}"
+3991. "\$${widget.amount.toStringAsFixed(2)}"
+3992. "\$${widget.availableBalance.toStringAsFixed(2)}"
+3993. "\$${widget.orderDetails.originalAmount.toStringAsFixed(2)}"
+3994. "\n... and ${result.errors.length - 5} more"
+3995. "\n⚠️ Errors:\n${result.errors.take(5).join("
+3996. "] != null &&
                     (item["
-3843. "] != null)
+3997. "] != null)
                           Text("
-3844. "] as String
+3998. "] as String
                   :"
-3845. "] as String).isEmpty ||
+3999. "] as String).isEmpty ||
             (milestone["
-3846. "] as String).isNotEmpty) ...[
+4000. "] as String).isNotEmpty) ...[
                   Text(
                     item["
-3847. "] as String,
+4001. "] as String,
                                     decoration: const InputDecoration(
                                       labelText:"
-3848. "] as String,
+4002. "] as String,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -22880,7 +24368,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                             const SizedBox(height: 4),
                             Text(
                               benefit["
-3849. "] as String,
+4003. "] as String,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -22890,7 +24378,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                         ),
                       ),
                       Text("
-3850. "] as String,
+4004. "] as String,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: ArtbeatColors.textPrimary,
@@ -22899,7 +24387,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                       const SizedBox(height: 4),
                       Text(
                         benefit["
-3851. "] as String,
+4005. "] as String,
                       style: TextStyle(
                         color: isSelected ? Colors.white : textSecondary,
                         fontSize: 12,
@@ -22961,7 +24449,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text("
-3852. "] as String,
+4006. "] as String,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -22970,53 +24458,53 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                   const SizedBox(height: 8),
                 ],
                 Text(item["
-3853. "] as String,
+4007. "] as String,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 if (item["
-3854. "] as String,
+4008. "] as String,
             description: m["
-3855. "] as String? ??"
-3856. "].hashCode.toString(),
+4009. "] as String? ??"
+4010. "].hashCode.toString(),
             title: m["
-3857. "]?.toString() ??"
-3858. "ads/${DateTime.now().millisecondsSinceEpoch}.jpg"
-3859. "art, digital, painting, creative (separate by comma)"
-3860. "assets/images/splashTRANS_logo.png"
-3861. "by $artistName"
-3862. "by $artistName on ARTbeat! 🎨\n\n$artworkUrl"
-3863. "by ${_artwork!.artistName}"
-3864. "by ${_capture!.artistName}"
-3865. "by ${art.artistName}"
-3866. "by ${artworkModel.artist?.displayName ??"
-3867. "by ${capture.artistName}"
-3868. "by ${content.authorName}"
-3869. "by ${item["
-3870. "by ${publicArt.artistName}"
-3871. "by ${transaction.fromUserName}"
-3872. "camera not available"
-3873. "chat_${chatData["
-3874. "demo_${contentType}_id"
-3875. "e.g. landscape, nature"
-3876. "e.g.,"
-3877. "e.g., 12345"
-3878. "e.g., 150"
-3879. "e.g., 2 weeks"
-3880. "e.g., 2-3 weeks, 1 month"
-3881. "e.g., 2.5"
-3882. "e.g., 3.2"
-3883. "e.g., Beta Access Code"
-3884. "e.g., Downtown Park, Main Street"
-3885. "e.g., Initial sketch"
-3886. "e.g., Portrait of my dog"
-3887. "email-already-in-use"
-3888. "event_bulk_$keyName"
-3889. "event_bulk_$status"
-3890. "iPhone 15"
-3891. "ll use a placeholder - in real usage this would be based on current artwork
+4011. "]?.toString() ??"
+4012. "ads/${DateTime.now().millisecondsSinceEpoch}.jpg"
+4013. "art, digital, painting, creative (separate by comma)"
+4014. "by $artistName"
+4015. "by $artistName on ARTbeat! 🎨\n\n$artworkUrl"
+4016. "by $artistName on ArtBeat!\n\n${artwork.description}"
+4017. "by ${_artwork!.artistName}"
+4018. "by ${_capture!.artistName}"
+4019. "by ${art.artistName}"
+4020. "by ${artworkModel.artist?.displayName ??"
+4021. "by ${capture.artistName}"
+4022. "by ${content.authorName}"
+4023. "by ${item["
+4024. "by ${publicArt.artistName}"
+4025. "by ${transaction.fromUserName}"
+4026. "camera not available"
+4027. "chat_${chatData["
+4028. "demo_${contentType}_id"
+4029. "e.g. landscape, nature"
+4030. "e.g.,"
+4031. "e.g., 12345"
+4032. "e.g., 150"
+4033. "e.g., 2 weeks"
+4034. "e.g., 2-3 weeks, 1 month"
+4035. "e.g., 2.5"
+4036. "e.g., 3.2"
+4037. "e.g., Beta Access Code"
+4038. "e.g., Downtown Park, Main Street"
+4039. "e.g., Initial sketch"
+4040. "e.g., Portrait of my dog"
+4041. "email-already-in-use"
+4042. "event_bulk_$keyName"
+4043. "event_bulk_$status"
+4044. "iPhone 15"
+4045. "ll use a placeholder - in real usage this would be based on current artwork
         _discoveryService.getDiscoveryFeed(limit: 20, userId: userId),
       ]);
 
@@ -23039,16 +24527,16 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-3892. "no camera found"
-3893. "not available"
-3894. "of total price"
-3895. "on WordNerd!"
-3896. "permission-denied"
-3897. "s Stripe customer ID
+4046. "no camera found"
+4047. "not available"
+4048. "of total price"
+4049. "on WordNerd!"
+4050. "permission-denied"
+4051. "s Stripe customer ID
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
         throw Exception("
-3898. "s art walks with progress tracking
+4052. "s art walks with progress tracking
 class EnhancedMyArtWalksScreen extends StatefulWidget {
   const EnhancedMyArtWalksScreen({super.key});
 
@@ -23112,23 +24600,23 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("
-3899. "s control."
-3900. "s current subscription
+4053. "s control."
+4054. "s current subscription
       final subscription = await _subscriptionService.getUserSubscription();
       _tierLevel = subscription?.tier ?? SubscriptionTier.starter;
 
       // Get count of user"
-3901. "s happening
+4055. "s happening
     AppLogger.info("
-3902. "s preferred unit
+4056. "s preferred unit
     final String distanceUnit = _userSettings?.distanceUnit ??"
-3903. "s saved ZIP code from profile
+4057. "s saved ZIP code from profile
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userProfile = await _userService.getUserProfile(user.uid);
         if (userProfile != null &&
             userProfile["
-3904. "s star feature)
+4058. "s star feature)
                 _buildInstantDiscoveryHeroSection(),
                 const SizedBox(height: 16),
 
@@ -23170,7 +24658,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                 const AdCtaCardWidget(
                   zone: LocalAdZone.featured,
                   ctaText:"
-3905. "s subscription allows event creation
+4059. "s subscription allows event creation
   Future<void> _checkSubscriptionStatus() async {
     setState(() {
       _isLoading = true;
@@ -23191,7 +24679,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     } catch (e) {
       setState(() {
         _errorMessage ="
-3906. "t blocked
+4060. "t blocked
     }
   }
 
@@ -23214,8 +24702,8 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       barrierDismissible: true,
       builder: (context) => AlertDialog(
         title: Text("
-3907. "t have endDate, we"
-3908. "t have yet
+4061. "t have endDate, we"
+4062. "t have yet
     for (final walkId in walkIds) {
       if (!_walkTitles.containsKey(walkId)) {
         try {
@@ -23241,7 +24729,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("
-3909. "t show the section
+4063. "t show the section
     if (_searchQuery.isNotEmpty && filteredItems.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -23302,7 +24790,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
 
   Future<void> _contactSupport() async {
     const email ="
-3910. "t throw here - allow the post to be created without video
+4064. "t throw here - allow the post to be created without video
           videoUrl = null;
         } finally {
           if (mounted) {
@@ -23311,73 +24799,74 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         }
       } else {
         debugPrint("
-3911. "t use bottom navigation
+4065. "t use bottom navigation
       appBar: core.EnhancedUniversalHeader(
         title:"
-3912. "too-many-requests"
-3913. "user-not-found"
-3914. "was sold"
-3915. "~${_calculateDistance(art)}"
-3916. "• $error"
-3917. "• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited"
-3918. "• ${widget.progress.visitedArt.length} art pieces visited"
-3919. "• Always be aware of your surroundings\n"
-3920. "• Check the debug console for SecureNetworkImage logs\n"
-3921. "• Completed in ${_formatDuration(widget.progress.timeSpent)}"
-3922. "• Create and manage your own events"
-3923. "• Follow turn-by-turn instructions"
-3924. "• Get event reminders"
-3925. "• Mark art as visited when you reach it"
-3926. "• Only capture art in public spaces\n"
-3927. "• Orange marker = next destination"
-3928. "• Purchase event tickets"
-3929. "• Tap"
-3930. "• Tap expand/collapse button to adjust navigation view"
-3931. "• Tap markers to view art details"
-3932. "• View your ticket history"
-3933. "• You won\"
-3934. "•••• •••• •••• ${card?.last4 ??"
-3935. "⚠️ Error animating camera: $e"
-3936. "⚠️ Fallback camera movement also failed: $fallbackError"
-3937. "⚠️ Not enough valid coordinates for polyline"
-3938. "✅ Commission settings saved successfully!"
-3939. "✅ Portfolio image uploaded successfully!"
-3940. "✨ Looking great!"
-3941. "❌ AdminArtWalkModerationScreen: Error in initState: $e"
-3942. "❌ AdminArtWalkModerationScreen: Error loading art walks: $e"
-3943. "❌ Art image load error: $error for ${art.imageUrl}"
-3944. "❌ Enhanced upload failed, falling back to legacy method: $e"
-3945. "❌ Error adding comment: $e"
-3946. "❌ Error initializing dashboard: $e"
-3947. "❌ Error initializing location: $e"
-3948. "❌ Error loading comments: $e"
-3949. "❌ Error loading nearby captures: $e"
-3950. "❌ Error refreshing location: $e"
-3951. "❌ Error type: ${e.runtimeType}"
-3952. "❌ Error updating nearby captures: $e"
-3953. "❌ Error updating user ZIP code: $e"
-3954. "❌ Error uploading image: $e"
-3955. "❌ Stack trace: $stack"
-3956. "❤️ Appreciated!"
-3957. "❤️ Liked ${widget.artist.displayName}!"
-3958. "🎉 Thank you for sponsoring ${widget.artist.displayName}!"
-3959. "🎨 ${notification["
-3960. "🎨 Commission request sent to ${widget.artist.displayName}!"
-3961. "🎨 Error loading artist feed: $e"
-3962. "🎨 Error loading artists: $e"
-3963. "🎨 Ready to showcase your art?"
-3964. "🏆 Achievement Categories"
-3965. "🏆 Quest Legend"
-3966. "👤 Following ${widget.artist.displayName}!"
-3967. "💬 User not authenticated, cannot view comments"
-3968. "📱 Error filtering blocked users: $e"
-3969. "📱 Error loading activities: $e"
-3970. "📱 Error loading posts: $e"
-3971. "📸 Capture the Moment"
-3972. "🔐 User is NOT authenticated"
-3973. "🤍 Post not found in _posts list"
-3974. "🤍 User not authenticated, cannot like post"
-3975. "🥇 Badge Tiers"
-3976. "🥇 Gold Benefactor - \$50/month"
-3977. "🥈 Silver Patron - \$15/month"
-3978. "🥉 Bronze Supporter - \$5/month"
+4066. "too-many-requests"
+4067. "user-not-found"
+4068. "video_content_upload_schedule_$schedule"
+4069. "was sold"
+4070. "~${_calculateDistance(art)}"
+4071. "• $error"
+4072. "• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited"
+4073. "• ${widget.progress.visitedArt.length} art pieces visited"
+4074. "• Always be aware of your surroundings\n"
+4075. "• Check the debug console for SecureNetworkImage logs\n"
+4076. "• Completed in ${_formatDuration(widget.progress.timeSpent)}"
+4077. "• Create and manage your own events"
+4078. "• Follow turn-by-turn instructions"
+4079. "• Get event reminders"
+4080. "• Mark art as visited when you reach it"
+4081. "• Only capture art in public spaces\n"
+4082. "• Orange marker = next destination"
+4083. "• Purchase event tickets"
+4084. "• Tap"
+4085. "• Tap expand/collapse button to adjust navigation view"
+4086. "• Tap markers to view art details"
+4087. "• View your ticket history"
+4088. "• You won\"
+4089. "•••• •••• •••• ${card?.last4 ??"
+4090. "⚠️ Error animating camera: $e"
+4091. "⚠️ Fallback camera movement also failed: $fallbackError"
+4092. "⚠️ Not enough valid coordinates for polyline"
+4093. "✅ Commission settings saved successfully!"
+4094. "✅ Portfolio image uploaded successfully!"
+4095. "✨ Looking great!"
+4096. "❌ AdminArtWalkModerationScreen: Error in initState: $e"
+4097. "❌ AdminArtWalkModerationScreen: Error loading art walks: $e"
+4098. "❌ Art image load error: $error for ${art.imageUrl}"
+4099. "❌ Enhanced upload failed, falling back to legacy method: $e"
+4100. "❌ Error adding comment: $e"
+4101. "❌ Error initializing dashboard: $e"
+4102. "❌ Error initializing location: $e"
+4103. "❌ Error loading comments: $e"
+4104. "❌ Error loading nearby captures: $e"
+4105. "❌ Error refreshing location: $e"
+4106. "❌ Error type: ${e.runtimeType}"
+4107. "❌ Error updating nearby captures: $e"
+4108. "❌ Error updating user ZIP code: $e"
+4109. "❌ Error uploading image: $e"
+4110. "❌ Stack trace: $stack"
+4111. "❤️ Appreciated!"
+4112. "❤️ Liked ${widget.artist.displayName}!"
+4113. "🎉 Thank you for sponsoring ${widget.artist.displayName}!"
+4114. "🎨 ${notification["
+4115. "🎨 Commission request sent to ${widget.artist.displayName}!"
+4116. "🎨 Error loading artist feed: $e"
+4117. "🎨 Error loading artists: $e"
+4118. "🎨 Ready to showcase your art?"
+4119. "🏆 Achievement Categories"
+4120. "🏆 Quest Legend"
+4121. "👤 Following ${widget.artist.displayName}!"
+4122. "💬 User not authenticated, cannot view comments"
+4123. "📱 Error filtering blocked users: $e"
+4124. "📱 Error loading activities: $e"
+4125. "📱 Error loading posts: $e"
+4126. "📸 Capture the Moment"
+4127. "🔐 User is NOT authenticated"
+4128. "🤍 Post not found in _posts list"
+4129. "🤍 User not authenticated, cannot like post"
+4130. "🥇 Badge Tiers"
+4131. "🥇 Gold Benefactor - \$50/month"
+4132. "🥈 Silver Patron - \$15/month"
+4133. "🥉 Bronze Supporter - \$5/month"

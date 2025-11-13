@@ -111,7 +111,10 @@ class InAppPurchaseService {
       AppLogger.info('✅ In-app purchase service initialized successfully');
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to initialize in-app purchase service: $e', error: e);
+      AppLogger.error(
+        '❌ Failed to initialize in-app purchase service: $e',
+        error: e,
+      );
       // Return false but don't crash - the app can continue without IAP
       return false;
     }
@@ -293,12 +296,18 @@ class InAppPurchaseService {
         );
       } else if (Platform.isIOS) {
         // iOS: Use App Store verification
-        final isSandbox =
-            purchaseDetails.purchaseID?.contains('sandbox') ?? false;
+        final user = _auth.currentUser;
+        if (user == null) {
+          AppLogger.error(
+            'User not authenticated for iOS purchase verification',
+          );
+          return false;
+        }
 
         return await PurchaseVerificationService.verifyAppStorePurchase(
           receiptData: purchaseDetails.verificationData.localVerificationData,
-          isSandbox: isSandbox,
+          productId: purchaseDetails.productID,
+          userId: user.uid,
         );
       } else {
         AppLogger.warning(
@@ -461,6 +470,7 @@ class InAppPurchaseService {
       // Validate in-app purchase is available
       if (!_isAvailable) {
         AppLogger.error('❌ In-app purchases not available on this device');
+        AppLogger.info('Available products: ${_products.length}');
         throw Exception('In-app purchases are not available on this device');
       }
 
@@ -468,7 +478,12 @@ class InAppPurchaseService {
       final product = _getProductDetails(productId);
       if (product == null) {
         AppLogger.error('❌ Product not found: $productId');
-        throw Exception('Product "$productId" not found. Please ensure it\'s configured in the store.');
+        AppLogger.info(
+          'Available products: ${_products.map((p) => p.id).join(", ")}',
+        );
+        throw Exception(
+          'Product "$productId" not found. Please ensure it\'s configured in the store.',
+        );
       }
 
       AppLogger.info('✅ Product found: ${product.title} - ${product.price}');
@@ -494,7 +509,9 @@ class InAppPurchaseService {
         applicationUserName: user.uid,
       );
 
-      AppLogger.info('📱 Purchase parameters validated, initiating purchase...');
+      AppLogger.info(
+        '📱 Purchase parameters validated, initiating purchase...',
+      );
 
       // Initiate purchase with comprehensive error handling
       final purchaseType = _getPurchaseType(productId);
@@ -507,13 +524,17 @@ class InAppPurchaseService {
             purchaseParam: purchaseParam,
           );
         } else {
-          AppLogger.info('💳 Initiating non-consumable/subscription purchase: $productId');
+          AppLogger.info(
+            '💳 Initiating non-consumable/subscription purchase: $productId',
+          );
           result = await _inAppPurchase.buyNonConsumable(
             purchaseParam: purchaseParam,
           );
         }
-        
-        AppLogger.info('✅ Purchase initiated successfully: $productId - Result: $result');
+
+        AppLogger.info(
+          '✅ Purchase initiated successfully: $productId - Result: $result',
+        );
         return result;
       } catch (e) {
         // Check if this is a PendingIntent-related crash
@@ -527,7 +548,7 @@ class InAppPurchaseService {
             'Payment service encountered an error. Please ensure Google Play is up to date.',
           );
         }
-        
+
         AppLogger.error('Error during purchase initiation: $e', error: e);
         rethrow;
       }

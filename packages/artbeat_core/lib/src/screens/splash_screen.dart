@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/user_sync_helper.dart';
 import '../utils/performance_monitor.dart';
 import '../theme/artbeat_colors.dart';
@@ -84,10 +85,20 @@ class _SplashScreenState extends State<SplashScreen>
       }
 
       FocusScope.of(context).unfocus();
-      final route = user != null ? '/dashboard' : '/login';
+
+      String route = '/login';
+      if (user != null) {
+        final onboardingComplete = await _checkOnboardingStatus(user.uid);
+        if (onboardingComplete) {
+          // All users go to main dashboard - it will show appropriate content based on user type
+          route = '/dashboard';
+        } else {
+          route = '/onboarding';
+        }
+      }
 
       // Start dashboard navigation timing
-      if (route == '/dashboard') {
+      if (route == '/dashboard' || route == '/artist/dashboard') {
         PerformanceMonitor.startTimer('dashboard_navigation');
       }
 
@@ -122,6 +133,36 @@ class _SplashScreenState extends State<SplashScreen>
         // Ignore sync errors in background
       }
     });
+  }
+
+  Future<bool> _checkOnboardingStatus(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get()
+          .timeout(const Duration(seconds: 5));
+
+      if (!doc.exists) {
+        if (kDebugMode) {
+          debugPrint('🔍 User document does not exist for: $userId');
+        }
+        return false;
+      }
+
+      final data = doc.data();
+      final isComplete = data?['onboardingCompleted'] as bool? ?? false;
+      if (kDebugMode) {
+        debugPrint('🔍 Onboarding status for $userId: $isComplete');
+        debugPrint('🔍 User data keys: ${data?.keys.toList()}');
+      }
+      return isComplete;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error checking onboarding status: $e');
+      }
+      return false;
+    }
   }
 
   @override

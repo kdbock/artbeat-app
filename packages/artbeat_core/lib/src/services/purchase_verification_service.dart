@@ -62,29 +62,34 @@ class PurchaseVerificationService {
   /// App Store shared secret. The secret is never exposed to the client app.
   static Future<bool> verifyAppStorePurchase({
     required String receiptData,
-    required bool isSandbox,
+    required String productId,
+    required String userId,
   }) async {
     try {
-      AppLogger.info('🔐 Verifying App Store purchase');
+      AppLogger.info('🔐 Verifying App Store purchase for product: $productId');
 
       // Call Cloud Function for verification
       final response = await http.post(
-        Uri.parse('$_cloudFunctionBaseUrl/verifyAppStorePurchase'),
+        Uri.parse('$_cloudFunctionBaseUrl/validateAppleReceipt'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'receiptData': receiptData, 'isSandbox': isSandbox}),
+        body: json.encode({
+          'receiptData': receiptData,
+          'userId': userId,
+          'productId': productId,
+        }),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final isValid = data['valid'] as bool? ?? false;
+        final success = data['success'] as bool? ?? false;
 
-        if (isValid) {
-          AppLogger.info('✅ App Store purchase verified');
+        if (success) {
+          AppLogger.info('✅ App Store purchase verified: $productId');
         } else {
           AppLogger.warning('⚠️ App Store purchase not valid');
         }
 
-        return isValid;
+        return success;
       } else {
         AppLogger.error(
           '❌ Verification failed: ${response.statusCode} - ${response.body}',

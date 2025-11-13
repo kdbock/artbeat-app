@@ -19,3 +19,7 @@ export 'artwork_recent_screen.dart';
 export 'artwork_trending_screen.dart';
 export 'upload_choice_screen.dart';
 export 'written_content_upload_screen.dart';
+export 'written_content_detail_screen.dart';
+export 'written_content_discovery_screen.dart';
+export 'audio_content_detail_screen.dart';
+export 'audio_content_upload_screen.dart';

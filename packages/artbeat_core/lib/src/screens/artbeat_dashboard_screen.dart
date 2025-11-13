@@ -114,6 +114,33 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      // Subscribe to route changes
+    }
+  }
+
+  @override
+  void didPopNext() {
+    // Called when returning to this screen (e.g., from onboarding)
+    super.didPopNext();
+    // Refresh user data in case user type changed during onboarding
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final viewModel = Provider.of<DashboardViewModel>(
+          context,
+          listen: false,
+        );
+        await viewModel.refreshUserData();
+      } catch (e) {
+        AppLogger.error('❌ Error refreshing user data on dashboard return: $e');
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _heroAnimationController.dispose();
     _celebrationController.dispose();
@@ -294,10 +321,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: AdCarouselWidget(
-              zone: LocalAdZone.home,
-              height: 200,
-            ),
+            child: AdCarouselWidget(zone: LocalAdZone.home, height: 200),
           ),
         ),
       );
@@ -326,10 +350,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       // Slot 4: Below leaderboard - Small banner ad
       catalysts.add(
         const SliverToBoxAdapter(
-          child: AdSmallBannerWidget(
-            zone: LocalAdZone.home,
-            height: 100,
-          ),
+          child: AdSmallBannerWidget(zone: LocalAdZone.home, height: 100),
         ),
       );
     }
@@ -351,9 +372,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     if (viewModel.isAuthenticated) {
       catalysts.add(
         const SliverToBoxAdapter(
-          child: AdNativeCardWidget(
-            zone: LocalAdZone.home,
-          ),
+          child: AdNativeCardWidget(zone: LocalAdZone.home),
         ),
       );
     }
@@ -380,7 +399,10 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
               children: [
                 Text(
                   'dashboard_recent_achievements'.tr(),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -439,10 +461,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: AdSmallBannerWidget(
-              zone: LocalAdZone.home,
-              height: 60,
-            ),
+            child: AdSmallBannerWidget(zone: LocalAdZone.home, height: 60),
           ),
         ),
       );
@@ -665,7 +684,9 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('error_navigation'.tr(namedArgs: {'error': error.toString()})),
+            content: Text(
+              'error_navigation'.tr(namedArgs: {'error': error.toString()}),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 4),
           ),

@@ -3,6 +3,7 @@ class AppRoutes {
   // Core routes
   static const String splash = '/splash';
   static const String dashboard = '/dashboard';
+  static const String onboarding = '/onboarding';
 
   // Auth routes
   static const String auth = '/auth';
@@ -246,6 +247,7 @@ class AppRoutes {
   static List<String> get allRoutes => [
     splash,
     dashboard,
+    onboarding,
     auth,
     login,
     register,

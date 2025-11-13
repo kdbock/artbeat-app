@@ -25,6 +25,7 @@ class UserModel {
   final int experiencePoints;
   final int level;
   final String? zipCode;
+  final bool onboardingCompleted;
 
   UserModel({
     required this.id,
@@ -44,6 +45,7 @@ class UserModel {
     this.experiencePoints = 0,
     this.level = 1,
     this.zipCode,
+    this.onboardingCompleted = false,
   }) : engagementStats =
            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
@@ -77,6 +79,7 @@ class UserModel {
       experiencePoints: data['experiencePoints'] as int? ?? 0,
       level: data['level'] as int? ?? 1,
       zipCode: data['zipCode'] as String?,
+      onboardingCompleted: data['onboardingCompleted'] as bool? ?? false,
     );
   }
 
@@ -129,6 +132,7 @@ class UserModel {
       experiencePoints: json['experiencePoints'] as int? ?? 0,
       level: json['level'] as int? ?? 1,
       zipCode: json['zipCode'] as String?,
+      onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
     );
   }
 
@@ -150,6 +154,7 @@ class UserModel {
       experiencePoints: 0,
       level: 1,
       zipCode: '94102',
+      onboardingCompleted: false,
     );
   }
 
@@ -171,6 +176,7 @@ class UserModel {
       'experiencePoints': experiencePoints,
       'level': level,
       'zipCode': zipCode,
+      'onboardingCompleted': onboardingCompleted,
     };
   }
 
@@ -195,6 +201,7 @@ class UserModel {
       'experiencePoints': experiencePoints,
       'level': level,
       'zipCode': zipCode,
+      'onboardingCompleted': onboardingCompleted,
     };
   }
 
@@ -216,6 +223,7 @@ class UserModel {
     int? experiencePoints,
     int? level,
     String? zipCode,
+    bool? onboardingCompleted,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -235,6 +243,7 @@ class UserModel {
       experiencePoints: experiencePoints ?? this.experiencePoints,
       level: level ?? this.level,
       zipCode: zipCode ?? this.zipCode,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
   }
 

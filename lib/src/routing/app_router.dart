@@ -20,6 +20,8 @@ import '../../screens/notifications_screen.dart';
 import '../../test_payment_debug.dart';
 import '../guards/auth_guard.dart';
 import '../screens/about_screen.dart';
+import '../screens/privacy_policy_screen.dart';
+import '../screens/terms_of_service_screen.dart';
 import '../screens/rewards_screen.dart';
 import 'app_routes.dart';
 import 'route_utils.dart';
@@ -50,7 +52,18 @@ class AppRouter {
       case AppRoutes.dashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 0,
-          child: const core.ArtbeatDashboardScreen(),
+          child: const core.DashboardScreen(),
+        );
+
+      case AppRoutes.onboarding:
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          return RouteUtils.createSimpleRoute(child: const auth.LoginScreen());
+        }
+        return RouteUtils.createSimpleRoute(
+          child: core.OnboardingDashboard(
+            user: RouteUtils.createUserModelFromFirebase(currentUser),
+          ),
         );
 
       case '/debug/payment':
@@ -160,6 +173,7 @@ class AppRouter {
 
   bool _isProtectedRoute(String routeName) =>
       routeName != AppRoutes.splash &&
+      routeName != AppRoutes.onboarding &&
       routeName != AppRoutes.login &&
       routeName != AppRoutes.register &&
       routeName != AppRoutes.forgotPassword &&
@@ -996,6 +1010,11 @@ class AppRouter {
           child: const core.CouponManagementScreen(),
         );
 
+      case '/admin/artwork':
+        return RouteUtils.createMainLayoutRoute(
+          child: const admin.AdminArtworkManagementScreen(),
+        );
+
       case AppRoutes.adminCouponManagement:
       case AppRoutes.adminUsers:
       case AppRoutes.adminModeration:
@@ -1559,6 +1578,18 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('About ARTbeat'),
           child: const AboutScreen(),
+        );
+
+      case '/privacy-policy':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Privacy Policy'),
+          child: const PrivacyPolicyScreen(),
+        );
+
+      case '/terms-of-service':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Terms of Service'),
+          child: const TermsOfServiceScreen(),
         );
 
       default:

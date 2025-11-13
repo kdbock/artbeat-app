@@ -22,6 +22,10 @@ class InAppSubscriptionService {
     bool isYearly = false,
   }) async {
     try {
+      AppLogger.info(
+        '🎯 Starting subscription purchase for ${tier.displayName} (yearly: $isYearly)',
+      );
+
       final user = _auth.currentUser;
       if (user == null) {
         AppLogger.error('User not authenticated for subscription');
@@ -30,6 +34,7 @@ class InAppSubscriptionService {
 
       // Check if user already has an active subscription
       final hasActive = await _purchaseService.hasActiveSubscription(user.uid);
+      AppLogger.info('User has active subscription: $hasActive');
       if (hasActive) {
         AppLogger.warning('User already has an active subscription');
         // You might want to handle subscription changes here
@@ -38,6 +43,7 @@ class InAppSubscriptionService {
 
       // Get product ID for the tier
       final productId = _getProductIdForTier(tier, isYearly);
+      AppLogger.info('Product ID for ${tier.displayName}: $productId');
       if (productId == null) {
         AppLogger.error('No product ID found for tier: ${tier.displayName}');
         return false;

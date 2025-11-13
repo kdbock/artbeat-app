@@ -209,7 +209,13 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                   'artist_artist_profile_edit_success_artist_profile_saved'
                       .tr())),
         );
-        Navigator.pop(context);
+        // Navigate to main dashboard after successful profile creation
+        // The dashboard will detect the user is an artist and show appropriate content
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false, // Remove all previous routes
+        );
       }
     } catch (e) {
       if (mounted) {

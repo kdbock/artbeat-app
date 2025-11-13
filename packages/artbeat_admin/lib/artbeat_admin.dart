@@ -20,6 +20,7 @@ export 'src/services/migration_service.dart';
 export 'src/services/consolidated_admin_service.dart';
 export 'src/services/unified_admin_service.dart';
 export 'src/services/audit_trail_service.dart';
+export 'src/services/admin_artwork_management_service.dart';
 
 // Export utilities
 export 'src/utils/image_utils.dart';
@@ -33,6 +34,7 @@ export 'src/screens/admin_settings_screen.dart';
 export 'src/screens/admin_security_center_screen.dart';
 export 'src/screens/admin_system_monitoring_screen.dart';
 export 'src/screens/admin_login_screen.dart';
+export 'src/screens/admin_artwork_management_screen.dart';
 
 // Export routes
 export 'src/routes/admin_routes.dart';

@@ -117,41 +117,65 @@ service firebase.storage {
     // Artwork videos - artists can upload their own artwork videos
     match /artwork_videos/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate video file types
+        (resource.contentType == null ||
+         resource.contentType.matches('video/*') ||
+         resource.contentType.matches('application/octet-stream')); // For files without proper MIME type
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Temporary more permissive artwork video upload path for debugging
     match /artwork_videos/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate video file types
+        (resource.contentType == null ||
+         resource.contentType.matches('video/*') ||
+         resource.contentType.matches('application/octet-stream'));
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Very permissive artwork video path for development
     match /artwork_videos/{allPaths=**} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() &&
+        // Basic video validation even in development
+        (resource.contentType == null ||
+         resource.contentType.matches('video/*') ||
+         resource.contentType.matches('application/octet-stream'));
     }
 
     // Artwork audio - artists can upload their own artwork audio files
     match /artwork_audio/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate audio file types
+        (resource.contentType == null ||
+         resource.contentType.matches('audio/*') ||
+         resource.contentType.matches('application/octet-stream')); // For files without proper MIME type
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Temporary more permissive artwork audio upload path for debugging
     match /artwork_audio/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId) &&
+        // Validate audio file types
+        (resource.contentType == null ||
+         resource.contentType.matches('audio/*') ||
+         resource.contentType.matches('application/octet-stream'));
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Very permissive artwork audio path for development
     match /artwork_audio/{allPaths=**} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // More permissive for development
+      allow write: if isAuthenticated() &&
+        // Basic audio validation even in development
+        (resource.contentType == null ||
+         resource.contentType.matches('audio/*') ||
+         resource.contentType.matches('application/octet-stream'));
     }
 
     // Written content files - for uploaded manuscripts and documents

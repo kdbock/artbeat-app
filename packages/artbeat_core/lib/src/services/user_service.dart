@@ -911,7 +911,7 @@ class UserService extends ChangeNotifier {
     final userId = currentUserId;
     if (userId == null) return;
     try {
-      await _usersCollection.doc(userId).update(updates);
+      await _usersCollection.doc(userId).set(updates, SetOptions(merge: true));
       notifyListeners();
     } catch (e, s) {
       _logError('Error updating user profile with map', e, s);

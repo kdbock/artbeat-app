@@ -5,7 +5,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, EnhancedStorageService, AppLogger;
+    show
+        SubscriptionTier,
+        EnhancedStorageService,
+        AppLogger,
+        ArtworkContentType;
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 
 /// Service for managing artwork
@@ -781,6 +785,65 @@ class ArtworkService {
     } catch (e) {
       AppLogger.error('Error getting search suggestions: $e');
       return [];
+    }
+  }
+
+  /// Get all public written content (books, stories, etc.)
+  Future<List<ArtworkModel>> getWrittenContent({
+    int limit = 50,
+    bool includeSerialized = true,
+    bool includeCompleted = true,
+  }) async {
+    try {
+      // Query for written content
+      var queryRef = _artworkCollection
+          .where('isPublic', isEqualTo: true)
+          .where('contentType', isEqualTo: ArtworkContentType.written.value);
+
+      // Apply serialization filters if specified
+      if (!includeSerialized && !includeCompleted) {
+        // If both are false, return empty list
+        return [];
+      } else if (!includeSerialized) {
+        // Only completed works
+        queryRef = queryRef.where('isSerializing', isEqualTo: false);
+      } else if (!includeCompleted) {
+        // Only serialized works
+        queryRef = queryRef.where('isSerializing', isEqualTo: true);
+      }
+      // If both are true, don't filter by serialization
+
+      final snapshot = await queryRef
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ArtworkModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      AppLogger.error('Error getting written content: $e');
+
+      // Fallback: Get all public artwork and filter in memory
+      try {
+        final allArtwork = await getAllPublicArtwork(limit: limit * 2);
+        final writtenContent = allArtwork
+            .where(
+                (artwork) => artwork.contentType == ArtworkContentType.written)
+            .where((artwork) {
+              if (!includeSerialized && !includeCompleted) return false;
+              if (!includeSerialized) return !artwork.isSerializing;
+              if (!includeCompleted) return artwork.isSerializing;
+              return true;
+            })
+            .take(limit)
+            .toList();
+
+        return writtenContent;
+      } catch (fallbackError) {
+        AppLogger.error('Fallback query also failed: $fallbackError');
+        return [];
+      }
     }
   }
 }

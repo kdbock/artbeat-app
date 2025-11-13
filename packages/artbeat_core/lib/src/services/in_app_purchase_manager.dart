@@ -7,6 +7,7 @@ import 'in_app_subscription_service.dart';
 import 'in_app_gift_service.dart';
 import 'in_app_ad_service.dart';
 import 'payment_strategy_service.dart';
+import 'subscription_service.dart';
 
 /// Main manager for coordinating all in-app purchase services
 class InAppPurchaseManager {
@@ -21,6 +22,7 @@ class InAppPurchaseManager {
   final InAppGiftService _giftService = InAppGiftService();
   final InAppAdService _adService = InAppAdService();
   final PaymentStrategyService _paymentStrategy = PaymentStrategyService();
+  final SubscriptionService _coreSubscriptionService = SubscriptionService();
 
   bool _isInitialized = false;
   StreamController<PurchaseEvent>? _purchaseEventController;
@@ -107,8 +109,39 @@ class InAppPurchaseManager {
 
   /// Handle subscription purchase
   void _handleSubscriptionPurchase(CompletedPurchase purchase) {
-    // Subscription processing is handled in the main purchase service
-    AppLogger.info('✅ Subscription purchase processed: ${purchase.productId}');
+    // Map product ID to subscription tier
+    final tier = _getTierFromProductId(purchase.productId);
+    if (tier != null) {
+      // Update user's subscription tier in their artist profile
+      _coreSubscriptionService.updateUserSubscriptionTier(tier);
+      AppLogger.info(
+        '✅ Subscription purchase processed: ${purchase.productId} -> ${tier.displayName}',
+      );
+    } else {
+      AppLogger.error(
+        '❌ Unknown subscription product ID: ${purchase.productId}',
+      );
+    }
+  }
+
+  /// Map product ID to subscription tier
+  SubscriptionTier? _getTierFromProductId(String productId) {
+    switch (productId) {
+      case 'artbeat_starter_monthly':
+      case 'artbeat_starter_yearly':
+        return SubscriptionTier.starter;
+      case 'artbeat_creator_monthly':
+      case 'artbeat_creator_yearly':
+        return SubscriptionTier.creator;
+      case 'artbeat_business_monthly':
+      case 'artbeat_business_yearly':
+        return SubscriptionTier.business;
+      case 'artbeat_enterprise_monthly':
+      case 'artbeat_enterprise_yearly':
+        return SubscriptionTier.enterprise;
+      default:
+        return null;
+    }
   }
 
   /// Handle gift purchase

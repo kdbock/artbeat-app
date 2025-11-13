@@ -34,9 +34,21 @@ class EnhancedArtworkUploadScreen extends StatefulWidget {
       _EnhancedArtworkUploadScreenState();
 }
 
+enum UploadStep {
+  media,
+  basicInfo,
+  details,
+  pricing,
+  review,
+}
+
 class _EnhancedArtworkUploadScreenState
     extends State<EnhancedArtworkUploadScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  // Wizard state
+  UploadStep _currentStep = UploadStep.media;
+  int _currentStepIndex = 0;
 
   // Controllers
   final _titleController = TextEditingController();
@@ -49,6 +61,11 @@ class _EnhancedArtworkUploadScreenState
   final _tagController = TextEditingController();
   final _hashtagController = TextEditingController();
   final _keywordController = TextEditingController();
+
+  // New rich metadata controllers
+  final _creationProcessController = TextEditingController();
+  final _inspirationController = TextEditingController();
+  final _techniqueController = TextEditingController();
 
   // Firebase instances
   final _storage = FirebaseStorage.instance;
@@ -69,7 +86,7 @@ class _EnhancedArtworkUploadScreenState
 
   bool _isForSale = false;
   bool _isLoading = false;
-  bool _isSaving = false;
+  String? _mainImageError;
   bool _canUpload = true;
   int _artworkCount = 0;
   SubscriptionTier? _tierLevel;
@@ -78,6 +95,14 @@ class _EnhancedArtworkUploadScreenState
   List<String> _tags = [];
   List<String> _hashtags = [];
   List<String> _keywords = [];
+
+  // New rich metadata
+  String _dimensionUnit = 'cm'; // cm or inches
+  List<String> _colorPalette = [];
+
+  // Upload progress tracking
+  double _mainImageUploadProgress = 0.0;
+  final bool _isUploadingMainImage = false;
 
   // Available options
   final List<String> _availableMediums = [
@@ -122,6 +147,35 @@ class _EnhancedArtworkUploadScreenState
     'Photorealistic',
   ];
 
+  final List<String> _dimensionUnits = ['cm', 'inches'];
+
+  final List<String> _availableColors = [
+    'Red',
+    'Blue',
+    'Green',
+    'Yellow',
+    'Orange',
+    'Purple',
+    'Pink',
+    'Brown',
+    'Black',
+    'White',
+    'Gray',
+    'Cyan',
+    'Magenta',
+    'Teal',
+    'Lime',
+    'Indigo',
+    'Violet',
+    'Maroon',
+    'Navy',
+    'Olive',
+    'Silver',
+    'Gold',
+    'Beige',
+    'Coral'
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +200,9 @@ class _EnhancedArtworkUploadScreenState
     _tagController.dispose();
     _hashtagController.dispose();
     _keywordController.dispose();
+    _creationProcessController.dispose();
+    _inspirationController.dispose();
+    _techniqueController.dispose();
     super.dispose();
   }
 
@@ -241,12 +298,24 @@ class _EnhancedArtworkUploadScreenState
           _keywords = (data['keywords'] is List
               ? (data['keywords'] as List).map((e) => e.toString()).toList()
               : <String>[]);
+
+          // Load new rich metadata
+          _dimensionUnit = (data['dimensionUnit'] ?? 'cm').toString();
+          _colorPalette = (data['colorPalette'] is List
+              ? (data['colorPalette'] as List).map((e) => e.toString()).toList()
+              : <String>[]);
+          _creationProcessController.text =
+              (data['creationProcess'] ?? '').toString();
+          _inspirationController.text = (data['inspiration'] ?? '').toString();
+          _techniqueController.text = (data['technique'] ?? '').toString();
         });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('enhanced_upload_load_error'.tr(namedArgs: {'error': e.toString()}))),
+          SnackBar(
+              content: Text('enhanced_upload_load_error'
+                  .tr(namedArgs: {'error': e.toString()}))),
         );
       }
     } finally {
@@ -275,12 +344,13 @@ class _EnhancedArtworkUploadScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('enhanced_upload_image_error'.tr(namedArgs: {'error': e.toString()}))),
+          SnackBar(
+              content: Text('enhanced_upload_image_error'
+                  .tr(namedArgs: {'error': e.toString()}))),
         );
       }
     }
   }
-
 
   Future<void> _pickAdditionalImages() async {
     final result = await FilePicker.platform.pickFiles(
@@ -431,10 +501,6 @@ class _EnhancedArtworkUploadScreenState
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
-
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
@@ -470,6 +536,14 @@ class _EnhancedArtworkUploadScreenState
         'tags': _tags,
         'hashtags': _hashtags,
         'keywords': _keywords,
+
+        // New rich metadata
+        'dimensionUnit': _dimensionUnit,
+        'colorPalette': _colorPalette,
+        'creationProcess': _creationProcessController.text,
+        'inspiration': _inspirationController.text,
+        'technique': _techniqueController.text,
+
         'isFeatured': false,
         'isPublic': true,
         'viewCount': 0,
@@ -499,15 +573,13 @@ class _EnhancedArtworkUploadScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('enhanced_upload_error'.tr(namedArgs: {'error': e.toString()}))),
+          SnackBar(
+              content: Text('enhanced_upload_error'
+                  .tr(namedArgs: {'error': e.toString()}))),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
+      if (mounted) {}
     }
   }
 
@@ -632,59 +704,246 @@ class _EnhancedArtworkUploadScreenState
     }
 
     return MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: EnhancedUniversalHeader(
-            title: widget.artworkId == null ? 'enhanced_upload_title'.tr() : 'enhanced_upload_title_edit'.tr(),
-            showLogo: false,
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Main Image Section
-                  _buildMainImageSection(),
-                  const SizedBox(height: 24),
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: widget.artworkId == null
+              ? 'enhanced_upload_title'.tr()
+              : 'enhanced_upload_title_edit'.tr(),
+          showLogo: false,
+          showBackButton: true,
+        ),
+        body: Stepper(
+          currentStep: _currentStepIndex,
+          onStepContinue: _onStepContinue,
+          onStepCancel: _onStepCancel,
+          onStepTapped: _onStepTapped,
+          controlsBuilder: _buildStepperControls,
+          steps: [
+            Step(
+              title: Text('enhanced_upload_step_media'.tr()),
+              subtitle: Text('enhanced_upload_step_media_desc'.tr()),
+              content: _buildMediaStep(),
+              isActive: _currentStepIndex >= 0,
+              state: _getStepState(0),
+            ),
+            Step(
+              title: Text('enhanced_upload_step_basic_info'.tr()),
+              subtitle: Text('enhanced_upload_step_basic_info_desc'.tr()),
+              content: _buildBasicInfoStep(),
+              isActive: _currentStepIndex >= 1,
+              state: _getStepState(1),
+            ),
+            Step(
+              title: Text('enhanced_upload_step_details'.tr()),
+              subtitle: Text('enhanced_upload_step_details_desc'.tr()),
+              content: _buildDetailsStep(),
+              isActive: _currentStepIndex >= 2,
+              state: _getStepState(2),
+            ),
+            Step(
+              title: Text('enhanced_upload_step_pricing'.tr()),
+              subtitle: Text('enhanced_upload_step_pricing_desc'.tr()),
+              content: _buildPricingStep(),
+              isActive: _currentStepIndex >= 3,
+              state: _getStepState(3),
+            ),
+            Step(
+              title: Text('enhanced_upload_step_review'.tr()),
+              subtitle: Text('enhanced_upload_step_review_desc'.tr()),
+              content: _buildReviewStep(),
+              isActive: _currentStepIndex >= 4,
+              state: _getStepState(4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                  // Additional Images Section
-                  _buildAdditionalImagesSection(),
-                  const SizedBox(height: 24),
+  StepState _getStepState(int stepIndex) {
+    if (stepIndex < _currentStepIndex) {
+      return StepState.complete;
+    } else if (stepIndex == _currentStepIndex) {
+      return StepState.editing;
+    } else {
+      return StepState.indexed;
+    }
+  }
 
-                  // Videos Section
-                  _buildVideosSection(),
-                  const SizedBox(height: 24),
-
-                  // Audio Files Section
-                  _buildAudioFilesSection(),
-                  const SizedBox(height: 24),
-
-                  // Basic Information
-                  _buildBasicInformation(),
-                  const SizedBox(height: 24),
-
-                  // Media and Styles
-                  _buildMediaAndStyles(),
-                  const SizedBox(height: 24),
-
-                  // Tags, Hashtags, Keywords
-                  _buildTagsSection(),
-                  const SizedBox(height: 24),
-
-                  // Pricing
-                  _buildPricingSection(),
-                  const SizedBox(height: 32),
-
-                  // Save Button
-                  _buildSaveButton(),
-                  const SizedBox(height: 24),
-                ],
+  Widget _buildStepperControls(BuildContext context, ControlsDetails details) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Row(
+        children: [
+          if (_currentStepIndex > 0)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: details.onStepCancel,
+                child: Text('enhanced_upload_back'.tr()),
+              ),
+            ),
+          if (_currentStepIndex > 0) const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _currentStepIndex == 4
+                  ? _saveArtwork
+                  : details.onStepContinue,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.primaryGreen,
+              ),
+              child: Text(
+                _currentStepIndex == 4
+                    ? 'enhanced_upload_publish'.tr()
+                    : 'enhanced_upload_continue'.tr(),
               ),
             ),
           ),
-        ));
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: _saveDraft,
+            child: Text('enhanced_upload_save_draft'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onStepContinue() {
+    if (_currentStepIndex < 4) {
+      if (_validateCurrentStep()) {
+        setState(() {
+          _currentStepIndex += 1;
+          _currentStep = UploadStep.values[_currentStepIndex];
+        });
+      }
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStepIndex > 0) {
+      setState(() {
+        _currentStepIndex -= 1;
+        _currentStep = UploadStep.values[_currentStepIndex];
+      });
+    }
+  }
+
+  void _onStepTapped(int stepIndex) {
+    if (stepIndex <= _currentStepIndex) {
+      setState(() {
+        _currentStepIndex = stepIndex;
+        _currentStep = UploadStep.values[stepIndex];
+      });
+    }
+  }
+
+  bool _validateCurrentStep() {
+    switch (_currentStep) {
+      case UploadStep.media:
+        return _mainImageFile != null || _imageUrl != null;
+      case UploadStep.basicInfo:
+        return _formKey.currentState?.validate() ?? false;
+      case UploadStep.details:
+        return _medium.isNotEmpty && _styles.isNotEmpty;
+      case UploadStep.pricing:
+        return !_isForSale || (_isForSale && _priceController.text.isNotEmpty);
+      case UploadStep.review:
+        return true;
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      final draftData = {
+        'userId': userId,
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'dimensions': _dimensionsController.text,
+        'dimensionUnit': _dimensionUnit,
+        'materials': _materialsController.text,
+        'location': _locationController.text,
+        'price': _priceController.text,
+        'yearCreated': _yearController.text,
+        'medium': _medium,
+        'styles': _styles,
+        'tags': _tags,
+        'hashtags': _hashtags,
+        'keywords': _keywords,
+        'colorPalette': _colorPalette,
+        'creationProcess': _creationProcessController.text,
+        'inspiration': _inspirationController.text,
+        'technique': _techniqueController.text,
+        'isForSale': _isForSale,
+        'currentStep': _currentStepIndex,
+        'imageUrl': _imageUrl,
+        'additionalImageUrls': _additionalImageUrls,
+        'videoUrls': _videoUrls,
+        'audioUrls': _audioUrls,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (widget.artworkId != null) {
+        await _firestore
+            .collection('artwork_drafts')
+            .doc(widget.artworkId)
+            .set(draftData);
+      } else {
+        await _firestore.collection('artwork_drafts').add(draftData);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('enhanced_upload_draft_saved'.tr())),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('enhanced_upload_draft_save_error'.tr())),
+        );
+      }
+    }
+  }
+
+  Widget _buildMediaStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'enhanced_upload_media_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'enhanced_upload_media_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Main Image Section
+        _buildMainImageSection(),
+        const SizedBox(height: 24),
+
+        // Additional Images Section
+        _buildAdditionalImagesSection(),
+        const SizedBox(height: 24),
+
+        // Videos Section
+        _buildVideosSection(),
+        const SizedBox(height: 24),
+
+        // Audio Files Section
+        _buildAudioFilesSection(),
+      ],
+    );
   }
 
   Widget _buildMainImageSection() {
@@ -692,44 +951,520 @@ class _EnhancedArtworkUploadScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'enhanced_upload_main_image_label'.tr(),
+          'enhanced_upload_main_image_title'.tr(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'enhanced_upload_main_image_description'.tr(),
+          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        ),
+        const SizedBox(height: 16),
+
+        // Main Image Display
+        if (_mainImageFile != null) ...[
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                _mainImageFile!,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _mainImageFile!.path.split('/').last,
+                  style: const TextStyle(fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () {
+                  setState(() {
+                    _mainImageFile = null;
+                    _imageUrl = null;
+                    _mainImageUploadProgress = 0.0;
+                  });
+                },
+              ),
+            ],
+          ),
+        ] else ...[
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(
+                  color: Colors.grey[300]!, style: BorderStyle.solid),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image,
+                  size: 48,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'enhanced_upload_main_image_placeholder'.tr(),
+                  style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 16),
+
+        // Upload Progress Indicator
+        if (_isUploadingMainImage) ...[
+          Column(
+            children: [
+              LinearProgressIndicator(
+                value: _mainImageUploadProgress,
+                backgroundColor: Colors.grey[200],
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${(_mainImageUploadProgress * 100).toInt()}% ${'enhanced_upload_uploading'.tr()}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Upload Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _isUploadingMainImage ? null : _pickMainImage,
+            icon: _isUploadingMainImage
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.photo_camera),
+            label: Text(
+              _mainImageFile != null
+                  ? 'enhanced_upload_change_image'.tr()
+                  : 'enhanced_upload_select_image'.tr(),
+            ),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+
+        // Error Message
+        if (_mainImageError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _mainImageError!,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBasicInfoStep() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'enhanced_upload_basic_info_step_title'.tr(),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'enhanced_upload_basic_info_step_description'.tr(),
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+
+          // Title
+          TextFormField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              labelText: 'enhanced_upload_title_label'.tr(),
+              border: const OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'enhanced_upload_title_error'.tr();
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Description
+          TextFormField(
+            controller: _descriptionController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              labelText: 'enhanced_upload_description_label'.tr(),
+              border: const OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'enhanced_upload_description_error'.tr();
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Year and Dimensions
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _yearController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'enhanced_upload_year_label'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  controller: _dimensionsController,
+                  decoration: InputDecoration(
+                    labelText: 'enhanced_upload_dimensions_label'.tr(),
+                    border: const OutlineInputBorder(),
+                    suffixText: _dimensionUnit,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              DropdownButton<String>(
+                value: _dimensionUnit,
+                items: _dimensionUnits.map((unit) {
+                  return DropdownMenuItem(
+                    value: unit,
+                    child: Text(unit),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _dimensionUnit = value ?? 'cm';
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Materials and Location
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _materialsController,
+                  decoration: InputDecoration(
+                    labelText: 'enhanced_upload_materials_label'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _locationController,
+                  decoration: InputDecoration(
+                    labelText: 'enhanced_upload_location_label'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailsStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'enhanced_upload_details_step_title'.tr(),
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 8),
-        Center(
-          child: GestureDetector(
-            onTap: _pickMainImage,
-            child: Container(
-              width: double.infinity,
-              height: 240,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-                image: _mainImageFile != null
-                    ? DecorationImage(
-                        image: FileImage(_mainImageFile!),
-                        fit: BoxFit.cover,
-                      )
-                    : _imageUrl != null && _isValidImageUrl(_imageUrl)
-                        ? DecorationImage(
-                            image: NetworkImage(_imageUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-              ),
-              child: _mainImageFile == null && _imageUrl == null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add_photo_alternate, size: 64),
-                        const SizedBox(height: 8),
-                        Text('enhanced_upload_select_main_image_text'.tr()),
-                      ],
-                    )
-                  : null,
+        Text(
+          'enhanced_upload_details_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Media and Styles
+        _buildMediaAndStyles(),
+        const SizedBox(height: 24),
+
+        // Rich Metadata
+        Text(
+          'enhanced_upload_rich_metadata_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Creation Process
+        TextFormField(
+          controller: _creationProcessController,
+          maxLines: 3,
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_creation_process_label'.tr(),
+            border: const OutlineInputBorder(),
+            alignLabelWithHint: true,
+            hintText: 'enhanced_upload_creation_process_hint'.tr(),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Inspiration
+        TextFormField(
+          controller: _inspirationController,
+          maxLines: 2,
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_inspiration_label'.tr(),
+            border: const OutlineInputBorder(),
+            alignLabelWithHint: true,
+            hintText: 'enhanced_upload_inspiration_hint'.tr(),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Technique
+        TextFormField(
+          controller: _techniqueController,
+          decoration: InputDecoration(
+            labelText: 'enhanced_upload_technique_label'.tr(),
+            border: const OutlineInputBorder(),
+            hintText: 'enhanced_upload_technique_hint'.tr(),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Color Palette
+        Text(
+          'enhanced_upload_color_palette_label'.tr(),
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _availableColors.map((color) {
+            final isSelected = _colorPalette.contains(color);
+            return FilterChip(
+              label: Text(color),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _colorPalette.add(color);
+                  } else {
+                    _colorPalette.remove(color);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Tags, Hashtags, Keywords
+        _buildTagsSection(),
+      ],
+    );
+  }
+
+  Widget _buildPricingStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'enhanced_upload_pricing_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'enhanced_upload_pricing_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // For Sale Toggle
+        SwitchListTile(
+          title: Text('enhanced_upload_for_sale_label'.tr()),
+          subtitle: Text('enhanced_upload_for_sale_description'.tr()),
+          value: _isForSale,
+          onChanged: (value) {
+            setState(() {
+              _isForSale = value;
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Price Input
+        if (_isForSale)
+          TextFormField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'enhanced_upload_price_label'.tr(),
+              border: const OutlineInputBorder(),
+              prefixText: '\$',
+            ),
+            validator: (value) {
+              if (_isForSale && (value == null || value.isEmpty)) {
+                return 'enhanced_upload_price_error'.tr();
+              }
+              return null;
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildReviewStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'enhanced_upload_review_step_title'.tr(),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'enhanced_upload_review_step_description'.tr(),
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 24),
+
+        // Preview Card
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image Preview
+                if (_mainImageFile != null || _imageUrl != null) ...[
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: _mainImageFile != null
+                          ? DecorationImage(
+                              image: FileImage(_mainImageFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : _imageUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(_imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Title and Description
+                  Text(
+                    _titleController.text.isNotEmpty
+                        ? _titleController.text
+                        : 'enhanced_upload_no_title'.tr(),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _descriptionController.text.isNotEmpty
+                        ? _descriptionController.text
+                        : 'enhanced_upload_no_description'.tr(),
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Metadata
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
+                    children: [
+                      if (_medium.isNotEmpty)
+                        Chip(
+                          label: Text(_medium),
+                          backgroundColor:
+                              ArtbeatColors.primaryGreen.withAlpha(25),
+                        ),
+                      if (_styles.isNotEmpty)
+                        ..._styles.map((style) => Chip(
+                              label: Text(style),
+                              backgroundColor: Colors.blue.withAlpha(25),
+                            )),
+                      if (_isForSale && _priceController.text.isNotEmpty)
+                        Chip(
+                          label: Text('\$${_priceController.text}'),
+                          backgroundColor: Colors.green.withAlpha(25),
+                        ),
+                    ],
+                  ),
+                ]
+              ],
             ),
           ),
         ),
@@ -744,11 +1479,13 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'enhanced_upload_additional_images_label'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'enhanced_upload_additional_images_label'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             TextButton.icon(
@@ -831,11 +1568,13 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'enhanced_upload_videos_label'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'enhanced_upload_videos_label'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             TextButton.icon(
@@ -890,11 +1629,13 @@ class _EnhancedArtworkUploadScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'enhanced_upload_audio_label'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                'enhanced_upload_audio_label'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             TextButton.icon(
@@ -938,108 +1679,6 @@ class _EnhancedArtworkUploadScreenState
               ),
             ),
           ),
-      ],
-    );
-  }
-
-  Widget _buildBasicInformation() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'enhanced_upload_basic_info_title'.tr(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Title
-        TextFormField(
-          controller: _titleController,
-          decoration: InputDecoration(
-            labelText: 'enhanced_upload_title_label'.tr(),
-            border: const OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'enhanced_upload_title_error'.tr();
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-
-        // Description
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 4,
-          decoration: InputDecoration(
-            labelText: 'enhanced_upload_description_label'.tr(),
-            border: const OutlineInputBorder(),
-            alignLabelWithHint: true,
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'enhanced_upload_description_error'.tr();
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-
-        // Year and Dimensions
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _yearController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'enhanced_upload_year_label'.tr(),
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: TextFormField(
-                controller: _dimensionsController,
-                decoration: InputDecoration(
-                  labelText: 'enhanced_upload_dimensions_label'.tr(),
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Materials and Location
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _materialsController,
-                decoration: InputDecoration(
-                  labelText: 'enhanced_upload_materials_label'.tr(),
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: TextFormField(
-                controller: _locationController,
-                decoration: InputDecoration(
-                  labelText: 'enhanced_upload_location_label'.tr(),
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -1137,17 +1776,18 @@ class _EnhancedArtworkUploadScreenState
         const SizedBox(height: 16),
 
         // Tags
-        _buildTagInput('enhanced_upload_tags_label'.tr(), _tagController, _tags, _addTag, _removeTag),
+        _buildTagInput('enhanced_upload_tags_label'.tr(), _tagController, _tags,
+            _addTag, _removeTag),
         const SizedBox(height: 16),
 
         // Hashtags
-        _buildTagInput('enhanced_upload_hashtags_label'.tr(), _hashtagController, _hashtags, _addHashtag,
-            _removeHashtag),
+        _buildTagInput('enhanced_upload_hashtags_label'.tr(),
+            _hashtagController, _hashtags, _addHashtag, _removeHashtag),
         const SizedBox(height: 16),
 
         // Keywords
-        _buildTagInput('enhanced_upload_keywords_label'.tr(), _keywordController, _keywords, _addKeyword,
-            _removeKeyword),
+        _buildTagInput('enhanced_upload_keywords_label'.tr(),
+            _keywordController, _keywords, _addKeyword, _removeKeyword),
       ],
     );
   }
@@ -1206,97 +1846,5 @@ class _EnhancedArtworkUploadScreenState
           ),
       ],
     );
-  }
-
-  Widget _buildPricingSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'enhanced_upload_pricing_title'.tr(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // For Sale switch
-        SwitchListTile(
-          title: Text('enhanced_upload_for_sale_label'.tr()),
-          value: _isForSale,
-          onChanged: (value) {
-            setState(() {
-              _isForSale = value;
-            });
-          },
-        ),
-
-        // Price if for sale
-        if (_isForSale)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: TextFormField(
-              controller: _priceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'enhanced_upload_price_label'.tr(),
-                border: const OutlineInputBorder(),
-                prefixText: '\$ ',
-              ),
-              validator: (value) {
-                if (_isForSale && (value == null || value.isEmpty)) {
-                  return 'enhanced_upload_price_error'.tr();
-                }
-                return null;
-              },
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isSaving ? null : _saveArtwork,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: _isSaving
-            ? const CircularProgressIndicator()
-            : Text(
-                widget.artworkId == null
-                    ? 'enhanced_upload_button_upload'.tr()
-                    : 'enhanced_upload_button_save'.tr(),
-                style: const TextStyle(fontSize: 16),
-              ),
-      ),
-    );
-  }
-
-  bool _isValidImageUrl(String? url) {
-    if (url == null || url.isEmpty || url.trim().isEmpty) return false;
-
-    // Check for invalid file URLs
-    if (url == 'file:///' || url.startsWith('file:///') && url.length <= 8) {
-      return false;
-    }
-
-    // Check for just the file scheme with no actual path
-    if (url == 'file://' || url == 'file:') {
-      return false;
-    }
-
-    // Check for malformed URLs that start with file:// but have no host
-    if (url.startsWith('file://') && !url.startsWith('file:///')) {
-      return false;
-    }
-
-    // Check for valid URL schemes
-    return url.startsWith('http://') ||
-        url.startsWith('https://') ||
-        (url.startsWith('file:///') && url.length > 8);
   }
 }

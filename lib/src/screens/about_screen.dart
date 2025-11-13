@@ -2,6 +2,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 
 /// About ARTbeat screen displaying app information, version, and credits
@@ -87,7 +88,12 @@ class _AboutScreenState extends State<AboutScreen> {
             const SizedBox(height: 8),
 
             Text(
-              'about_version'.tr(namedArgs: {'version': _packageInfo?.version ?? 'Unknown', 'buildNumber': _packageInfo?.buildNumber ?? 'Unknown'}),
+              'about_version'.tr(
+                namedArgs: {
+                  'version': _packageInfo?.version ?? 'Unknown',
+                  'buildNumber': _packageInfo?.buildNumber ?? 'Unknown',
+                },
+              ),
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
 
@@ -268,10 +274,22 @@ class _AboutScreenState extends State<AboutScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildInfoRow('about_app_name_label'.tr(), _packageInfo?.appName ?? 'ARTbeat'),
-        _buildInfoRow('about_package_name'.tr(), _packageInfo?.packageName ?? 'Unknown'),
-        _buildInfoRow('about_version_label'.tr(), _packageInfo?.version ?? 'Unknown'),
-        _buildInfoRow('about_build_number'.tr(), _packageInfo?.buildNumber ?? 'Unknown'),
+        _buildInfoRow(
+          'about_app_name_label'.tr(),
+          _packageInfo?.appName ?? 'ARTbeat',
+        ),
+        _buildInfoRow(
+          'about_package_name'.tr(),
+          _packageInfo?.packageName ?? 'Unknown',
+        ),
+        _buildInfoRow(
+          'about_version_label'.tr(),
+          _packageInfo?.version ?? 'Unknown',
+        ),
+        _buildInfoRow(
+          'about_build_number'.tr(),
+          _packageInfo?.buildNumber ?? 'Unknown',
+        ),
         _buildInfoRow('about_built_with'.tr(), 'about_built_with_value'.tr()),
       ],
     ),
@@ -342,7 +360,12 @@ class _AboutScreenState extends State<AboutScreen> {
           children: [
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/settings/privacy');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PrivacyPolicyScreen(),
+                  ),
+                );
               },
               child: Text('about_privacy_policy'.tr()),
             ),

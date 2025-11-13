@@ -34,8 +34,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        String errorMessage = 'settings_load_failed'.tr();
+        
+        if (e.toString().contains('not authenticated')) {
+          errorMessage = 'Please log in again to access privacy settings';
+        } else if (e.toString().contains('Permission denied')) {
+          errorMessage = 'Unable to load privacy settings - permission denied. Please check your privacy settings in Firestore.';
+        } else if (e.toString().contains('Network')) {
+          errorMessage = 'Network error - please check your internet connection';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('settings_load_failed'.tr())),
+          SnackBar(
+            content: Text(errorMessage),
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }

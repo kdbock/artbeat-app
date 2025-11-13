@@ -232,15 +232,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        if (Platform.isIOS)
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text(
-              'Apple Sign-In configuration in progress',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-          ),
       ],
     );
   }

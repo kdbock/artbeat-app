@@ -424,35 +424,37 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
   Widget _buildHeroContent() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Dynamic messaging based on nearby art
-          _buildDynamicMessage(),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Dynamic messaging based on nearby art
+            _buildDynamicMessage(),
 
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Social proof
-          if (_activeUsersNearby > 0)
-            Text(
-              '$_activeUsersNearby art explorers active nearby',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 14,
+            // Social proof
+            if (_activeUsersNearby > 0)
+              Text(
+                '$_activeUsersNearby art explorers active nearby',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14,
+                ),
               ),
-            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // Call to action button
-          _buildActionButton(),
+            // Call to action button
+            _buildActionButton(),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Streak indicator
-          if (_userStreak > 0) _buildStreakIndicator(),
-        ],
+            // Streak indicator
+            if (_userStreak > 0) _buildStreakIndicator(),
+          ],
+        ),
       ),
     );
   }
