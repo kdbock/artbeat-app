@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
+import 'social_service.dart';
 
 /// Service for managing user rewards, XP, and achievements
 class RewardsService {
@@ -405,15 +406,19 @@ class RewardsService {
 
     try {
       final userRef = _firestore.collection('users').doc(user.uid);
+      
+      int newXP = 0;
+      int oldLevel = 0;
+      int newLevel = 0;
 
       await _firestore.runTransaction((transaction) async {
         final userDoc = await transaction.get(userRef);
         final userData = userDoc.data() ?? {};
 
         final currentXP = userData['experiencePoints'] as int? ?? 0;
-        final newXP = currentXP + xpAmount;
-        final newLevel = _calculateLevel(newXP);
-        final oldLevel = _calculateLevel(currentXP);
+        newXP = currentXP + xpAmount;
+        newLevel = _calculateLevel(newXP);
+        oldLevel = _calculateLevel(currentXP);
 
         // Update user stats
         final updates = <String, dynamic>{
@@ -466,6 +471,23 @@ class RewardsService {
         // Check for action-specific achievements
         _checkActionAchievements(user.uid, action, userData);
       });
+      
+      // Post social activity for level up
+      if (newLevel > oldLevel) {
+        try {
+          final socialService = SocialService();
+          await socialService.postActivity(
+            userId: user.uid,
+            userName: user.displayName ?? 'Explorer',
+            userAvatar: user.photoURL,
+            type: SocialActivityType.milestone,
+            message: 'reached level $newLevel: ${getLevelTitle(newLevel)}',
+            metadata: {'newLevel': newLevel, 'oldLevel': oldLevel, 'artTitle': getLevelTitle(newLevel)},
+          );
+        } catch (e) {
+          _logger.w('Failed to post social activity for level up: $e');
+        }
+      }
 
       _logger.i('Awarded $xpAmount XP for $action to user ${user.uid}');
     } catch (e) {
@@ -658,6 +680,29 @@ class RewardsService {
       }, SetOptions(merge: true));
 
       _logger.i('Awarded badge $badgeId to user $userId');
+      
+      // Post social activity for badge earned
+      try {
+        final badgeInfo = badges[badgeId];
+        if (badgeInfo != null) {
+          final user = _auth.currentUser;
+          final badge = badgeInfo;
+          final badgeName = badge['name'] ?? 'Unknown Badge';
+          final badgeIcon = badge['icon'] ?? '🏅';
+          
+          final socialService = SocialService();
+          await socialService.postActivity(
+            userId: userId,
+            userName: user?.displayName ?? 'Explorer',
+            userAvatar: user?.photoURL,
+            type: SocialActivityType.achievement,
+            message: 'earned badge: $badgeIcon $badgeName',
+            metadata: {'badgeId': badgeId, 'badgeName': badgeName, 'artTitle': '$badgeIcon $badgeName'},
+          );
+        }
+      } catch (e) {
+        _logger.w('Failed to post social activity for badge: $e');
+      }
     } catch (e) {
       _logger.e('Error awarding badge: $e');
     }

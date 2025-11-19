@@ -3,7 +3,6 @@ class AppRoutes {
   // Core routes
   static const String splash = '/splash';
   static const String dashboard = '/dashboard';
-  static const String onboarding = '/onboarding';
 
   // Auth routes
   static const String auth = '/auth';
@@ -84,6 +83,9 @@ class AppRoutes {
   // Subscription routes
   static const String subscriptionComparison = '/subscription/comparison';
   static const String subscriptionPlans = '/subscription/plans';
+  static const String subscriptions = '/iap/subscriptions';
+  static const String gifts = '/iap/gifts';
+  static const String ads = '/iap/ads';
 
   // Payment routes
   static const String paymentMethods = '/payment/methods';
@@ -247,7 +249,6 @@ class AppRoutes {
   static List<String> get allRoutes => [
     splash,
     dashboard,
-    onboarding,
     auth,
     login,
     register,

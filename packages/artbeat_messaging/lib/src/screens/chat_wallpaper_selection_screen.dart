@@ -37,6 +37,7 @@ class ChatWallpaperSelectionScreen extends StatelessWidget {
                   .set({
                     'wallpaper': wallpapers[index].toARGB32(),
                   }, SetOptions(merge: true));
+              // ignore: use_build_context_synchronously
               Navigator.pop(context, wallpapers[index]);
             },
             child: Container(

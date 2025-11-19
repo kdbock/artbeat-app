@@ -733,6 +733,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     });
 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.of(context).pop(true);
                 }
               } on FirebaseAuthException catch (e) {
@@ -750,6 +751,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     errorMessage = 'Verification failed: ${e.message}';
                 }
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(errorMessage),
@@ -759,6 +761,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Verification failed: $e'),

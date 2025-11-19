@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/commission_dispute_model.dart';
 import '../../services/commission_dispute_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommissionDisputeScreen extends StatefulWidget {
   final String commissionId;
@@ -61,6 +62,7 @@ class _CommissionDisputeScreenState extends State<CommissionDisputeScreen> {
       );
 
       _descriptionController.clear();
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Dispute created. Support team will review soon.'),
@@ -68,6 +70,7 @@ class _CommissionDisputeScreenState extends State<CommissionDisputeScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     } finally {
@@ -78,7 +81,22 @@ class _CommissionDisputeScreenState extends State<CommissionDisputeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dispute Resolution'), elevation: 0),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: ArtbeatColors.primaryGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(title: const Text('Dispute Resolution'), elevation: 0),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

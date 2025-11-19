@@ -1275,7 +1275,7 @@ PODS:
     - firebase_core
     - FirebaseAnalytics (= 12.4.0)
     - Flutter
-  - firebase_app_check (0.4.1-2):
+  - firebase_app_check (0.4.0):
     - Firebase/CoreOnly (~> 12.4.0)
     - firebase_core
     - FirebaseAppCheck (~> 12.4.0)
@@ -1936,7 +1936,7 @@ SPEC CHECKSUMS:
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Firebase: f07b15ae5a6ec0f93713e30b923d9970d144af3e
   firebase_analytics: 67fbdd9f3c04e55048024f3da21cfc36f05e56cf
-  firebase_app_check: 61fb3578a0761c806533482aca240a2d5cc5b5ef
+  firebase_app_check: 666dde3aa7736f6077fe4b46aaca3064989f49cd
   firebase_auth: 9225db04db5d8e3b46dc8940e04bc6aec6833e27
   firebase_core: f1aafb21c14f497e5498f7ffc4dc63cbb52b2594
   firebase_crashlytics: 83c7467d7534975a4d779af43bd226d0a4616464

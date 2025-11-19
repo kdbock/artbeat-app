@@ -617,6 +617,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               // Implement reset logic
               await _settingsService.resetSettings();
               await _loadSettings();
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('admin_admin_settings_success_settings_reset_successfully'.tr())),
               );

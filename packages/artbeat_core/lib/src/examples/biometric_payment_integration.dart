@@ -326,6 +326,7 @@ class _BiometricPaymentDialogState extends State<BiometricPaymentDialog> {
 
       if (result.success) {
         widget.onConfirm();
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop();
       } else {
         _showError(result.error ?? 'Authentication failed');

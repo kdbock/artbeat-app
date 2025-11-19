@@ -719,6 +719,7 @@ class DashboardCapturesSection extends StatelessWidget {
           ? 'Added "${capture.title ?? 'artwork'}" to your liked captures!'
           : 'Removed "${capture.title ?? 'artwork'}" from your liked captures';
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
@@ -737,6 +738,7 @@ class DashboardCapturesSection extends StatelessWidget {
       // and the capture cards will rebuild with the new like state
     } catch (e) {
       // Handle errors gracefully
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to update like: ${e.toString()}'),

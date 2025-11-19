@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/direct_commission_model.dart';
 import '../../theme/community_colors.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommissionProgressTracker extends StatelessWidget {
   final DirectCommissionModel commission;
@@ -15,7 +16,7 @@ class CommissionProgressTracker extends StatelessWidget {
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,

@@ -1,31 +1,312 @@
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/art_models.dart';
 import '../models/post_model.dart';
 import '../services/art_community_service.dart';
 import '../src/services/moderation_service.dart';
-import '../widgets/art_gallery_widgets.dart';
 import '../widgets/enhanced_post_card.dart';
+import '../widgets/activity_card.dart';
+import '../widgets/mini_artist_card.dart';
 import '../widgets/comments_modal.dart';
 import '../widgets/commission_artists_browser.dart';
+import '../widgets/fullscreen_image_viewer.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'artist_onboarding_screen.dart';
 import 'artist_feed_screen.dart';
 import 'feed/comments_screen.dart';
 import 'feed/create_post_screen.dart';
-import 'feed/enhanced_community_feed_screen.dart';
 import 'package:artbeat_artist/src/services/community_service.dart'
     as artist_community;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
 import 'feed/trending_content_screen.dart';
-import 'feed/create_group_post_screen.dart';
+import 'feed/group_feed_screen.dart';
 import 'feed/social_engagement_demo_screen.dart';
 import 'posts/user_posts_screen.dart';
 import 'settings/quiet_mode_screen.dart';
-import '../models/group_models.dart';
-import '../widgets/fullscreen_image_viewer.dart';
+import '../models/direct_commission_model.dart';
+import '../services/direct_commission_service.dart';
+
+// Mixin for shared post loading logic
+mixin PostLoadingMixin<T extends StatefulWidget> on State<T> {
+  List<PostModel> posts = [];
+  List<PostModel> filteredPosts = [];
+  bool isLoading = true;
+  final ModerationService moderationService = ModerationService();
+
+  Future<void> loadPosts(
+    ArtCommunityService communityService, {
+    int limit = 20,
+  }) async {
+    setState(() => isLoading = true);
+
+    try {
+      AppLogger.info('📱 Loading posts from community service...');
+
+      final loadedPosts = await communityService.getFeed(limit: limit);
+
+      AppLogger.info('📱 Loaded ${loadedPosts.length} posts');
+
+      // Filter out posts from blocked users
+      List<PostModel> filtered = loadedPosts;
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        try {
+          final blockedUserIds = await moderationService.getBlockedUsers(
+            currentUser.uid,
+          );
+
+          if (blockedUserIds.isNotEmpty) {
+            filtered = loadedPosts
+                .where((post) => !blockedUserIds.contains(post.userId))
+                .toList();
+            AppLogger.info(
+              '📱 Filtered out ${loadedPosts.length - filtered.length} posts from blocked users',
+            );
+          }
+        } catch (e) {
+          AppLogger.error('📱 Error filtering blocked users: $e');
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          posts = filtered;
+          filteredPosts = filtered;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('📱 Error loading posts: $e');
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading posts: $e')));
+      }
+    }
+  }
+
+  void filterPosts(String searchQuery) {
+    setState(() {
+      if (searchQuery.isEmpty) {
+        filteredPosts = posts;
+      } else {
+        filteredPosts = posts.where((post) {
+          final content = post.content.toLowerCase();
+          final authorName = post.userName.toLowerCase();
+          final location = post.location.toLowerCase();
+
+          return content.contains(searchQuery) ||
+              authorName.contains(searchQuery) ||
+              location.contains(searchQuery);
+        }).toList();
+      }
+    });
+  }
+}
+
+// Tab-specific version of commissions content (without MainLayout)
+class CommissionsTab extends StatefulWidget {
+  const CommissionsTab({super.key});
+
+  @override
+  State<CommissionsTab> createState() => _CommissionsTabState();
+}
+
+class _CommissionsTabState extends State<CommissionsTab>
+    with SingleTickerProviderStateMixin {
+  final DirectCommissionService _commissionService = DirectCommissionService();
+  late final TabController _tabController;
+  List<DirectCommissionModel> _commissions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _loadCommissions();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCommissions() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final commissions = await _commissionService.getCommissionsByUser(
+        user.uid,
+      );
+      setState(() {
+        _commissions = commissions;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading commissions: $e')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Tabs for filtering commissions
+        TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Active'),
+            Tab(text: 'Pending'),
+            Tab(text: 'Completed'),
+          ],
+        ),
+        // Commission list
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Active commissions (in progress, accepted, quoted)
+                    _buildCommissionList(
+                      _commissions
+                          .where(
+                            (c) =>
+                                c.status == CommissionStatus.inProgress ||
+                                c.status == CommissionStatus.accepted ||
+                                c.status == CommissionStatus.quoted,
+                          )
+                          .toList(),
+                    ),
+                    // Pending commissions
+                    _buildCommissionList(
+                      _commissions
+                          .where((c) => c.status == CommissionStatus.pending)
+                          .toList(),
+                    ),
+                    // Completed commissions
+                    _buildCommissionList(
+                      _commissions
+                          .where(
+                            (c) =>
+                                c.status == CommissionStatus.completed ||
+                                c.status == CommissionStatus.delivered,
+                          )
+                          .toList(),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommissionList(List<DirectCommissionModel> commissions) {
+    if (commissions.isEmpty) {
+      return const Center(child: Text('No commissions found'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: commissions.length,
+      itemBuilder: (context, index) {
+        final commission = commissions[index];
+        return Card(
+          child: ListTile(
+            title: Text(commission.title),
+            subtitle: Text(
+              'Status: ${commission.status.displayName} • \$${commission.totalPrice.toStringAsFixed(2)}',
+            ),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              _showCommissionDetails(commission);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCommissionDetails(DirectCommissionModel commission) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Commission Details',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow('Commission ID', commission.id),
+              _buildDetailRow('Title', commission.title),
+              _buildDetailRow('Client', commission.clientName),
+              _buildDetailRow('Artist', commission.artistName),
+              _buildDetailRow('Type', commission.type.displayName),
+              _buildDetailRow(
+                'Total Price',
+                '\$${commission.totalPrice.toStringAsFixed(2)}',
+              ),
+              _buildDetailRow('Status', commission.status.displayName),
+              _buildDetailRow('Requested', commission.requestedAt.toString()),
+              if (commission.deadline != null)
+                _buildDetailRow('Deadline', commission.deadline.toString()),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(color: Colors.grey)),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// New simplified community hub with gallery-style design
 class ArtCommunityHub extends StatefulWidget {
@@ -502,17 +783,15 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.push<Widget>(
+              // Navigate to regular create post screen for group posts
+              Navigator.push<void>(
                 context,
-                MaterialPageRoute<Widget>(
-                  builder: (context) => const CreateGroupPostScreen(
-                    groupType: GroupType.artist,
-                    postType: 'general',
-                  ),
+                MaterialPageRoute<void>(
+                  builder: (context) => const CreatePostScreen(),
                 ),
               );
             },
-            child: const Text('Artist Post'),
+            child: const Text('Group Post'),
           ),
         ],
       ),
@@ -627,12 +906,14 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
                       // Sign in anonymously for testing
                       try {
                         await FirebaseAuth.instance.signInAnonymously();
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Signed in anonymously for testing'),
                           ),
                         );
                       } catch (e) {
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Sign in failed: $e')),
                         );
@@ -677,7 +958,7 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
               tabs: const [
                 Tab(text: 'Feed', icon: Icon(Icons.feed, size: 20)),
                 Tab(text: 'Artists', icon: Icon(Icons.palette, size: 20)),
-                Tab(text: 'Topics', icon: Icon(Icons.topic, size: 20)),
+                Tab(text: 'Groups', icon: Icon(Icons.group, size: 20)),
               ],
             ),
           ),
@@ -706,7 +987,7 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
               communityService: _communityService,
               searchQuery: _searchQuery,
             ),
-            TopicsTab(
+            GroupsTab(
               communityService: _communityService,
               searchQuery: _searchQuery,
             ),
@@ -735,7 +1016,9 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
               MaterialPageRoute<void>(
                 builder: (context) => const CreatePostScreen(),
               ),
-            );
+            ).then((result) {
+              setState(() {});
+            });
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -761,82 +1044,34 @@ class CommunityFeedTab extends StatefulWidget {
   State<CommunityFeedTab> createState() => _CommunityFeedTabState();
 }
 
-class _CommunityFeedTabState extends State<CommunityFeedTab> {
-  List<PostModel> _posts = [];
-  List<PostModel> _filteredPosts = [];
+class _CommunityFeedTabState extends State<CommunityFeedTab>
+    with PostLoadingMixin {
   List<art_walk.SocialActivity> _activities = [];
-  bool _isLoading = true;
-  final ModerationService _moderationService = ModerationService();
+  bool _showActivities = true; // Filter toggle for activities
+  List<dynamic> _feedItems = []; // Combined posts and activities
 
   @override
   void initState() {
     super.initState();
-    _loadPosts();
+    loadPosts(widget.communityService);
     _loadActivities();
+  }
+
+  @override
+  Future<void> loadPosts(
+    ArtCommunityService communityService, {
+    int limit = 20,
+  }) async {
+    await super.loadPosts(communityService, limit: limit);
+    _combineFeedItems();
   }
 
   @override
   void didUpdateWidget(CommunityFeedTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.searchQuery != widget.searchQuery) {
-      _filterPosts();
-    }
-  }
-
-  Future<void> _loadPosts() async {
-    setState(() => _isLoading = true);
-
-    try {
-      AppLogger.info('📱 Loading posts from community service...');
-
-      final posts = await widget.communityService.getFeed(limit: 20);
-
-      AppLogger.info('📱 Loaded ${posts.length} posts');
-      if (posts.isNotEmpty) {
-        AppLogger.info(
-          '📱 First post like status: ${posts.first.isLikedByCurrentUser}, like count: ${posts.first.engagementStats.likeCount}',
-        );
-      }
-
-      // Filter out posts from blocked users
-      List<PostModel> filteredPosts = posts;
-      final currentUser = FirebaseAuth.instance.currentUser;
-
-      if (currentUser != null) {
-        try {
-          final blockedUserIds = await _moderationService.getBlockedUsers(
-            currentUser.uid,
-          );
-
-          if (blockedUserIds.isNotEmpty) {
-            filteredPosts = posts
-                .where((post) => !blockedUserIds.contains(post.userId))
-                .toList();
-            AppLogger.info(
-              '📱 Filtered out ${posts.length - filteredPosts.length} posts from blocked users',
-            );
-          }
-        } catch (e) {
-          AppLogger.error('📱 Error filtering blocked users: $e');
-          // Continue with unfiltered posts if blocking filter fails
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _posts = filteredPosts;
-          _filteredPosts = filteredPosts;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      AppLogger.error('📱 Error loading posts: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading posts: $e')));
-      }
+      filterPosts(widget.searchQuery.toLowerCase());
+      _combineFeedItems();
     }
   }
 
@@ -899,27 +1134,56 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         setState(() {
           _activities = activities;
         });
+        _combineFeedItems();
       }
     } catch (e) {
       AppLogger.error('📱 Error loading activities: $e');
     }
   }
 
-  void _filterPosts() {
-    setState(() {
-      if (widget.searchQuery.isEmpty) {
-        _filteredPosts = _posts;
-      } else {
-        _filteredPosts = _posts.where((post) {
-          final content = post.content.toLowerCase();
-          final authorName = post.userName.toLowerCase();
-          final location = post.location.toLowerCase();
+  void _combineFeedItems() {
+    final combinedItems = <dynamic>[];
 
-          return content.contains(widget.searchQuery) ||
-              authorName.contains(widget.searchQuery) ||
-              location.contains(widget.searchQuery);
-        }).toList();
+    // Add posts
+    combinedItems.addAll(filteredPosts);
+
+    // Add activities if filter is enabled
+    if (_showActivities) {
+      combinedItems.addAll(_activities);
+    }
+
+    // Sort by timestamp (newest first)
+    combinedItems.sort((a, b) {
+      DateTime timeA, timeB;
+
+      if (a is PostModel) {
+        timeA = a.createdAt;
+      } else if (a is art_walk.SocialActivity) {
+        timeA = a.timestamp;
+      } else {
+        return 0;
       }
+
+      if (b is PostModel) {
+        timeB = b.createdAt;
+      } else if (b is art_walk.SocialActivity) {
+        timeB = b.timestamp;
+      } else {
+        return 0;
+      }
+
+      return timeB.compareTo(timeA); // Newest first
+    });
+
+    setState(() {
+      _feedItems = combinedItems;
+    });
+  }
+
+  void _toggleActivitiesFilter() {
+    setState(() {
+      _showActivities = !_showActivities;
+      _combineFeedItems();
     });
   }
 
@@ -1156,12 +1420,12 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       AppLogger.info('🤍 User authenticated: ${user.uid}');
 
       // Optimistically update UI
-      final postIndex = _posts.indexWhere((p) => p.id == post.id);
+      final postIndex = posts.indexWhere((p) => p.id == post.id);
       if (postIndex != -1) {
         AppLogger.info('🤍 Found post at index $postIndex');
         setState(() {
-          final currentLikeCount = _posts[postIndex].engagementStats.likeCount;
-          final isCurrentlyLiked = _posts[postIndex].isLikedByCurrentUser;
+          final currentLikeCount = posts[postIndex].engagementStats.likeCount;
+          final isCurrentlyLiked = posts[postIndex].isLikedByCurrentUser;
 
           AppLogger.info(
             '🤍 Current like count: $currentLikeCount, Currently liked: $isCurrentlyLiked',
@@ -1172,13 +1436,13 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             likeCount: isCurrentlyLiked
                 ? currentLikeCount - 1
                 : currentLikeCount + 1,
-            commentCount: _posts[postIndex].engagementStats.commentCount,
-            shareCount: _posts[postIndex].engagementStats.shareCount,
+            commentCount: posts[postIndex].engagementStats.commentCount,
+            shareCount: posts[postIndex].engagementStats.shareCount,
             lastUpdated: DateTime.now(),
           );
 
           // Update the post with new like state
-          _posts[postIndex] = _posts[postIndex].copyWith(
+          posts[postIndex] = posts[postIndex].copyWith(
             isLikedByCurrentUser: !isCurrentlyLiked,
             engagementStats: newEngagementStats,
           );
@@ -1201,26 +1465,26 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         // Revert the optimistic update if the API call failed
         if (postIndex != -1) {
           setState(() {
-            final currentLikeCount =
-                _posts[postIndex].engagementStats.likeCount;
-            final isCurrentlyLiked = _posts[postIndex].isLikedByCurrentUser;
+            final currentLikeCount = posts[postIndex].engagementStats.likeCount;
+            final isCurrentlyLiked = posts[postIndex].isLikedByCurrentUser;
 
             final revertedEngagementStats = EngagementStats(
               likeCount: isCurrentlyLiked
                   ? currentLikeCount - 1
                   : currentLikeCount + 1,
-              commentCount: _posts[postIndex].engagementStats.commentCount,
-              shareCount: _posts[postIndex].engagementStats.shareCount,
+              commentCount: posts[postIndex].engagementStats.commentCount,
+              shareCount: posts[postIndex].engagementStats.shareCount,
               lastUpdated: DateTime.now(),
             );
 
-            _posts[postIndex] = _posts[postIndex].copyWith(
+            posts[postIndex] = posts[postIndex].copyWith(
               isLikedByCurrentUser: !isCurrentlyLiked,
               engagementStats: revertedEngagementStats,
             );
           });
         }
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to update like. Please try again.'),
@@ -1231,6 +1495,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       }
     } catch (e) {
       AppLogger.error('Error handling like: $e');
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error updating like. Please try again.')),
       );
@@ -1269,54 +1534,15 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
 
   void _handleShare(PostModel post) async {
     try {
-      // Build share content
-      String shareText = '';
-
-      if (post.content.isNotEmpty) {
-        shareText = '"${post.content}"\n\n';
-      }
-
-      shareText += 'Shared from ARTbeat Community\n';
-      shareText += 'By ${post.userName}';
-
-      if (post.location.isNotEmpty) {
-        shareText += ' • ${post.location}';
-      }
-
-      // Add hashtags if any
-      if (post.tags.isNotEmpty) {
-        shareText += '\n\n${post.tags.map((tag) => '#$tag').join(' ')}';
-      }
-
-      // Share with images if available
-      if (post.imageUrls.isNotEmpty) {
-        // For now, share text only. In the future, we could download and share images
-        await SharePlus.instance.share(ShareParams(text: shareText));
-      } else {
-        await SharePlus.instance.share(ShareParams(text: shareText));
-      }
-
-      // Update share count optimistically
-      final postIndex = _posts.indexWhere((p) => p.id == post.id);
-      if (postIndex != -1) {
-        setState(() {
-          final currentShareCount =
-              _posts[postIndex].engagementStats.shareCount;
-          final newEngagementStats = EngagementStats(
-            likeCount: _posts[postIndex].engagementStats.likeCount,
-            commentCount: _posts[postIndex].engagementStats.commentCount,
-            shareCount: currentShareCount + 1,
-            lastUpdated: DateTime.now(),
-          );
-
-          _posts[postIndex] = _posts[postIndex].copyWith(
-            engagementStats: newEngagementStats,
-          );
-        });
-
-        // Update share count in backend (fire and forget)
-        widget.communityService.incrementShareCount(post.id);
-      }
+      // Navigate to create post screen with pre-filled content for sharing
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => CreatePostScreen(
+            prefilledCaption: 'Shared from ${post.userName}: "${post.content}"',
+          ),
+        ),
+      );
     } catch (e) {
       AppLogger.error('Error sharing post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1332,16 +1558,19 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     int initialIndex,
     List<String> allImages,
   ) {
-    FullscreenImageViewer.show(
-      context,
-      imageUrls: allImages,
-      initialIndex: initialIndex,
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      builder: (context) => FullscreenImageViewer(
+        imageUrls: allImages,
+        initialIndex: initialIndex,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (isLoading) {
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(
@@ -1351,7 +1580,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       );
     }
 
-    if (_posts.isEmpty) {
+    if (_feedItems.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1370,7 +1599,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'No posts yet',
+              'No posts or activities yet',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -1379,9 +1608,22 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Be the first to share your creative work!',
+              'Be the first to share your creative work or complete an art walk!',
               style: TextStyle(color: ArtbeatColors.textSecondary, height: 1.5),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            // Filter toggle
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Show Activities'),
+                Switch(
+                  value: _showActivities,
+                  onChanged: (value) => _toggleActivitiesFilter(),
+                  activeThumbColor: ArtbeatColors.primaryPurple,
+                ),
+              ],
             ),
           ],
         ),
@@ -1389,27 +1631,43 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadPosts,
+      onRefresh: () async {
+        await loadPosts(widget.communityService);
+        await _loadActivities();
+      },
       color: ArtbeatColors.primaryPurple,
       child: CustomScrollView(
         slivers: [
-          // Live Activity Feed at the top
+          // Filter toggle at the top
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: LiveActivityFeed(activities: _activities),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Show Activities',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                  ),
+                  Switch(
+                    value: _showActivities,
+                    onChanged: (value) => _toggleActivitiesFilter(),
+                    activeThumbColor: ArtbeatColors.primaryPurple,
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Ad1 - Community & Social Zone
-          const SliverToBoxAdapter(child: SizedBox.shrink()),
-
-          // Posts list
+          // Combined feed list
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                if (index >= _filteredPosts.length) {
+                if (index >= _feedItems.length) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16),
@@ -1422,50 +1680,65 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                   );
                 }
 
-                final post = _filteredPosts[index];
+                final item = _feedItems[index];
 
-                // Insert ads every 3 posts
-                if (index > 0 && index % 3 == 0) {
-                  return Column(
-                    children: [
-                      // Ad placement
-                      const SizedBox.shrink(),
-                      const SizedBox(height: 8),
-                      // Post card
-                      EnhancedPostCard(
-                        post: post,
-                        onTap: () => _handlePostTap(post),
-                        onLike: () => _handleLike(post),
-                        onComment: () => _handleComment(post),
-                        onShare: () => _handleShare(post),
-                        onImageTap: (String imageUrl, int index) =>
-                            _showFullscreenImage(
-                              imageUrl,
-                              index,
-                              post.imageUrls,
-                            ),
-                        onBlockStatusChanged: () => _loadPosts(),
-                      ),
-                    ],
+                if (item is PostModel) {
+                  // Insert ads every 5 items
+                  if (index > 0 && index % 5 == 0) {
+                    return Column(
+                      children: [
+                        // Ad placement
+                        const SizedBox.shrink(),
+                        const SizedBox(height: 8),
+                        // Post card
+                        EnhancedPostCard(
+                          post: item,
+                          onTap: () => _handlePostTap(item),
+                          onLike: () => _handleLike(item),
+                          onComment: () => _handleComment(item),
+                          onShare: () => _handleShare(item),
+                          onImageTap: (String imageUrl, int imgIndex) =>
+                              _showFullscreenImage(
+                                imageUrl,
+                                imgIndex,
+                                item.imageUrls,
+                              ),
+                          onBlockStatusChanged: () =>
+                              loadPosts(widget.communityService),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return EnhancedPostCard(
+                    post: item,
+                    onTap: () => _handlePostTap(item),
+                    onLike: () => _handleLike(item),
+                    onComment: () => _handleComment(item),
+                    onShare: () => _handleShare(item),
+                    onImageTap: (String imageUrl, int imgIndex) =>
+                        _showFullscreenImage(
+                          imageUrl,
+                          imgIndex,
+                          item.imageUrls,
+                        ),
+                    onBlockStatusChanged: () =>
+                        loadPosts(widget.communityService),
+                  );
+                } else if (item is art_walk.SocialActivity) {
+                  return ActivityCard(
+                    activity: item,
+                    onTap: () {
+                      // Handle activity tap - could show details or navigate
+                      AppLogger.info('Activity tapped: ${item.message}');
+                    },
                   );
                 }
 
-                return EnhancedPostCard(
-                  post: post,
-                  onTap: () => _handlePostTap(post),
-                  onLike: () => _handleLike(post),
-                  onComment: () => _handleComment(post),
-                  onShare: () => _handleShare(post),
-                  onImageTap: (String imageUrl, int index) =>
-                      _showFullscreenImage(imageUrl, index, post.imageUrls),
-                  onBlockStatusChanged: () => _loadPosts(),
-                );
-              }, childCount: _filteredPosts.length),
+                return const SizedBox.shrink();
+              }, childCount: _feedItems.length),
             ),
           ),
-
-          // Ad at the bottom
-          const SliverToBoxAdapter(child: SizedBox.shrink()),
 
           // Bottom padding
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -1580,6 +1853,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
 
       if (!success) {
         // Only show error message and revert on failure
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -1596,6 +1870,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
       }
       // On success, do nothing - the optimistic update in ArtistCard is sufficient
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1708,6 +1983,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
                       if (result == true && mounted) {
                         // Refresh the artists list after successful onboarding
                         _loadArtists();
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
@@ -1783,29 +2059,29 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
             ),
           ),
 
-          // Artists grid
+          // Artists grid - 2 columns with mini cards
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 1,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.0,
+                crossAxisCount: 2, // 2 columns
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.75, // Taller than wide for mini cards
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
                 final artist = _filteredArtists[index];
 
-                // Insert ads every 4 artists
-                if (index > 0 && index % 4 == 0) {
+                // Insert ads every 6 artists (3 rows)
+                if (index > 0 && index % 6 == 0) {
                   return Column(
                     children: [
                       // Ad placement
                       const SizedBox.shrink(),
                       const SizedBox(height: 8),
-                      // Artist card
+                      // Mini artist card
                       Expanded(
-                        child: ArtistCard(
+                        child: MiniArtistCard(
                           artist: artist,
                           onTap: () => _handleArtistTap(artist),
                           onFollow: (isFollowing) =>
@@ -1816,14 +2092,10 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
                   );
                 }
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ArtistCard(
-                    artist: artist,
-                    onTap: () => _handleArtistTap(artist),
-                    onFollow: (isFollowing) =>
-                        _handleFollow(artist, isFollowing),
-                  ),
+                return MiniArtistCard(
+                  artist: artist,
+                  onTap: () => _handleArtistTap(artist),
+                  onFollow: (isFollowing) => _handleFollow(artist, isFollowing),
                 );
               }, childCount: _filteredArtists.length),
             ),
@@ -1840,96 +2112,118 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
   }
 }
 
-/// Topics tab - Browse by categories
-class TopicsTab extends StatefulWidget {
+/// Groups tab - User-created group feeds
+class GroupsTab extends StatefulWidget {
   final ArtCommunityService communityService;
   final String searchQuery;
 
-  const TopicsTab({
+  const GroupsTab({
     super.key,
     required this.communityService,
     this.searchQuery = '',
   });
 
   @override
-  State<TopicsTab> createState() => _TopicsTabState();
+  State<GroupsTab> createState() => _GroupsTabState();
 }
 
-class _TopicsTabState extends State<TopicsTab> {
-  List<String> _topics = [];
-  List<String> _filteredTopics = [];
+class _GroupsTabState extends State<GroupsTab> {
+  List<GroupModel> _groups = [];
+  List<GroupModel> _filteredGroups = [];
   bool _isLoading = true;
-
-  final List<String> _defaultTopics = [
-    'Paintings',
-    'Digital Art',
-    'Photography',
-    'Sculpture',
-    'Mixed Media',
-    'Street Art',
-    'Abstract',
-    'Realism',
-    'Watercolor',
-    'Charcoal',
-    'Ceramics',
-    'Textile Art',
-  ];
 
   @override
   void initState() {
     super.initState();
-    _loadTopics();
+    _loadGroups();
   }
 
   @override
-  void didUpdateWidget(TopicsTab oldWidget) {
+  void didUpdateWidget(GroupsTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.searchQuery != widget.searchQuery) {
-      _filterTopics();
+      _filterGroups();
     }
   }
 
-  Future<void> _loadTopics() async {
+  Future<void> _loadGroups() async {
     setState(() => _isLoading = true);
 
     try {
-      final topics = await widget.communityService.getPopularTopics(limit: 12);
+      // Load groups from Firestore
+      final groupsSnapshot = await FirebaseFirestore.instance
+          .collection('groups')
+          .orderBy('memberCount', descending: true)
+          .limit(20)
+          .get();
+
+      final groups = groupsSnapshot.docs.map((DocumentSnapshot doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return GroupModel(
+          id: doc.id,
+          name: data['name'] as String? ?? 'Unknown',
+          description: data['description'] as String? ?? '',
+          iconUrl: data['iconUrl'] as String? ?? '',
+          memberCount: data['memberCount'] as int? ?? 0,
+          postCount: data['postCount'] as int? ?? 0,
+          createdBy: data['createdBy'] as String? ?? '',
+          color: data['color'] as String? ?? '#8B5CF6',
+        );
+      }).toList();
+
       if (mounted) {
         setState(() {
-          _topics = topics.isNotEmpty ? topics : _defaultTopics;
-          _filteredTopics = _topics;
+          _groups = groups;
+          _filteredGroups = groups;
           _isLoading = false;
         });
       }
     } catch (e) {
+      AppLogger.error('Error loading groups: $e');
       if (mounted) {
         setState(() {
-          _topics = _defaultTopics;
-          _filteredTopics = _topics;
+          _groups = [];
+          _filteredGroups = [];
           _isLoading = false;
         });
       }
     }
   }
 
-  void _filterTopics() {
+  void _filterGroups() {
     setState(() {
       if (widget.searchQuery.isEmpty) {
-        _filteredTopics = _topics;
+        _filteredGroups = _groups;
       } else {
-        _filteredTopics = _topics
-            .where((topic) => topic.toLowerCase().contains(widget.searchQuery))
+        _filteredGroups = _groups
+            .where(
+              (group) =>
+                  group.name.toLowerCase().contains(
+                    widget.searchQuery.toLowerCase(),
+                  ) ||
+                  group.description.toLowerCase().contains(
+                    widget.searchQuery.toLowerCase(),
+                  ),
+            )
             .toList();
       }
     });
   }
 
-  void _handleTopicTap(String topic) {
+  void _handleGroupTap(GroupModel group) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => EnhancedCommunityFeedScreen(topicFilter: topic),
+        builder: (context) =>
+            GroupFeedScreen(groupId: group.id, groupName: group.name),
       ),
     );
+  }
+
+  void _showCreateGroupDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => const CreateGroupDialog(),
+    ).then((_) => _loadGroups()); // Refresh groups after creation
   }
 
   @override
@@ -1945,139 +2239,472 @@ class _TopicsTabState extends State<TopicsTab> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadTopics,
+      onRefresh: _loadGroups,
       color: ArtbeatColors.primaryPurple,
       child: CustomScrollView(
         slivers: [
-          // Ad1 - Community & Social Zone
-          const SliverToBoxAdapter(child: SizedBox.shrink()),
-
-          // Topics grid
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.2,
+          // Header with create button
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Groups',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: ArtbeatColors.textPrimary,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Join communities and share your art',
+                          style: TextStyle(
+                            color: ArtbeatColors.textSecondary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _showCreateGroupDialog,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create Group'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ArtbeatColors.primaryPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final topic = _filteredTopics[index];
-
-                // Insert ads every 6 topics (3 rows in 2-column grid)
-                if (index > 0 && index % 6 == 0) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Ad placement
-                      const SizedBox.shrink(),
-                      const SizedBox(height: 8),
-                      // Topic card - use Flexible to allow shrinking if needed
-                      Flexible(child: _buildTopicCard(topic)),
-                    ],
-                  );
-                }
-
-                return _buildTopicCard(topic);
-              }, childCount: _filteredTopics.length),
             ),
           ),
 
-          // Ad at the bottom
-          const SliverToBoxAdapter(child: SizedBox.shrink()),
+          // Groups grid
+          if (_filteredGroups.isEmpty) ...[
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.primaryPurple.withValues(
+                          alpha: 0.1,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: const Icon(
+                        Icons.group_outlined,
+                        size: 64,
+                        color: ArtbeatColors.primaryPurple,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'No groups found',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Be the first to create a group!',
+                      style: TextStyle(
+                        color: ArtbeatColors.textSecondary,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _showCreateGroupDialog,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create First Group'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ArtbeatColors.primaryPurple,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.8,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final group = _filteredGroups[index];
+                  return _buildGroupCard(group);
+                }, childCount: _filteredGroups.length),
+              ),
+            ),
 
-          // Bottom padding
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            // Bottom padding
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildTopicCard(String topic) {
+  Widget _buildGroupCard(GroupModel group) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
-        onTap: () => _handleTopicTap(topic),
-        borderRadius: BorderRadius.circular(16),
+        onTap: () => _handleGroupTap(group),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-                ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
+                Color(
+                  int.parse(group.color.replaceFirst('#', ''), radix: 16) +
+                      0xFF000000,
+                ).withValues(alpha: 0.1),
+                Color(
+                  int.parse(group.color.replaceFirst('#', ''), radix: 16) +
+                      0xFF000000,
+                ).withValues(alpha: 0.05),
               ],
             ),
           ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _getTopicIcon(topic),
-                    size: 32,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon/Image
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Color(
+                    int.parse(group.color.replaceFirst('#', ''), radix: 16) +
+                        0xFF000000,
+                  ).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 12),
+                child: group.iconUrl.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          group.iconUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.group,
+                                color: ArtbeatColors.primaryPurple,
+                              ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.group,
+                        size: 30,
+                        color: Color(
+                          int.parse(
+                                group.color.replaceFirst('#', ''),
+                                radix: 16,
+                              ) +
+                              0xFF000000,
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 16),
+
+              // Group name
+              Text(
+                group.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: ArtbeatColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+
+              // Description
+              if (group.description.isNotEmpty) ...[
                 Text(
-                  topic,
+                  group.description,
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: ArtbeatColors.textPrimary,
+                    fontSize: 12,
+                    color: ArtbeatColors.textSecondary,
+                    height: 1.3,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 8),
               ],
-            ),
+
+              // Member and post counts
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${group.memberCount}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: ArtbeatColors.primaryPurple,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.people,
+                    size: 12,
+                    color: ArtbeatColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.primaryBlue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${group.postCount}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: ArtbeatColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.article,
+                    size: 12,
+                    color: ArtbeatColors.textSecondary,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+}
 
-  IconData _getTopicIcon(String topic) {
-    switch (topic.toLowerCase()) {
-      case 'paintings':
-        return Icons.brush;
-      case 'digital art':
-        return Icons.computer;
-      case 'photography':
-        return Icons.camera_alt;
-      case 'sculpture':
-        return Icons.account_balance;
-      case 'mixed media':
-        return Icons.auto_awesome;
-      case 'street art':
-        return Icons.location_city;
-      case 'abstract':
-        return Icons.blur_on;
-      case 'realism':
-        return Icons.visibility;
-      case 'watercolor':
-        return Icons.color_lens;
-      case 'charcoal':
-        return Icons.edit;
-      case 'ceramics':
-        return Icons.restaurant;
-      case 'textile art':
-        return Icons.texture;
-      default:
-        return Icons.palette;
+/// Model for group data
+class GroupModel {
+  final String id;
+  final String name;
+  final String description;
+  final String iconUrl;
+  final int memberCount;
+  final int postCount;
+  final String createdBy;
+  final String color;
+
+  const GroupModel({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.iconUrl,
+    required this.memberCount,
+    required this.postCount,
+    required this.createdBy,
+    required this.color,
+  });
+
+  factory GroupModel.fromMap(Map<String, dynamic> map) {
+    return GroupModel(
+      id: map['id'] as String? ?? '',
+      name: map['name'] as String? ?? 'Unknown',
+      description: map['description'] as String? ?? '',
+      iconUrl: map['iconUrl'] as String? ?? '',
+      memberCount: map['memberCount'] as int? ?? 0,
+      postCount: map['postCount'] as int? ?? 0,
+      createdBy: map['createdBy'] as String? ?? '',
+      color: map['color'] as String? ?? '#8B5CF6',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'iconUrl': iconUrl,
+      'memberCount': memberCount,
+      'postCount': postCount,
+      'createdBy': createdBy,
+      'color': color,
+    };
+  }
+}
+
+/// Dialog for creating new groups
+class CreateGroupDialog extends StatefulWidget {
+  const CreateGroupDialog({super.key});
+
+  @override
+  State<CreateGroupDialog> createState() => _CreateGroupDialogState();
+}
+
+class _CreateGroupDialogState extends State<CreateGroupDialog> {
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createGroup() async {
+    if (_nameController.text.trim().isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please sign in to create a group')),
+        );
+        return;
+      }
+
+      // Create group document
+      final groupRef = await FirebaseFirestore.instance
+          .collection('groups')
+          .add({
+            'name': _nameController.text.trim(),
+            'description': _descriptionController.text.trim(),
+            'createdBy': user.uid,
+            'memberCount': 1,
+            'postCount': 0,
+            'color': '#8B5CF6',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+
+      // Add creator as first member
+      await FirebaseFirestore.instance.collection('groupMembers').add({
+        'groupId': groupRef.id,
+        'userId': user.uid,
+        'role': 'admin',
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Group created successfully!')),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Error creating group: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create group. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Create New Group'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Group Name',
+              hintText: 'Enter group name',
+            ),
+            maxLength: 50,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(
+              labelText: 'Description (optional)',
+              hintText: 'Describe your group',
+            ),
+            maxLength: 200,
+            maxLines: 3,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _createGroup,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ArtbeatColors.primaryPurple,
+            foregroundColor: Colors.white,
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Create'),
+        ),
+      ],
+    );
   }
 }

@@ -4,13 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_community/artbeat_community.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
-import '../widgets/leaderboard_preview_widget.dart';
-
 import '../widgets/dashboard/dashboard_browse_section.dart';
 import '../widgets/dashboard/art_walk_hero_section.dart';
-import '../widgets/dashboard/user_progress_card.dart';
 
 /// ARTbeat Dynamic Engagement Dashboard
 ///
@@ -149,24 +144,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     super.dispose();
   }
 
-  /// Create a test challenge for development/testing purposes
-  ChallengeModel _createTestChallenge() {
-    return ChallengeModel(
-      id: 'test_daily_challenge',
-      userId: 'test_user',
-      title: 'Art Explorer',
-      description: 'Discover 3 pieces of public art today',
-      type: ChallengeType.daily,
-      targetCount: 3,
-      currentCount: 1,
-      rewardXP: 100,
-      rewardDescription: '🎨 Artist Badge + 100 XP',
-      isCompleted: false,
-      createdAt: DateTime.now(),
-      expiresAt: DateTime.now().add(const Duration(hours: 20)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DashboardViewModel>(context);
@@ -181,8 +158,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
   /// Check if there are any critical errors
   bool _hasErrors(DashboardViewModel viewModel) {
     return (viewModel.eventsError != null && viewModel.events.isEmpty) ||
-        (viewModel.artworkError != null && viewModel.artwork.isEmpty) ||
-        (viewModel.artistsError != null && viewModel.artists.isEmpty);
+        (viewModel.artworkError != null && viewModel.artwork.isEmpty);
   }
 
   /// Get appropriate error message
@@ -228,11 +204,45 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
                 ),
               ),
 
-              // === USER EXPERIENCE SECTION ===
-              // Personalized content directly after hero for immediate relevance
+              // === LIVE ACTIVITY FEED ===
+              // Real-time community activity proof
+              SliverToBoxAdapter(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _scrollDepth * -2.0,
+                    0,
+                  ),
+                  child: LiveActivityFeed(
+                    activities: viewModel.activities,
+                    onTap: () {},
+                  ),
+                ),
+              ),
+
+              // === INTEGRATED ENGAGEMENT WIDGET ===
+              // Combines Daily Quest, Weekly Goals & Leaderboard
               if (viewModel.isAuthenticated && viewModel.currentUser != null)
                 SliverToBoxAdapter(
-                  child: DashboardUserSection(viewModel: viewModel),
+                  child: SizedBox(
+                    height: 500,
+                    child: IntegratedEngagementWidget(
+                      user: viewModel.currentUser!,
+                      currentStreak: viewModel.currentStreak,
+                      totalDiscoveries: viewModel.totalDiscoveries,
+                      weeklyProgress: viewModel.weeklyProgress,
+                      weeklyGoal: 7,
+                      achievements: viewModel.achievements,
+                      activities: viewModel.activities,
+                      onProfileTap: () => _showProfileMenu(context),
+                      onAchievementsTap: () =>
+                          Navigator.pushNamed(context, '/achievements'),
+                      onWeeklyGoalsTap: () => _navigateToWeeklyGoals(context),
+                      onLeaderboardTap: () =>
+                          Navigator.pushNamed(context, '/leaderboard'),
+                    ),
+                  ),
                 ),
 
               // === ENGAGEMENT CATALYST ZONE ===
@@ -250,10 +260,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
               // === GROWTH & ACHIEVEMENT ZONE ===
               // Gamification and progress tracking
               ..._buildGrowthAchievementZone(viewModel),
-
-              // === STRATEGIC MONETIZATION ===
-              // Thoughtfully placed, native-style ads (max 2)
-              ..._buildStrategicAds(viewModel),
 
               // === CONVERSION ZONE ===
               // Artist onboarding and premium features
@@ -296,16 +302,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
             hasNotifications: _hasNotifications(viewModel),
             notificationCount: _getNotificationCount(viewModel),
           ),
-
-          // Immediate engagement hook - Active quest
-          if (viewModel.todaysChallenge != null || true)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: DailyQuestCard(
-                challenge: viewModel.todaysChallenge ?? _createTestChallenge(),
-                onTap: () => _navigateToQuestJournal(context),
-              ),
-            ),
         ],
       ),
     );
@@ -314,68 +310,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
   /// ENGAGEMENT CATALYSTS - Dynamic, context-aware content
   List<Widget> _buildEngagementCatalysts(DashboardViewModel viewModel) {
     final catalysts = <Widget>[];
-
-    // Slot 1: Top carousel banner (hero placement)
-    if (viewModel.isAuthenticated) {
-      catalysts.add(
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: AdCarouselWidget(zone: LocalAdZone.home, height: 200),
-          ),
-        ),
-      );
-    }
-
-    // Live social proof - builds FOMO and community feeling
-    catalysts.add(
-      SliverToBoxAdapter(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          transform: Matrix4.translationValues(0, _scrollDepth * -2.0, 0),
-          child: LiveActivityFeed(
-            activities: viewModel.activities,
-            onTap: () => _navigateToCommunityHub(context),
-          ),
-        ),
-      ),
-    );
-
-    // Leaderboard preview - competitive element right after social proof
-    if (viewModel.isAuthenticated && viewModel.currentUser != null) {
-      catalysts.add(
-        const SliverToBoxAdapter(child: LeaderboardPreviewWidget()),
-      );
-
-      // Slot 4: Below leaderboard - Small banner ad
-      catalysts.add(
-        const SliverToBoxAdapter(
-          child: AdSmallBannerWidget(zone: LocalAdZone.home, height: 100),
-        ),
-      );
-    }
-
-    // Personal progress - immediate gratification
-    catalysts.add(
-      SliverToBoxAdapter(
-        child: UserProgressCard(
-          currentStreak: viewModel.currentStreak,
-          totalDiscoveries: viewModel.totalDiscoveries,
-          weeklyProgress: viewModel.weeklyProgress,
-          weeklyGoal: 7,
-          onTap: () => _navigateToWeeklyGoals(context),
-        ),
-      ),
-    );
-
-    // Slot 2: Between progress & browse - Native card ad
-    if (viewModel.isAuthenticated) {
-      catalysts.add(
-        const SliverToBoxAdapter(
-          child: AdNativeCardWidget(zone: LocalAdZone.home),
-        ),
-      );
-    }
 
     // Achievement showcase (when available)
     if (viewModel.achievements.isNotEmpty) {
@@ -455,18 +389,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       SliverToBoxAdapter(child: DashboardBrowseSection(viewModel: viewModel)),
     );
 
-    // Slot 3: Browse carousel footer - Ad placement after browse section
-    if (viewModel.isAuthenticated) {
-      discoveries.add(
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: AdSmallBannerWidget(zone: LocalAdZone.home, height: 60),
-          ),
-        ),
-      );
-    }
-
     // Local art captures - immediate relevance
     discoveries.add(
       SliverToBoxAdapter(child: DashboardCapturesSection(viewModel: viewModel)),
@@ -525,24 +447,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     }
 
     return growthWidgets;
-  }
-
-  /// STRATEGIC ADS - Maximum 2, native integration
-  List<Widget> _buildStrategicAds(DashboardViewModel viewModel) {
-    if (!viewModel.isAuthenticated) return [];
-
-    return [
-      // Slot 5: Optional strategic ad between zones
-      const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: AdCtaCardWidget(
-            zone: LocalAdZone.home,
-            ctaText: 'Discover More',
-          ),
-        ),
-      ),
-    ];
   }
 
   /// CONVERSION ZONE - Artist onboarding and premium features
@@ -640,14 +544,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     );
   }
 
-  void _navigateToCommunityHub(BuildContext context) {
-    // Navigate to art community hub
-    Navigator.push<void>(
-      context,
-      MaterialPageRoute<void>(builder: (context) => const ArtCommunityHub()),
-    );
-  }
-
   void _openDrawer() {
     _scaffoldKey.currentState?.openDrawer();
   }
@@ -693,14 +589,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
         );
       }
     }
-  }
-
-  void _navigateToQuestJournal(BuildContext context) {
-    // Navigate to quest history/journal screen
-    Navigator.push<void>(
-      context,
-      MaterialPageRoute<void>(builder: (context) => const QuestHistoryScreen()),
-    );
   }
 
   /// Handle error states gracefully

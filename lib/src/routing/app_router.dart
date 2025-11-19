@@ -21,8 +21,8 @@ import '../../test_payment_debug.dart';
 import '../guards/auth_guard.dart';
 import '../screens/about_screen.dart';
 import '../screens/privacy_policy_screen.dart';
-import '../screens/terms_of_service_screen.dart';
 import '../screens/rewards_screen.dart';
+import '../screens/terms_of_service_screen.dart';
 import 'app_routes.dart';
 import 'route_utils.dart';
 
@@ -46,24 +46,18 @@ class AppRouter {
 
     // Core routes
     switch (routeName) {
+      case '/store':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Artbeat Store'),
+          child: const core.ArtbeatStoreScreen(),
+        );
       case AppRoutes.splash:
         return RouteUtils.createSimpleRoute(child: const core.SplashScreen());
 
       case AppRoutes.dashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 0,
-          child: const core.DashboardScreen(),
-        );
-
-      case AppRoutes.onboarding:
-        final currentUser = FirebaseAuth.instance.currentUser;
-        if (currentUser == null) {
-          return RouteUtils.createSimpleRoute(child: const auth.LoginScreen());
-        }
-        return RouteUtils.createSimpleRoute(
-          child: core.OnboardingDashboard(
-            user: RouteUtils.createUserModelFromFirebase(currentUser),
-          ),
+          child: const core.ArtbeatDashboardScreen(),
         );
 
       case '/debug/payment':
@@ -173,7 +167,6 @@ class AppRouter {
 
   bool _isProtectedRoute(String routeName) =>
       routeName != AppRoutes.splash &&
-      routeName != AppRoutes.onboarding &&
       routeName != AppRoutes.login &&
       routeName != AppRoutes.register &&
       routeName != AppRoutes.forgotPassword &&
@@ -258,6 +251,11 @@ class AppRouter {
     // Subscription routes
     if (routeName.startsWith('/subscription')) {
       return _handleSubscriptionRoutes(settings);
+    }
+
+    // In-App Purchase routes
+    if (routeName.startsWith('/iap')) {
+      return _handleIapRoutes(settings);
     }
 
     // Miscellaneous routes
@@ -541,7 +539,7 @@ class AppRouter {
       case AppRoutes.communityGifts:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Gift Artists'),
-          child: const community.GiftsScreen(),
+          child: const community.ViewReceivedGiftsScreen(),
         );
 
       case AppRoutes.communityPortfolios:
@@ -557,7 +555,7 @@ class AppRouter {
       case AppRoutes.communitySponsorships:
         // Sponsorship functionality removed - redirect to gifts
         return RouteUtils.createMainLayoutRoute(
-          child: const community.GiftsScreen(),
+          child: const community.ViewReceivedGiftsScreen(),
         );
 
       case AppRoutes.communitySettings:
@@ -1446,6 +1444,27 @@ class AppRouter {
 
       default:
         return RouteUtils.createNotFoundRoute('Capture feature');
+    }
+  }
+
+  /// Handles in-app purchase routes
+  Route<dynamic>? _handleIapRoutes(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.subscriptions:
+        return RouteUtils.createMainLayoutRoute(
+          child: const core.SubscriptionsScreen(),
+        );
+
+      case AppRoutes.gifts:
+        return RouteUtils.createMainLayoutRoute(
+          child: const core.GiftsScreen(),
+        );
+
+      case AppRoutes.ads:
+        return RouteUtils.createMainLayoutRoute(child: const core.AdsScreen());
+
+      default:
+        return RouteUtils.createNotFoundRoute('In-App Purchase feature');
     }
   }
 

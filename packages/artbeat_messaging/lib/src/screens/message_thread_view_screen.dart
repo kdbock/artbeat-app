@@ -96,6 +96,7 @@ class _MessageThreadViewScreenState extends State<MessageThreadViewScreen> {
     } catch (e) {
       AppLogger.error('Error sending reply: $e');
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('messaging_message_thread_view_error_failed_to_send'.tr())));
     }

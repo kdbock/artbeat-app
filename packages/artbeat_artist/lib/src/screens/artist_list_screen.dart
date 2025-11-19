@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../services/artist_profile_service.dart';
 
 class ArtistListScreen extends StatefulWidget {
   final String? title;
@@ -36,24 +36,9 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
         _error = null;
       });
 
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('artistProfiles')
-          .where('userType', isEqualTo: 'artist')
-          .orderBy('displayName')
-          .limit(20)
-          .get();
-
-      final List<ArtistProfileModel> artists = [];
-      for (var doc in snapshot.docs) {
-        if (doc.exists) {
-          try {
-            final artist = ArtistProfileModel.fromFirestore(doc);
-            artists.add(artist);
-          } catch (e) {
-            // debugPrint('Error parsing artist: $e');
-          }
-        }
-      }
+      final artistProfileService = ArtistProfileService();
+      final List<ArtistProfileModel> artists =
+          await artistProfileService.getAllArtists(limit: 20);
 
       setState(() {
         _artists = artists;

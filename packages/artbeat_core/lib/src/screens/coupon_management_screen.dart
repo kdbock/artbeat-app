@@ -135,9 +135,11 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
             onPressed: () async {
               try {
                 await _couponService.deleteCoupon(coupon.id);
+                // ignore: use_build_context_synchronously
                 Navigator.of(context).pop();
                 setState(() {});
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('core_coupon_success_deleted'.tr()),
@@ -145,8 +147,10 @@ class _CouponManagementScreenState extends State<CouponManagementScreen> {
                   );
                 }
               } catch (e) {
+                // ignore: use_build_context_synchronously
                 Navigator.of(context).pop();
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to delete coupon: $e')),
                   );

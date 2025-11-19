@@ -20,6 +20,7 @@ class ArtistProfileModel {
   final bool isVerified;
   final bool isFeatured;
   final SubscriptionTier subscriptionTier;
+  final int followerCount;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -38,6 +39,7 @@ class ArtistProfileModel {
     this.isVerified = false,
     this.isFeatured = false,
     required this.subscriptionTier,
+    this.followerCount = 0,
     required this.createdAt,
     required this.updatedAt,
   }) : socialLinks = socialLinks ?? {};
@@ -69,6 +71,7 @@ class ArtistProfileModel {
       isFeatured: map['isFeatured'] is bool ? map['isFeatured'] as bool : false,
       subscriptionTier:
           _tierFromString((map['subscriptionTier'] ?? 'starter').toString()),
+      followerCount: map['followerCount'] is int ? map['followerCount'] as int : 0,
       createdAt: map['createdAt'] is Timestamp
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
@@ -94,6 +97,7 @@ class ArtistProfileModel {
       'isVerified': isVerified,
       'isFeatured': isFeatured,
       'subscriptionTier': _tierToString(subscriptionTier),
+      'followerCount': followerCount,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -134,6 +138,7 @@ class ArtistProfileModel {
     List<String>? mediums,
     List<String>? styles,
     Map<String, String>? socialLinks,
+    int? followerCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -152,6 +157,7 @@ class ArtistProfileModel {
       mediums: mediums ?? this.mediums,
       styles: styles ?? this.styles,
       socialLinks: socialLinks ?? this.socialLinks,
+      followerCount: followerCount ?? this.followerCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

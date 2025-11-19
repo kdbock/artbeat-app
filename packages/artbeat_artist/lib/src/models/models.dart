@@ -7,3 +7,4 @@ export 'gallery_invitation_model.dart';
 export 'subscription_model.dart';
 export 'earnings_model.dart';
 export 'payout_model.dart';
+export 'top_follower_model.dart';

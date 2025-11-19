@@ -180,6 +180,33 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
                         size: 16,
                       ),
                     ],
+                    if (widget.post.groupType != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getGroupColor(
+                            widget.post.groupType!,
+                          ).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _getGroupColor(widget.post.groupType!),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          _getGroupDisplayName(widget.post.groupType!),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: _getGroupColor(widget.post.groupType!),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 Text(
@@ -495,6 +522,36 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
         }).toList(),
       ),
     );
+  }
+
+  Color _getGroupColor(String groupType) {
+    switch (groupType) {
+      case 'artist':
+        return ArtbeatColors.primaryPurple;
+      case 'event':
+        return ArtbeatColors.primaryGreen;
+      case 'artwalk':
+        return ArtbeatColors.secondaryTeal;
+      case 'artistwanted':
+        return ArtbeatColors.accentYellow;
+      default:
+        return ArtbeatColors.primaryPurple;
+    }
+  }
+
+  String _getGroupDisplayName(String groupType) {
+    switch (groupType) {
+      case 'artist':
+        return 'Artist';
+      case 'event':
+        return 'Event';
+      case 'artwalk':
+        return 'Art Walk';
+      case 'artistwanted':
+        return 'Artist Wanted';
+      default:
+        return 'Group';
+    }
   }
 
   Widget _buildEngagementActions() {

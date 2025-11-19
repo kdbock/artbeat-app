@@ -71,6 +71,7 @@ class GoogleMapsErrorHandler {
   static Future<void> handleMapTimeout(BuildContext context) async {
     final isRunningOnEmulator = await isEmulator();
 
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

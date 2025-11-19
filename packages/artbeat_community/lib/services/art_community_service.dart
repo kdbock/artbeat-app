@@ -30,20 +30,52 @@ class ArtCommunityService extends ChangeNotifier {
     try {
       AppLogger.info('🎨 Fetching artists from Firestore...');
 
-      final snapshot = await _firestore
-          .collection('artistProfiles')
-          .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
+      final snapshot = await _firestore.collection('users').limit(100).get();
+
+      AppLogger.info('🎨 Query returned ${snapshot.docs.length} documents');
 
       final artists = <ArtistProfile>[];
       final currentUser = FirebaseAuth.instance.currentUser;
 
       for (final doc in snapshot.docs) {
-        try {
-          final artist = ArtistProfile.fromFirestore(doc);
+        final userData = doc.data();
+        final userType = userData['userType'] as String?;
+        AppLogger.info(
+          '🎨 Processing user doc: ${doc.id}, userType=${userType}, fullName=${userData['fullName']}',
+        );
 
-          // If portfolio images are empty, try to fetch from artworks
+        // Check if user has an artist profile
+        DocumentSnapshot? artistProfileDoc;
+        try {
+          final profileQuery = await _firestore
+              .collection('artistProfiles')
+              .where('userId', isEqualTo: doc.id)
+              .limit(1)
+              .get();
+
+          if (profileQuery.docs.isNotEmpty) {
+            artistProfileDoc = profileQuery.docs.first;
+            AppLogger.info('🎨 User ${doc.id} has detailed artist profile');
+          }
+        } catch (e) {
+          AppLogger.warning(
+            '🎨 Could not check artist profile for ${doc.id}: $e',
+          );
+        }
+
+        // Only process users who are artists (have userType 'artist' or have artistProfile)
+        final bool isArtist = userType == 'artist' || artistProfileDoc != null;
+        if (!isArtist) {
+          AppLogger.info('🎨 Skipping user ${doc.id} - not an artist');
+          continue;
+        }
+
+        try {
+          // Use artist profile document if available, otherwise use user document
+          final sourceDoc = artistProfileDoc ?? doc;
+          final artist = ArtistProfile.fromFirestore(sourceDoc);
+
+          // Check if portfolio images are empty, try to fetch from artworks
           List<String> portfolioImages = artist.portfolioImages;
           if (portfolioImages.isEmpty) {
             try {
@@ -162,9 +194,8 @@ class ArtCommunityService extends ChangeNotifier {
 
     // Set up real-time listeners for artists
     _firestore
-        .collection('artistProfiles')
-        .orderBy('createdAt', descending: true)
-        .limit(50)
+        .collection('users')
+        .where('userType', isEqualTo: 'artist')
         .snapshots()
         .listen((snapshot) {
           _artistsCache = snapshot.docs

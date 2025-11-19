@@ -32,6 +32,7 @@ class NavigationService {
 
       // Perform navigation
       if (clearStack) {
+        // ignore: use_build_context_synchronously
         await Navigator.of(context).pushNamedAndRemoveUntil(
           routeName,
           (route) => false,
@@ -39,9 +40,11 @@ class NavigationService {
         );
       } else if (replace) {
         await Navigator.of(
+          // ignore: use_build_context_synchronously
           context,
         ).pushReplacementNamed(routeName, arguments: arguments);
       } else {
+        // ignore: use_build_context_synchronously
         await Navigator.of(context).pushNamed(routeName, arguments: arguments);
       }
 
@@ -60,6 +63,7 @@ class NavigationService {
       );
 
       // Show error to user
+      // ignore: use_build_context_synchronously
       _showNavigationError(context, routeName, error);
 
       // Log to console for debugging

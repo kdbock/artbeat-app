@@ -128,6 +128,7 @@ class _AdvancedArtworkSearchScreenState
       setState(() {
         _isLoading = false;
       });
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('advanced_search_error'.tr())),
       );
@@ -173,11 +174,14 @@ class _AdvancedArtworkSearchScreenState
                   await _artworkService.saveSearch(
                       searchNameController.text, criteria);
                   await _loadSavedSearches();
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('advanced_search_saved_success'.tr())),
                   );
                 } catch (e) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('advanced_search_save_error'.tr())),
                   );

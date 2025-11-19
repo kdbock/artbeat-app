@@ -378,10 +378,12 @@ class _CaptureDrawerState extends State<CaptureDrawer> {
     try {
       await FirebaseAuth.instance.signOut();
       if (mounted) {
+        // ignore: use_build_context_synchronously
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       }
     } catch (e) {
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error signing out: $e'),

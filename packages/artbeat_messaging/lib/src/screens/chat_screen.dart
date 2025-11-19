@@ -215,6 +215,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
     if (image == null) return;
 
+    // ignore: use_build_context_synchronously
     final chatService = Provider.of<ChatService>(context, listen: false);
     try {
       // Show loading indicator
@@ -250,6 +251,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
     if (image == null) return;
 
+    // ignore: use_build_context_synchronously
     final chatService = Provider.of<ChatService>(context, listen: false);
     try {
       // Show loading indicator
@@ -962,6 +964,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                     // Send location as a message (reuse sendMessage, but with type/location)
                                     final chatService =
                                         Provider.of<ChatService>(
+                                          // ignore: use_build_context_synchronously
                                           context,
                                           listen: false,
                                         );
@@ -982,6 +985,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                       message.content,
                                     );
                                   } catch (e) {
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(

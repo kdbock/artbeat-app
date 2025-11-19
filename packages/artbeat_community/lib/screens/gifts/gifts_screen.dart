@@ -6,14 +6,14 @@ import '../../widgets/gift_card_widget.dart';
 import '../../theme/community_colors.dart';
 import 'gift_rules_screen.dart';
 
-class GiftsScreen extends StatefulWidget {
-  const GiftsScreen({super.key});
+class ViewReceivedGiftsScreen extends StatefulWidget {
+  const ViewReceivedGiftsScreen({super.key});
 
   @override
-  State<GiftsScreen> createState() => _GiftsScreenState();
+  State<ViewReceivedGiftsScreen> createState() => _ViewReceivedGiftsScreenState();
 }
 
-class _GiftsScreenState extends State<GiftsScreen> {
+class _ViewReceivedGiftsScreenState extends State<ViewReceivedGiftsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final InAppGiftService _giftService = InAppGiftService();
   final _scaffoldKey = GlobalKey<ScaffoldState>();

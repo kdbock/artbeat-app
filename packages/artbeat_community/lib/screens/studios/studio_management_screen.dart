@@ -47,6 +47,7 @@ class _StudioManagementScreenState extends State<StudioManagementScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading studio: $e')));
     }
@@ -66,11 +67,13 @@ class _StudioManagementScreenState extends State<StudioManagementScreen> {
         _studio = updatedStudio;
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Member removed successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error removing member: $e')));
     }
@@ -103,12 +106,15 @@ class _StudioManagementScreenState extends State<StudioManagementScreen> {
     if (confirmed == true) {
       try {
         await _firestoreService.deleteStudio(_studio!.id);
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop(); // Return to previous screen
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Studio deleted successfully')),
         );
       } catch (e) {
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(SnackBar(content: Text('Error deleting studio: $e')));
       }

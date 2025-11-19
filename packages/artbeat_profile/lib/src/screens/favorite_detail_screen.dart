@@ -246,6 +246,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                           mode: LaunchMode.externalApplication,
                         );
                       } else {
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Could not open URL: $sourceUrl'),

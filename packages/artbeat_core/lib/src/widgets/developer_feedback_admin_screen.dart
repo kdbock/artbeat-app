@@ -826,7 +826,9 @@ class _DeveloperFeedbackAdminScreenState
                     controller.text.trim(),
                   );
                   if (mounted) {
+                    // ignore: use_build_context_synchronously
                     Navigator.pop(context);
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Response added successfully'),
@@ -836,6 +838,7 @@ class _DeveloperFeedbackAdminScreenState
                   }
                 } catch (e) {
                   if (mounted) {
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Failed to add response: $e'),
@@ -922,6 +925,7 @@ class _DeveloperFeedbackAdminScreenState
     );
 
     if (confirmed == true) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bulk action functionality coming soon'),

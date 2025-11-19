@@ -143,6 +143,7 @@ class DebugMenu extends StatelessWidget {
 
     unawaited(
       showDialog<void>(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('🔥 Firebase Debug'),

@@ -105,13 +105,16 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                 );
                 await chatService.deleteChat(widget.chat.id);
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context); // Go back to previous screen
                   ScaffoldMessenger.of(
+                    // ignore: use_build_context_synchronously
                     context,
                   ).showSnackBar(SnackBar(content: Text('messaging_chat_info_text_chat_deleted'.tr())));
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('messaging_chat_info_error_failed_to_delete'.tr())),
                   );

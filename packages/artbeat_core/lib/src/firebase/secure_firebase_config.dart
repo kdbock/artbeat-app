@@ -143,11 +143,14 @@ class SecureFirebaseConfig {
         AppLogger.auth('🔐 Initializing App Check in debug mode...');
         AppLogger.debug('🔐 Debug mode: $_debug');
         AppLogger.auth('🔐 Team ID: $_teamId');
-        AppLogger.warning('⚠️ App Check set to DEBUG mode - authentication will use placeholder tokens');
+        AppLogger.warning(
+          '⚠️ App Check set to DEBUG mode - authentication will use placeholder tokens',
+        );
 
         // In debug mode, skip App Check to avoid blocking auth during development
         // The debug token approach often fails due to Firebase Console configuration
         // This is the recommended approach for development
+        // ignore: deprecated_member_use
         try {
           await FirebaseAppCheck.instance.activate(
             androidProvider: AndroidProvider.debug,
@@ -164,6 +167,7 @@ class SecureFirebaseConfig {
         }
       } else {
         // Production mode - use secure providers
+        // ignore: deprecated_member_use
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.playIntegrity,
           appleProvider: AppleProvider.deviceCheck,

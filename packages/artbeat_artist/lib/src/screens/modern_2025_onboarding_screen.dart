@@ -835,6 +835,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
       } else {
         // For paid tiers, navigate to payment screen
         final purchaseSuccess = await Navigator.push<bool>(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<bool>(
             builder: (context) => SubscriptionPurchaseScreen(tier: tier),

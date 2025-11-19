@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 
 import 'app.dart';
 import 'config/maps_config.dart';
-import 'in_app_purchase_setup.dart';
 import 'src/managers/app_lifecycle_manager.dart';
 import 'src/services/app_permission_service.dart';
 

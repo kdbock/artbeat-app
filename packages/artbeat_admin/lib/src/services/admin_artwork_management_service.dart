@@ -33,7 +33,7 @@ class AdminArtworkManagementService {
 
       query = query.orderBy('createdAt', descending: true).limit(limit);
       final snapshot = await query.get();
-      
+
       return snapshot.docs
           .map((doc) => ArtworkModel.fromFirestore(doc))
           .toList();
@@ -149,7 +149,8 @@ class AdminArtworkManagementService {
   }
 
   /// Delete a specific comment
-  Future<void> deleteComment(String artworkId, String commentId, {String? reason}) async {
+  Future<void> deleteComment(String artworkId, String commentId,
+      {String? reason}) async {
     try {
       await _firestore
           .collection('artwork')
@@ -157,10 +158,10 @@ class AdminArtworkManagementService {
           .collection('comments')
           .doc(commentId)
           .update({
-            'isDeleted': true,
-            'deletionReason': reason,
-            'deletedAt': FieldValue.serverTimestamp(),
-          });
+        'isDeleted': true,
+        'deletionReason': reason,
+        'deletedAt': FieldValue.serverTimestamp(),
+      });
 
       await _firestore.collection('artwork').doc(artworkId).update({
         'commentCount': FieldValue.increment(-1),
@@ -171,7 +172,8 @@ class AdminArtworkManagementService {
   }
 
   /// Flag a comment as inappropriate
-  Future<void> flagComment(String artworkId, String commentId, String reason) async {
+  Future<void> flagComment(
+      String artworkId, String commentId, String reason) async {
     try {
       await _firestore
           .collection('artwork')
@@ -179,10 +181,10 @@ class AdminArtworkManagementService {
           .collection('comments')
           .doc(commentId)
           .update({
-            'flagged': true,
-            'flagReason': reason,
-            'flaggedAt': FieldValue.serverTimestamp(),
-          });
+        'flagged': true,
+        'flagReason': reason,
+        'flaggedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       throw Exception('Error flagging comment: $e');
     }
@@ -224,8 +226,8 @@ class AdminArtworkManagementService {
   Future<Map<String, dynamic>> getArtworkAnalyticsSummary() async {
     try {
       final allArtwork = await _firestore.collection('artwork').get();
-      
-      int totalArtwork = allArtwork.size;
+
+      final int totalArtwork = allArtwork.size;
       int reportedCount = 0;
       int flaggedCount = 0;
       int pendingCount = 0;
@@ -241,7 +243,7 @@ class AdminArtworkManagementService {
         if (reports.isNotEmpty) reportedCount++;
         if (status == 'flagged') flaggedCount++;
         if (status == 'pending') pendingCount++;
-        
+
         totalViews += data['viewCount'] as int? ?? 0;
         totalLikes += data['likeCount'] as int? ?? 0;
         totalComments += data['commentCount'] as int? ?? 0;
@@ -255,7 +257,7 @@ class AdminArtworkManagementService {
         'totalViews': totalViews,
         'totalLikes': totalLikes,
         'totalComments': totalComments,
-        'averageEngagement': totalArtwork > 0 
+        'averageEngagement': totalArtwork > 0
             ? '${((totalLikes + totalComments) / totalArtwork).toStringAsFixed(1)}'
             : '0',
       };
@@ -270,7 +272,7 @@ class AdminArtworkManagementService {
       final results = await _firestore
           .collection('artwork')
           .where('title', isGreaterThanOrEqualTo: query)
-          .where('title', isLessThan: query + 'z')
+          .where('title', isLessThan: '${query}z')
           .limit(20)
           .get();
 

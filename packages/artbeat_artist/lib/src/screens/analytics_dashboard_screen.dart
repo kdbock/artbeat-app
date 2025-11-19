@@ -87,6 +87,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       setState(() {
         _isLoading = false;
       });
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

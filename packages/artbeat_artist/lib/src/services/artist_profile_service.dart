@@ -10,6 +10,7 @@ class ArtistProfileService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   CollectionReference get _artistProfilesCollection =>
       _firestore.collection('artistProfiles');
+  CollectionReference get _usersCollection => _firestore.collection('users');
 
   /// Create a new artist profile
   Future<core.ArtistProfileModel> createArtistProfile({
@@ -214,15 +215,39 @@ class ArtistProfileService {
   Future<List<core.ArtistProfileModel>> getFeaturedArtists(
       {int limit = 10}) async {
     try {
-      final query = await _artistProfilesCollection
+      // Query users where userType = 'artist' and isFeatured = true
+      final usersQuery = await _usersCollection
+          .where('userType', isEqualTo: 'artist')
           .where('isFeatured', isEqualTo: true)
-          .orderBy('updatedAt', descending: true)
           .limit(limit)
           .get();
 
-      return query.docs.map((doc) {
-        return core.ArtistProfileModel.fromFirestore(doc);
-      }).toList();
+      final artists = <core.ArtistProfileModel>[];
+
+      for (final doc in usersQuery.docs) {
+        // Check if user has an artist profile
+        DocumentSnapshot? artistProfileDoc;
+        try {
+          final profileQuery = await _artistProfilesCollection
+              .where('userId', isEqualTo: doc.id)
+              .limit(1)
+              .get();
+
+          if (profileQuery.docs.isNotEmpty) {
+            artistProfileDoc = profileQuery.docs.first;
+          }
+        } catch (e) {
+          // Ignore errors, use user doc
+        }
+
+        // Use artist profile document if available, otherwise use user document
+        final sourceDoc = artistProfileDoc ?? doc;
+        final artist = core.ArtistProfileModel.fromFirestore(sourceDoc);
+
+        artists.add(artist);
+      }
+
+      return artists;
     } catch (e) {
       throw Exception('Error getting featured artists: $e');
     }
@@ -234,15 +259,62 @@ class ArtistProfileService {
     int limit = 10,
   }) async {
     try {
-      final query = await _artistProfilesCollection
+      // First, query users where userType = 'artist' and location matches
+      final usersQuery = await _usersCollection
+          .where('userType', isEqualTo: 'artist')
           .where('location', isEqualTo: location)
-          .orderBy('updatedAt', descending: true)
-          .limit(limit)
+          .orderBy('createdAt', descending: true)
+          .limit(limit * 2) // Get more to account for users without profiles
           .get();
 
-      return query.docs.map((doc) {
-        return core.ArtistProfileModel.fromFirestore(doc);
-      }).toList();
+      final List<core.ArtistProfileModel> artists = [];
+
+      for (final userDoc in usersQuery.docs) {
+        if (artists.length >= limit) break;
+
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final userId = userDoc.id;
+
+        // Try to get the artist profile
+        final profileDoc = await _artistProfilesCollection
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+
+        if (profileDoc.docs.isNotEmpty) {
+          // User has a profile
+          artists.add(
+              core.ArtistProfileModel.fromFirestore(profileDoc.docs.first));
+        } else {
+          // User doesn't have a profile yet, create basic one from user data
+          artists.add(core.ArtistProfileModel(
+            id: userId,
+            userId: userId,
+            displayName: (userData['fullName'] as String?) ??
+                (userData['displayName'] as String?) ??
+                'Unknown Artist',
+            bio: userData['bio'] as String? ?? '',
+            userType: core.UserType.artist,
+            location: userData['location'] as String?,
+            mediums: [],
+            styles: [],
+            profileImageUrl: userData['profileImageUrl'] as String?,
+            coverImageUrl: null,
+            socialLinks: {},
+            isVerified: false,
+            isFeatured: false,
+            isPortfolioPublic: true,
+            subscriptionTier: core.SubscriptionTier.free,
+            createdAt: (userData['createdAt'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
+            updatedAt: (userData['updatedAt'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
+            followersCount: 0,
+          ));
+        }
+      }
+
+      return artists;
     } catch (e) {
       throw Exception('Error getting artists by location: $e');
     }
@@ -254,19 +326,64 @@ class ArtistProfileService {
     DocumentSnapshot? lastDocument,
   }) async {
     try {
-      Query query = _artistProfilesCollection
-          .orderBy('updatedAt', descending: true)
+      // Query users where userType = 'artist'
+      Query usersQuery = _usersCollection
+          .where('userType', isEqualTo: 'artist')
+          .orderBy('createdAt', descending: true)
           .limit(limit);
 
       if (lastDocument != null) {
-        query = query.startAfterDocument(lastDocument);
+        // For pagination, we'd need to track the last user document
+        // This is simplified - in production, you'd need proper pagination
+        usersQuery = usersQuery.startAfterDocument(lastDocument);
       }
 
-      final querySnapshot = await query.get();
+      final usersSnapshot = await usersQuery.get();
+      final List<core.ArtistProfileModel> artists = [];
 
-      return querySnapshot.docs.map((doc) {
-        return core.ArtistProfileModel.fromFirestore(doc);
-      }).toList();
+      for (final userDoc in usersSnapshot.docs) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final userId = userDoc.id;
+
+        // Try to get the artist profile
+        final profileDoc = await _artistProfilesCollection
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+
+        if (profileDoc.docs.isNotEmpty) {
+          // User has a profile
+          artists.add(
+              core.ArtistProfileModel.fromFirestore(profileDoc.docs.first));
+        } else {
+          // User doesn't have a profile yet, create basic one from user data
+          final now = DateTime.now();
+          artists.add(core.ArtistProfileModel(
+            id: userId, // Use userId as id since no profile document exists
+            userId: userId,
+            displayName: (userData['fullName'] as String?) ??
+                (userData['displayName'] as String?) ??
+                'Unknown Artist',
+            bio: userData['bio'] as String? ?? '',
+            userType: core.UserType.artist,
+            location: userData['location'] as String?,
+            mediums: [],
+            styles: [],
+            profileImageUrl: userData['profileImageUrl'] as String?,
+            coverImageUrl: null,
+            socialLinks: {},
+            isVerified: false,
+            isFeatured: false,
+            isPortfolioPublic: true,
+            subscriptionTier: core.SubscriptionTier.free,
+            createdAt: (userData['createdAt'] as Timestamp?)?.toDate() ?? now,
+            updatedAt: (userData['updatedAt'] as Timestamp?)?.toDate() ?? now,
+            followersCount: 0,
+          ));
+        }
+      }
+
+      return artists;
     } catch (e) {
       throw Exception('Error getting all artists: $e');
     }
@@ -284,50 +401,89 @@ class ArtistProfileService {
 
       final String queryLower = query.toLowerCase().trim();
 
-      // Get all artists and filter client-side for more flexible search
-      // This is a simple implementation - for production, consider using
-      // Elasticsearch or Algolia for better search performance
-      final querySnapshot = await _artistProfilesCollection
-          .orderBy('displayName')
-          .limit(100) // Get more results to filter from
-          .get();
+      // First, get all users with userType = 'artist'
+      final usersQuery =
+          await _usersCollection.where('userType', isEqualTo: 'artist').get();
 
-      final List<core.ArtistProfileModel> allArtists = querySnapshot.docs
-          .map((doc) => core.ArtistProfileModel.fromFirestore(doc))
+      final List<core.UserModel> artistUsers = usersQuery.docs
+          .map((doc) => core.UserModel.fromFirestore(doc))
           .toList();
 
-      // Filter results by display name and location
-      final filteredArtists = allArtists.where((artist) {
+      // Filter users client-side by display name and location
+      final filteredUsers = artistUsers.where((user) {
         final displayNameMatch =
-            artist.displayName.toLowerCase().contains(queryLower);
-        final locationMatch =
-            artist.location?.toLowerCase().contains(queryLower) ?? false;
-        final bioMatch =
-            artist.bio?.toLowerCase().contains(queryLower) ?? false;
+            user.fullName.toLowerCase().contains(queryLower) ||
+                user.username.toLowerCase().contains(queryLower);
+        final locationMatch = user.location.toLowerCase().contains(queryLower);
+        final bioMatch = user.bio.toLowerCase().contains(queryLower);
 
         return displayNameMatch || locationMatch || bioMatch;
       }).toList();
 
       // Sort by relevance (exact matches first, then partial matches)
-      filteredArtists.sort((a, b) {
-        final aDisplayName = a.displayName.toLowerCase();
-        final bDisplayName = b.displayName.toLowerCase();
+      filteredUsers.sort((a, b) {
+        final aName = a.fullName.toLowerCase();
+        final bName = b.fullName.toLowerCase();
 
         // Exact display name matches first
-        if (aDisplayName == queryLower && bDisplayName != queryLower) return -1;
-        if (bDisplayName == queryLower && aDisplayName != queryLower) return 1;
+        if (aName == queryLower && bName != queryLower) return -1;
+        if (bName == queryLower && aName != queryLower) return 1;
 
         // Display name starts with query
-        if (aDisplayName.startsWith(queryLower) &&
-            !bDisplayName.startsWith(queryLower)) return -1;
-        if (bDisplayName.startsWith(queryLower) &&
-            !aDisplayName.startsWith(queryLower)) return 1;
+        if (aName.startsWith(queryLower) && !bName.startsWith(queryLower))
+          return -1;
+        if (bName.startsWith(queryLower) && !aName.startsWith(queryLower))
+          return 1;
 
         // Otherwise, alphabetical order
-        return aDisplayName.compareTo(bDisplayName);
+        return aName.compareTo(bName);
       });
 
-      return filteredArtists.take(limit).toList();
+      // Get artist profiles for the top matching users
+      final List<core.ArtistProfileModel> artists = [];
+      final topUsers = filteredUsers
+          .take(limit * 2)
+          .toList(); // Get more to account for users without profiles
+
+      for (final user in topUsers) {
+        if (artists.length >= limit) break;
+
+        // Try to get the artist profile
+        final profileDoc = await _artistProfilesCollection
+            .where('userId', isEqualTo: user.id)
+            .limit(1)
+            .get();
+
+        if (profileDoc.docs.isNotEmpty) {
+          // User has a profile
+          artists.add(
+              core.ArtistProfileModel.fromFirestore(profileDoc.docs.first));
+        } else {
+          // User doesn't have a profile yet, create basic one from user data
+          artists.add(core.ArtistProfileModel(
+            id: user.id,
+            userId: user.id,
+            displayName: user.fullName,
+            bio: user.bio,
+            userType: core.UserType.artist,
+            location: user.location,
+            mediums: [],
+            styles: [],
+            profileImageUrl: user.profileImageUrl,
+            coverImageUrl: null,
+            socialLinks: {},
+            isVerified: false,
+            isFeatured: false,
+            isPortfolioPublic: true,
+            subscriptionTier: core.SubscriptionTier.free,
+            createdAt: user.createdAt,
+            updatedAt: user.createdAt,
+            followersCount: 0,
+          ));
+        }
+      }
+
+      return artists.take(limit).toList();
     } catch (e) {
       throw Exception('Error searching artists: $e');
     }

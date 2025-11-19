@@ -218,12 +218,14 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
                                 if (!mounted) return;
 
                                 Navigator.pushReplacementNamed(
+                                  // ignore: use_build_context_synchronously
                                   context,
                                   '/messaging/chat',
                                   arguments: {'chat': chat},
                                 );
                               } catch (e) {
                                 if (!mounted) return;
+                                // ignore: use_build_context_synchronously
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(

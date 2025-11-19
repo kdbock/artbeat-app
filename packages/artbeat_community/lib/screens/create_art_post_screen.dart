@@ -130,6 +130,7 @@ class _CreateArtPostScreenState extends State<CreateArtPostScreen> {
 
         // Show warning for invalid files
         if (invalidFiles.isNotEmpty) {
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -222,6 +223,7 @@ class _CreateArtPostScreenState extends State<CreateArtPostScreen> {
 
         // Check if all images were uploaded successfully
         if (imageUrls.length != _selectedImages.length) {
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

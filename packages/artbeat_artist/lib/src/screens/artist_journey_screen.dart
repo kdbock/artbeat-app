@@ -831,6 +831,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
 
         // Step 2: Artist profile setup
         await Navigator.push<void>(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => ArtistOnboardingScreen(
@@ -894,6 +895,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
         );
 
         await Navigator.push<void>(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => ArtistOnboardingScreen(

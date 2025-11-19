@@ -74,7 +74,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
           .where('groupType', isEqualTo: widget.groupType.value)
           .where('isPublic', isEqualTo: true)
           .orderBy('createdAt', descending: true)
-          .limit(_postsPerPage)
+          .limit(50)
           .get();
 
       if (!mounted) return;

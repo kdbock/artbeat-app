@@ -273,7 +273,9 @@ class AuthService {
       if (userCredential.user != null && googleUser.displayName != null) {
         try {
           await userCredential.user!.updateDisplayName(googleUser.displayName);
-          AppLogger.info('✅ Display name set from Google profile: ${googleUser.displayName}');
+          AppLogger.info(
+            '✅ Display name set from Google profile: ${googleUser.displayName}',
+          );
         } catch (e) {
           AppLogger.warning('⚠️ Could not update display name: $e');
         }
@@ -464,13 +466,15 @@ class AuthService {
 
       // Update Firebase user's displayName with Apple profile name
       try {
-        if (userCredential.user != null && appleCredential != null) {
+        if (userCredential.user != null) {
           final firstName = appleCredential.givenName ?? '';
           final lastName = appleCredential.familyName ?? '';
           final displayName = '$firstName $lastName'.trim();
           if (displayName.isNotEmpty) {
             await userCredential.user?.updateDisplayName(displayName);
-            AppLogger.info('✅ Display name set from Apple profile: $displayName');
+            AppLogger.info(
+              '✅ Display name set from Apple profile: $displayName',
+            );
           }
         }
       } catch (e) {
@@ -587,7 +591,9 @@ class AuthService {
           'isVerified': false,
         }, SetOptions(merge: true));
 
-        AppLogger.info('✅ Social user document created for ${user.uid} with username: $username');
+        AppLogger.info(
+          '✅ Social user document created for ${user.uid} with username: $username',
+        );
       }
     } catch (e) {
       AppLogger.error('❌ Failed to create social user document: $e');

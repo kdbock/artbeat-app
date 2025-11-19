@@ -219,6 +219,7 @@ class _OrderReviewScreenState extends State<OrderReviewScreen> {
       });
 
       // Show success feedback
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

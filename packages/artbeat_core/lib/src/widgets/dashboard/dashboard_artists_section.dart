@@ -487,6 +487,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
             ? 'Following ${artist.displayName}'
             : 'Unfollowed ${artist.displayName}';
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -496,6 +497,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
       }
     } catch (e) {
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to follow: ${e.toString()}'),

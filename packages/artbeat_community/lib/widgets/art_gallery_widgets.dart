@@ -389,6 +389,7 @@ class _ArtPostCardState extends State<ArtPostCard>
                                   );
 
                                   if (mounted) {
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
@@ -401,6 +402,7 @@ class _ArtPostCardState extends State<ArtPostCard>
                                   }
                                 } catch (e) {
                                   if (mounted) {
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Failed to share: $e'),
@@ -1031,6 +1033,7 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
         });
 
         // Show success message
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Comment posted successfully! 💬'),
@@ -1495,6 +1498,7 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
                           );
 
                           if (mounted) {
+                            // ignore: use_build_context_synchronously
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Post shared successfully!'),
@@ -1505,6 +1509,7 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
                           }
                         } catch (e) {
                           if (mounted) {
+                            // ignore: use_build_context_synchronously
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Failed to share: $e'),

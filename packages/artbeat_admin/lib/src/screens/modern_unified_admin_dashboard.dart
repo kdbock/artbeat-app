@@ -1434,13 +1434,15 @@ class _ModernUnifiedAdminDashboardState
     );
   }
 
-  void _navigateToUserDetail(UserAdminModel user) {
-    Navigator.push(
+  void _navigateToUserDetail(UserAdminModel user) async {
+    await Navigator.push(
       context,
       MaterialPageRoute<AdminUserDetailScreen>(
         builder: (context) => AdminUserDetailScreen(user: user),
       ),
     );
+    // Refresh user data after returning from detail screen
+    await _loadUserData();
   }
 
   Color _getUserTypeColor(String? userType) {
@@ -1902,7 +1904,8 @@ class _ModernUnifiedAdminDashboardState
                 child: ElevatedButton.icon(
                   onPressed: () => _approveContent(review),
                   icon: const Icon(Icons.check_rounded, size: 16),
-                  label: Text('admin_modern_unified_admin_dashboard_text_approve'.tr()),
+                  label: Text(
+                      'admin_modern_unified_admin_dashboard_text_approve'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF81C784),
                     foregroundColor: Colors.white,
@@ -1917,7 +1920,8 @@ class _ModernUnifiedAdminDashboardState
                 child: ElevatedButton.icon(
                   onPressed: () => _rejectContent(review),
                   icon: const Icon(Icons.close_rounded, size: 16),
-                  label: Text('admin_modern_unified_admin_dashboard_text_reject'.tr()),
+                  label: Text(
+                      'admin_modern_unified_admin_dashboard_text_reject'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEF5350),
                     foregroundColor: Colors.white,
@@ -2085,7 +2089,10 @@ class _ModernUnifiedAdminDashboardState
     try {
       // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('admin_modern_unified_admin_dashboard_text_approving_content'.tr())),
+        SnackBar(
+            content: Text(
+                'admin_modern_unified_admin_dashboard_text_approving_content'
+                    .tr())),
       );
 
       // Approve the content using the unified admin service
@@ -2102,7 +2109,9 @@ class _ModernUnifiedAdminDashboardState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('admin_modern_unified_admin_dashboard_title_approved_reviewtitle'.tr()),
+            content: Text(
+                'admin_modern_unified_admin_dashboard_title_approved_reviewtitle'
+                    .tr()),
             backgroundColor: Colors.green,
           ),
         );
@@ -2111,7 +2120,9 @@ class _ModernUnifiedAdminDashboardState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('admin_modern_unified_admin_dashboard_error_failed_to_approve'.tr()),
+            content: Text(
+                'admin_modern_unified_admin_dashboard_error_failed_to_approve'
+                    .tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -2157,7 +2168,10 @@ class _ModernUnifiedAdminDashboardState
     try {
       // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('admin_modern_unified_admin_dashboard_text_rejecting_content'.tr())),
+        SnackBar(
+            content: Text(
+                'admin_modern_unified_admin_dashboard_text_rejecting_content'
+                    .tr())),
       );
 
       // Reject the content using the unified admin service
@@ -2170,7 +2184,9 @@ class _ModernUnifiedAdminDashboardState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('admin_modern_unified_admin_dashboard_title_rejected_reviewtitle'.tr()),
+            content: Text(
+                'admin_modern_unified_admin_dashboard_title_rejected_reviewtitle'
+                    .tr()),
             backgroundColor: Colors.orange,
           ),
         );
@@ -2179,7 +2195,9 @@ class _ModernUnifiedAdminDashboardState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('admin_modern_unified_admin_dashboard_error_failed_to_reject'.tr()),
+            content: Text(
+                'admin_modern_unified_admin_dashboard_error_failed_to_reject'
+                    .tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -2475,7 +2493,9 @@ class _ModernUnifiedAdminDashboardState
                                         content.id,
                                         _getContentTypeFromString(
                                             content.type));
+                                    // ignore: use_build_context_synchronously
                                     Navigator.pop(context);
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: const Text(
@@ -2490,11 +2510,14 @@ class _ModernUnifiedAdminDashboardState
                                     );
                                     await _loadContentData(); // Refresh the list
                                   } catch (e) {
+                                    // ignore: use_build_context_synchronously
                                     Navigator.pop(context);
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content:
-                                            Text('admin_modern_unified_admin_dashboard_error_failed_to_clear'.tr()),
+                                        content: Text(
+                                            'admin_modern_unified_admin_dashboard_error_failed_to_clear'
+                                                .tr()),
                                         backgroundColor: Colors.red,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(
@@ -2516,7 +2539,9 @@ class _ModernUnifiedAdminDashboardState
                                   ),
                                 ),
                                 icon: const Icon(Icons.check_circle),
-                                label: Text('admin_modern_unified_admin_dashboard_text_clear_review'.tr()),
+                                label: Text(
+                                    'admin_modern_unified_admin_dashboard_text_clear_review'
+                                        .tr()),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -2538,7 +2563,9 @@ class _ModernUnifiedAdminDashboardState
                                 ),
                               ),
                               icon: const Icon(Icons.edit),
-                              label: Text('admin_modern_unified_admin_dashboard_text_edit'.tr()),
+                              label: Text(
+                                  'admin_modern_unified_admin_dashboard_text_edit'
+                                      .tr()),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -2559,7 +2586,9 @@ class _ModernUnifiedAdminDashboardState
                                 ),
                               ),
                               icon: const Icon(Icons.delete),
-                              label: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
+                              label: Text(
+                                  'admin_modern_unified_admin_dashboard_text_delete'
+                                      .tr()),
                             ),
                           ),
                         ],
@@ -2932,7 +2961,8 @@ class _ModernUnifiedAdminDashboardState
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
+            child:
+                Text('admin_modern_unified_admin_dashboard_text_delete'.tr()),
           ),
         ],
       ),
@@ -2971,9 +3001,12 @@ class _ModernUnifiedAdminDashboardState
         });
       }
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('admin_modern_unified_admin_dashboard_success_updated_newtitle_successfully'.tr()),
+          content: Text(
+              'admin_modern_unified_admin_dashboard_success_updated_newtitle_successfully'
+                  .tr()),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -2982,9 +3015,12 @@ class _ModernUnifiedAdminDashboardState
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('admin_modern_unified_admin_dashboard_error_failed_to_update'.tr()),
+          content: Text(
+              'admin_modern_unified_admin_dashboard_error_failed_to_update'
+                  .tr()),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -3009,9 +3045,12 @@ class _ModernUnifiedAdminDashboardState
         _allContent.removeWhere((c) => c.id == content.id);
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('admin_modern_unified_admin_dashboard_success_deleted_contenttitle_successfully'.tr()),
+          content: Text(
+              'admin_modern_unified_admin_dashboard_success_deleted_contenttitle_successfully'
+                  .tr()),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -3020,9 +3059,12 @@ class _ModernUnifiedAdminDashboardState
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('admin_modern_unified_admin_dashboard_error_failed_to_delete'.tr()),
+          content: Text(
+              'admin_modern_unified_admin_dashboard_error_failed_to_delete'
+                  .tr()),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

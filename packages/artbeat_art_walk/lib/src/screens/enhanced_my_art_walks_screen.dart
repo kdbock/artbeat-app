@@ -432,12 +432,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
     try {
       await _progressService.resumeWalk(progress.id);
       Navigator.pushNamed(
+        // ignore: use_build_context_synchronously
         context,
         '/art-walk-experience',
         arguments: {'artWalkId': progress.artWalkId},
       );
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_resuming_walk'.tr())));
     }
@@ -449,6 +451,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       _loadAllData();
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_pausing_walk'.tr())));
     }
@@ -481,6 +484,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         _loadAllData();
       } catch (e) {
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_art_walk_experience_error_error_abandoning_walk'.tr())));
       }
@@ -518,6 +522,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             });
 
             if (mounted) {
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -529,6 +534,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
             }
           } catch (e) {
             if (mounted) {
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('art_walk_enhanced_my_art_walks_error_failed_to_save'.tr()),
@@ -577,6 +583,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         _loadAllData();
       } catch (e) {
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_my_art_walks_error_error_deleting_walk'.tr())));
       }
@@ -593,6 +600,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       _loadAllData();
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('art_walk_enhanced_my_art_walks_error_error_unsaving_walk'.tr())));
     }

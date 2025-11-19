@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.wordnerd.artbeat"
     compileSdk = 36  // Updated for latest plugin compatibility
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     buildFeatures {
         buildConfig = true
@@ -59,7 +59,7 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
         targetSdk = 36  // Updated to match compileSdk
-        versionCode = 71
+        versionCode = 73
         versionName = "2.3.8"
         
         // Enable multidex for large app

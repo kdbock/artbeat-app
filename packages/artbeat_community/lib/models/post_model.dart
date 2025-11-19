@@ -82,6 +82,7 @@ class PostModel {
   final DateTime? flaggedAt;
   final String? moderationNotes;
   final bool isLikedByCurrentUser;
+  final String? groupType; // For group posts
 
   // Legacy constant for backward compatibility during migration
   static const int maxApplausePerUser = 5;
@@ -110,6 +111,7 @@ class PostModel {
     this.flaggedAt,
     this.moderationNotes,
     this.isLikedByCurrentUser = false,
+    this.groupType,
   }) : engagementStats =
            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
@@ -181,6 +183,7 @@ class PostModel {
       moderationNotes: data['moderationNotes'] as String?,
       isLikedByCurrentUser:
           false, // This will be set separately when loading posts with user context
+      groupType: data['groupType'] as String?,
     );
 
     return result;
@@ -208,6 +211,7 @@ class PostModel {
       'flagged': flagged,
       'flaggedAt': flaggedAt != null ? Timestamp.fromDate(flaggedAt!) : null,
       'moderationNotes': moderationNotes,
+      'groupType': groupType,
     };
   }
 

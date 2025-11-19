@@ -174,6 +174,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                           );
                           await chatService.clearChatHistory(widget.chat.id);
                           if (mounted) {
+                            // ignore: use_build_context_synchronously
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('messaging_chat_settings_text_chat_history_cleared'.tr()),
@@ -182,6 +183,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                           }
                         } catch (e) {
                           if (mounted) {
+                            // ignore: use_build_context_synchronously
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('messaging_chat_settings_error_failed_to_clear'.tr()),

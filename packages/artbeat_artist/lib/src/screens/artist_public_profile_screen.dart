@@ -8,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart' as artist_subscription;
 import '../services/analytics_service.dart';
 import '../widgets/commission_badge_widget.dart';
+import '../widgets/top_followers_widget.dart';
+import '../widgets/artist_social_stats_widget.dart';
 
 /// Screen for viewing an artist's public profile
 class ArtistPublicProfileScreen extends StatefulWidget {
@@ -400,10 +402,50 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                         ),
                       ),
                     ),
+                ],
+              ),
+            ),
+          ),
 
+          // Top Followers Section
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 16.0),
+            sliver: SliverToBoxAdapter(
+              child: TopFollowersWidget(
+                artistProfileId: _artistProfileId!,
+                artistUserId: widget.userId,
+              ),
+            ),
+          ),
+
+          // Social Stats Section
+          SliverToBoxAdapter(
+            child: ArtistSocialStatsWidget(
+              artistProfileId: _artistProfileId!,
+              followerCount: artist.followersCount,
+            ),
+          ),
+
+          // Divider
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            sliver: SliverToBoxAdapter(
+              child: Divider(
+                color: Colors.grey[300],
+              ),
+            ),
+          ),
+
+          // Bio Section
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   // Bio
                   Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
+                    padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
                       artist.bio ?? 'No bio provided',
                       style: const TextStyle(height: 1.5),

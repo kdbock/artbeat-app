@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/commission_rating_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommissionRatingScreen extends StatefulWidget {
   final DirectCommissionModel commission;
@@ -88,7 +89,22 @@ class _CommissionRatingScreenState extends State<CommissionRatingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Rate Commission'), elevation: 0),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: ArtbeatColors.primaryGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(title: const Text('Rate Commission'), elevation: 0),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -81,6 +81,7 @@ class AttachmentButton extends StatelessWidget {
 
   Future<void> _showVoiceRecorder(BuildContext context) async {
     final service = VoiceRecordingService();
+    final capturedContext = context;
 
     try {
       // IMPORTANT: Check and request permissions BEFORE initializing the service
@@ -100,7 +101,12 @@ class AttachmentButton extends StatelessWidget {
       // If permanently denied, show settings dialog and return
       if (permissionResult == PermissionResult.permanentlyDenied) {
         log('🚫 Permission permanently denied, showing settings dialog');
-        _showPermissionSettingsDialog(context, service);
+        try {
+          // ignore: use_build_context_synchronously
+          _showPermissionSettingsDialog(capturedContext, service);
+        } catch (e) {
+          log('⚠️ Failed to show permission settings dialog: $e');
+        }
         return;
       }
 
@@ -116,83 +122,101 @@ class AttachmentButton extends StatelessWidget {
       log('✅ Voice recording service initialized');
     } catch (e) {
       log('❌ Failed to initialize voice recording service: $e');
-      _showInitializationErrorDialog(context);
+      try {
+        // ignore: use_build_context_synchronously
+        _showInitializationErrorDialog(capturedContext);
+      } catch (e) {
+        log('⚠️ Failed to show initialization error dialog: $e');
+      }
       return;
     }
 
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ChangeNotifierProvider.value(
-        value: service,
-        child: Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: VoiceRecorderWidget(
-            onVoiceRecorded: (voiceFilePath, duration) {
-              Navigator.pop(context);
-              onVoiceRecorded?.call(voiceFilePath, duration);
-            },
-            onCancel: () {
-              Navigator.pop(context);
-            },
+    try {
+      await showModalBottomSheet<void>(
+        // ignore: use_build_context_synchronously
+        context: capturedContext,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => ChangeNotifierProvider.value(
+          value: service,
+          child: Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: VoiceRecorderWidget(
+              onVoiceRecorded: (voiceFilePath, duration) {
+                Navigator.pop(context);
+                onVoiceRecorded?.call(voiceFilePath, duration);
+              },
+              onCancel: () {
+                Navigator.pop(context);
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      log('⚠️ Failed to show voice recorder modal: $e');
+    }
   }
 
   void _showPermissionSettingsDialog(
     BuildContext context,
     VoiceRecordingService service,
   ) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Microphone Permission Required'),
-          content: const Text(
-            'ARTbeat needs microphone access to record voice messages. '
-            'Please go to Settings > ARTbeat > Microphone and enable access.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+    try {
+      showDialog<void>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('Microphone Permission Required'),
+            content: const Text(
+              'ARTbeat needs microphone access to record voice messages. '
+              'Please go to Settings > ARTbeat > Microphone and enable access.',
             ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await openAppSettings();
-              },
-              child: const Text('Open Settings'),
-            ),
-          ],
-        );
-      },
-    );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+                  await openAppSettings();
+                },
+                child: const Text('Open Settings'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      log('Error showing permission settings dialog: $e');
+    }
   }
 
   void _showInitializationErrorDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Voice Recording Unavailable'),
-          content: const Text(
-            'Unable to initialize voice recording. Please check your device settings and try again.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+    try {
+      showDialog<void>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('Voice Recording Unavailable'),
+            content: const Text(
+              'Unable to initialize voice recording. Please check your device settings and try again.',
             ),
-          ],
-        );
-      },
-    );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      log('Error showing initialization error dialog: $e');
+    }
   }
 
   @override

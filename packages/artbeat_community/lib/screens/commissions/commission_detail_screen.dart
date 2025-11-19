@@ -7,6 +7,7 @@ import '../../services/stripe_service.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommissionDetailScreen extends StatefulWidget {
   final DirectCommissionModel commission;
@@ -74,7 +75,7 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,

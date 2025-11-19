@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
 import '../widgets/events_drawer.dart';
 import 'events_list_screen.dart';
@@ -152,27 +151,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   // Stats Section
                   SliverToBoxAdapter(child: _buildStatsSection()),
 
-                  // Slot 1: Top sticky banner - Featured carousel
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: AdCarouselWidget(
-                        zone: LocalAdZone.events,
-                        height: 120,
-                      ),
-                    ),
-                  ),
-
                   // Category Filter
                   SliverToBoxAdapter(child: _buildCategoryFilter()),
-
-                  // Slot 2: Between category chips and list - Native ad-card
-                  const SliverToBoxAdapter(
-                    child: AdNativeCardWidget(
-                      zone: LocalAdZone.events,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                  ),
 
                   // Featured Events
                   if (_filteredEvents.isNotEmpty)
@@ -192,16 +172,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
                   ),
 
                   _buildEventsList(),
-
-                  // Slot 5: List bottom - Banner ad
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: AdSmallBannerWidget(
-                        zone: LocalAdZone.events,
-                      ),
-                    ),
-                  ),
 
                   // Bottom Padding
                   const SliverToBoxAdapter(child: SizedBox(height: 100)),

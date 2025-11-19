@@ -53,6 +53,7 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
         'photoUrl': _urlController.text.trim(), // Update both fields
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profile image URL updated successfully!'),
@@ -63,6 +64,7 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
       await _loadCurrentUser();
     } on Exception catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
     } finally {

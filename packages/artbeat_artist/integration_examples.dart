@@ -175,6 +175,7 @@ class IntegrationExamples {
     switch (recommendation.type) {
       case 'enable-artist':
         final shouldEnable = await showDialog<bool>(
+          // ignore: use_build_context_synchronously
           context: context,
           builder: (context) => AlertDialog(
             title: Text(recommendation.title),
@@ -213,6 +214,7 @@ class IntegrationExamples {
         break;
 
       case 'none':
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('You have all available features!')),
         );

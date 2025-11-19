@@ -367,13 +367,13 @@ class DashboardViewModel extends ChangeNotifier {
 
       final profileService = artist_profile.ArtistProfileService();
       final featuredArtists = await profileService.getFeaturedArtists(
-        limit: 10,
+        limit: 20,
       );
       if (featuredArtists.isNotEmpty) {
         _artists = featuredArtists;
       } else {
         // Fallback: load all artists if no featured
-        final allArtists = await profileService.getAllArtists(limit: 10);
+        final allArtists = await profileService.getAllArtists(limit: 20);
         _artists = allArtists;
       }
       _artistsError = null;

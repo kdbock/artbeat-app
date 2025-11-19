@@ -217,7 +217,7 @@ class _PayoutAccountsScreenState extends State<PayoutAccountsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         account.accountType == 'bank_account'
-                            ? '${account.bankName ?? 'Bank Account'} •••• ${account.accountNumber.substring(account.accountNumber.length - 4)}'
+                            ? '${account.bankName ?? 'Bank Account'} •••• ${account.accountNumber.length >= 4 ? account.accountNumber.substring(account.accountNumber.length - 4) : account.accountNumber}'
                             : 'PayPal Account',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.grey[600],

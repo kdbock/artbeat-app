@@ -265,6 +265,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               // Force refresh achievements
               await _loadAchievements();
               if (mounted) {
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('profile_achievements_refreshed'.tr())),
                 );

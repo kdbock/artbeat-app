@@ -50,11 +50,13 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                   if (!mounted) return;
 
                   Navigator.pushNamed(
+                    // ignore: use_build_context_synchronously
                     context,
                     '/messaging/chat',
                     arguments: {'chat': chat},
                   );
                 } catch (e) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('messaging_group_creation_error_failed_to_create'.tr()),

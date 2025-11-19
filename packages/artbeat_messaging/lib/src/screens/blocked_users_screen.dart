@@ -287,6 +287,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   listen: false,
                 );
                 await chatService.reportUser(user.id, 'Blocked user report');
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('messaging_blocked_users_success_user_reported_successfully'.tr()),
@@ -294,6 +295,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   ),
                 );
               } catch (e) {
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('messaging_blocked_users_error_failed_to_report'.tr()),

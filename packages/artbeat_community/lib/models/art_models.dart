@@ -177,8 +177,9 @@ class ArtistProfile {
         : List<String>.from(data['mediums'] as Iterable? ?? []);
 
     return ArtistProfile(
-      userId: data['userId'] as String? ?? '',
-      displayName: data['displayName'] as String? ?? '',
+      userId: data['userId'] as String? ?? doc.id,
+      displayName:
+          data['displayName'] as String? ?? data['fullName'] as String? ?? '',
       bio: data['bio'] as String? ?? '',
       avatarUrl: avatarUrl,
       specialties: specialties,

@@ -423,6 +423,7 @@ class _EnhancedArtWalkExperienceScreenState
     await _hapticService?.buttonPressed();
 
     if (_currentPosition == null || _artPieces.isEmpty) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -481,6 +482,7 @@ class _EnhancedArtWalkExperienceScreenState
       // Update map with detailed route
       _updateMapWithRoute(route);
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -494,6 +496,7 @@ class _EnhancedArtWalkExperienceScreenState
         _isLoading = false;
         _isStartingNavigation = false;
       });
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('art_walk_art_walk_detail_error_failed_to_start'.tr()),
@@ -516,6 +519,7 @@ class _EnhancedArtWalkExperienceScreenState
     });
     _createMarkersAndRoute();
 
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -695,6 +699,7 @@ class _EnhancedArtWalkExperienceScreenState
       // Haptic feedback for achievement
       await _hapticService?.artPieceVisited();
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${art.title} marked as visited! +10 XP'),
@@ -707,6 +712,7 @@ class _EnhancedArtWalkExperienceScreenState
         _showWalkCompletionDialog();
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1214,6 +1220,7 @@ class _EnhancedArtWalkExperienceScreenState
         if (didPop) return;
         final shouldPop = await _onWillPop();
         if (shouldPop && mounted) {
+          // ignore: use_build_context_synchronously
           Navigator.of(context).pop();
         }
       },

@@ -432,6 +432,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
         if (confirm == true) {
           await FirebaseAuth.instance.signOut();
           if (mounted) {
+            // ignore: use_build_context_synchronously
             Navigator.pushReplacementNamed(context, '/login');
           }
         }

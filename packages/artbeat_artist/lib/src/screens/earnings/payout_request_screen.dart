@@ -342,7 +342,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '${account.bankName ?? 'Bank'} •••• ${account.accountNumber.substring(account.accountNumber.length - 4)}',
+                          '${account.bankName ?? 'Bank'} •••• ${account.accountNumber.length >= 4 ? account.accountNumber.substring(account.accountNumber.length - 4) : account.accountNumber}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],

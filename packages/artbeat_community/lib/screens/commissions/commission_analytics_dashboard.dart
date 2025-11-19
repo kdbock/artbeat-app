@@ -52,7 +52,22 @@ class _CommissionAnalyticsDashboardState
 
     if (_analytics == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Commission Analytics')),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: ArtbeatColors.primaryGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: AppBar(title: const Text('Commission Analytics')),
+          ),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -76,7 +91,25 @@ class _CommissionAnalyticsDashboardState
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Commission Analytics'), elevation: 0),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: ArtbeatColors.primaryGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: AppBar(
+            title: const Text('Commission Analytics'),
+            elevation: 0,
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

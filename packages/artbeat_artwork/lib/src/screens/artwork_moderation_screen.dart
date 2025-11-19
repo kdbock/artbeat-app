@@ -64,6 +64,7 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
         _selectedArtworks.clear();
       });
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('moderation_error_loading'.tr(namedArgs: {'error': e.toString()}))),
       );
@@ -87,10 +88,12 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
         _selectedArtworks.remove(artwork.id);
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('moderation_success_status'.tr(namedArgs: {'status': status.displayName.toLowerCase()}))),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('moderation_error_moderating'.tr(namedArgs: {'error': e.toString()}))),
       );
@@ -122,11 +125,13 @@ class _ArtworkModerationScreenState extends State<ArtworkModerationScreen> {
         _selectedArtworks.clear();
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('moderation_success_bulk'.tr(namedArgs: {'count': selectedIds.length.toString(), 'status': status.displayName.toLowerCase()}))),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('moderation_error_bulk'.tr(namedArgs: {'error': e.toString()}))),
       );

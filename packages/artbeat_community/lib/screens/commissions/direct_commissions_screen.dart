@@ -90,7 +90,7 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: core.ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,
@@ -855,8 +855,10 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
                   },
                 );
 
+                // ignore: use_build_context_synchronously
                 Navigator.of(context).pop();
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -869,6 +871,7 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
                   await _loadCommissions();
                 }
               } catch (e) {
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Error creating commission request: $e'),

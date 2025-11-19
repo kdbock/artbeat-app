@@ -50,6 +50,7 @@ class DeveloperMenu extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).pop();
                 Future.delayed(const Duration(milliseconds: 250), () {
+                  // ignore: use_build_context_synchronously
                   Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute<void>(
                       builder: (context) => const FeedbackForm(),

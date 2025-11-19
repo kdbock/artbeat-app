@@ -769,6 +769,7 @@ class _EnhancedCommunityFeedScreenState
       if (artistProfile != null) {
         // User is an artist - show the options screen for specialized posts
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => const CreatePostScreen(),
@@ -777,6 +778,7 @@ class _EnhancedCommunityFeedScreenState
       } else {
         // Regular user - go directly to the simple create post form
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => const CreateArtPostScreen(),
@@ -788,6 +790,7 @@ class _EnhancedCommunityFeedScreenState
     } catch (e) {
       // If there's an error checking artist status, default to simple create post
       Navigator.push(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute<void>(
           builder: (context) => const CreateArtPostScreen(),
@@ -857,6 +860,7 @@ class _EnhancedCommunityFeedScreenState
 
     // Show loading indicator
     showDialog<void>(
+      // ignore: use_build_context_synchronously
       context: context,
       barrierDismissible: false,
       builder: (context) => const AlertDialog(
@@ -875,8 +879,10 @@ class _EnhancedCommunityFeedScreenState
       // Call the fix method from the community service
       await ArtCommunityService().fixAnonymousPosts();
 
+      // ignore: use_build_context_synchronously
       Navigator.pop(context); // Close loading dialog
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -886,7 +892,9 @@ class _EnhancedCommunityFeedScreenState
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       Navigator.pop(context); // Close loading dialog
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error fixing posts: $e'),

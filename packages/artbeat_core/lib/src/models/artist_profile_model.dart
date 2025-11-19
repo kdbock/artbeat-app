@@ -59,15 +59,26 @@ class ArtistProfileModel {
   factory ArtistProfileModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
+    // Check if this is a user document (has fullName) or artist profile document
+    final isUserDoc = data['fullName'] != null && data['userId'] == null;
+
+    final String userId = isUserDoc
+        ? doc.id
+        : (data['userId'] as String?) ?? '';
+    final String displayName = isUserDoc
+        ? (data['fullName'] as String?) ?? 'Unknown Artist'
+        : (data['displayName'] as String?) ?? 'Unknown Artist';
+
     return ArtistProfileModel(
       id: doc.id,
-      userId: (data['userId'] as String?) ?? '',
-      displayName: (data['displayName'] as String?) ?? 'Unknown Artist',
+      userId: userId,
+      displayName: displayName,
       bio: data['bio'] as String?,
-      profileImageUrl: data['profileImageUrl'] as String?,
+      profileImageUrl:
+          data['profileImageUrl'] as String? ?? data['avatarUrl'] as String?,
       coverImageUrl: data['coverImageUrl'] as String?,
       website: data['website'] as String?,
-      location: data['location'] as String?,
+      location: data['location'] as String? ?? data['zipCode'] as String?,
       userType: _parseUserType(data['userType']),
       subscriptionTier: _parseSubscriptionTier(data['subscriptionTier']),
       isVerified: data['isVerified'] as bool? ?? false,

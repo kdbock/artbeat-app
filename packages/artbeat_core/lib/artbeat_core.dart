@@ -38,6 +38,7 @@ export 'src/services/enhanced_payment_service_working.dart'
 // Deprecated: GiftPurchaseScreen removed (legacy basic screen, use EnhancedGiftPurchaseScreen)
 export 'src/services/in_app_purchase_manager.dart'
     show InAppPurchaseManager, PurchaseEvent, PurchaseEventType;
+export 'src/services/in_app_purchase_setup.dart' show InAppPurchaseSetup;
 export 'src/models/in_app_purchase_models.dart' show CompletedPurchase;
 export 'src/services/in_app_ad_service.dart' show InAppAdService;
 export 'src/services/notification_service.dart'
@@ -104,6 +105,10 @@ export 'src/repositories/known_entity_repository.dart'
 // Export Screens
 export 'src/screens/leaderboard_screen.dart' show LeaderboardScreen;
 export 'src/screens/help_support_screen.dart' show HelpSupportScreen;
+export 'src/screens/subscriptions/subscriptions_screen.dart'
+    show SubscriptionsScreen;
+export 'src/screens/gifts/gifts_screen.dart' show GiftsScreen;
+export 'src/screens/ads/ads_screen.dart' show AdsScreen;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -179,8 +184,6 @@ export 'src/utils/distance_utils.dart' show DistanceUtils;
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/artbeat_dashboard_screen.dart' show ArtbeatDashboardScreen;
-export 'src/screens/dashboard_screen.dart' show DashboardScreen;
-export 'src/screens/dashboard/onboarding_dashboard.dart' show OnboardingDashboard;
 // Deprecated: Use SearchResultsPage instead
 // export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 export 'src/screens/search_results_page.dart' show SearchResultsPage;
@@ -214,3 +217,6 @@ export 'src/widgets/quick_navigation_fab.dart'
 
 // Export In-App Purchase Widgets
 export 'src/widgets/widgets.dart';
+
+// Export Artbeat Store Screen
+export 'src/screens/artbeat_store.dart' show ArtbeatStoreScreen;

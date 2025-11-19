@@ -54,7 +54,11 @@ class AccessibilityService {
   /// Announce text to screen reader
   void announceToScreenReader(String message) {
     if (_isScreenReaderEnabled) {
-      SemanticsService.announce(message, TextDirection.ltr);
+      SemanticsService.sendAnnouncement(
+        WidgetsBinding.instance.platformDispatcher.views.first,
+        message,
+        TextDirection.ltr,
+      );
     }
   }
 

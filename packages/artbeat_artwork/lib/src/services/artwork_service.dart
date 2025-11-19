@@ -11,6 +11,7 @@ import 'package:artbeat_core/artbeat_core.dart'
         AppLogger,
         ArtworkContentType;
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' show SocialService, SocialActivityType;
 
 /// Service for managing artwork
 class ArtworkService {
@@ -144,6 +145,24 @@ class ArtworkService {
 
       // Create Firestore document
       final docRef = await _artworkCollection.add(artworkData);
+      
+      // Post social activity for artwork upload
+      try {
+        final user = _auth.currentUser;
+        if (user != null) {
+          await SocialService().postActivity(
+            userId: user.uid,
+            userName: user.displayName ?? 'Artist',
+            userAvatar: user.photoURL,
+            type: SocialActivityType.milestone,
+            message: 'uploaded new artwork: "$title"',
+            metadata: {'artworkId': docRef.id, 'artTitle': title},
+          );
+        }
+      } catch (e) {
+        AppLogger.warning('Failed to post social activity for artwork upload: $e');
+      }
+      
       return docRef.id;
     } catch (e) {
       AppLogger.error('Error uploading artwork: $e');

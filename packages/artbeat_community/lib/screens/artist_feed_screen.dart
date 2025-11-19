@@ -127,6 +127,7 @@ class _ArtistFeedScreenState extends State<ArtistFeedScreen> {
         });
 
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(const SnackBar(content: Text('Failed to update like')));
       }

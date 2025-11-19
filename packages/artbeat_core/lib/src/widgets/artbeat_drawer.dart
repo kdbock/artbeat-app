@@ -204,6 +204,11 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/weekly-goals',
     };
 
+    // Add Artbeat Store route
+    if (route == '/store') {
+      Navigator.pushNamed(context, '/store');
+      return;
+    }
     if (implementedRoutes.contains(route)) {
       try {
         AppLogger.info('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
@@ -677,6 +682,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
             await FirebaseAuth.instance.signOut();
             if (mounted) {
               setState(() => _cachedUserModel = null);
+              // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, '/login');
             }
             return;
@@ -691,13 +697,16 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
             if (mounted) {
               try {
                 _handleNavigation(
+                  // ignore: use_build_context_synchronously
                   context,
+                  // ignore: use_build_context_synchronously
                   snackBarContext,
                   item.route,
                   isMainNavigationRoute,
                 );
               } catch (error) {
                 AppLogger.error('⚠️ Error in drawer navigation: $error');
+                // ignore: use_build_context_synchronously
                 _showError(context, 'Navigation failed: ${error.toString()}');
               }
             }

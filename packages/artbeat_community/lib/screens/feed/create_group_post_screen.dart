@@ -1,465 +1,463 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:video_player/video_player.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/art_community_service.dart';
+import '../../services/firebase_storage_service.dart';
+import '../../services/moderation_service.dart';
 import '../../models/group_models.dart';
-import '../../theme/community_colors.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
-/// Screen for creating posts in different group types
+/// Enhanced create group post screen with multimedia support and AI moderation
 class CreateGroupPostScreen extends StatefulWidget {
   final GroupType groupType;
   final String postType;
+  final String? groupId;
 
   const CreateGroupPostScreen({
     super.key,
     required this.groupType,
     required this.postType,
+    this.groupId,
   });
 
   @override
   State<CreateGroupPostScreen> createState() => _CreateGroupPostScreenState();
 }
 
-class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _contentController = TextEditingController();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+class _CreateGroupPostScreenState extends State<CreateGroupPostScreen>
+    with TickerProviderStateMixin {
+  final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _tagsController = TextEditingController();
+  final ArtCommunityService _communityService = ArtCommunityService();
+  final FirebaseStorageService _storageService = FirebaseStorageService();
+  final ModerationService _moderationService = ModerationService();
   final ImagePicker _imagePicker = ImagePicker();
 
-  bool _isLoading = false;
   List<File> _selectedImages = [];
-  String _selectedLocation = '';
-  String _selectedMedium = '';
-  String _selectedStyle = '';
+  File? _selectedVideo;
+  File? _selectedAudio;
+
+  bool _isLoading = false;
+  bool _isPickingMedia = false;
+  bool _isUploadingMedia = false;
+  double _uploadProgress = 0.0;
+  double _videoUploadProgress = 0.0;
+
+  VideoPlayerController? _videoController;
+  AudioPlayer? _audioPlayer;
+
+  // Guard against duplicate post submissions
+  bool _postSubmissionInProgress = false;
+
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _contentController.dispose();
+    _tagsController.dispose();
+    _communityService.dispose();
+    _videoController?.dispose();
+    _audioPlayer?.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1, // Not a main navigation screen
-      scaffoldKey: _scaffoldKey,
-      appBar: EnhancedUniversalHeader(
-        title: 'Create ${widget.groupType.title} Post',
-        showBackButton: true,
-        showSearch: false,
-        showDeveloperTools: true,
-        backgroundGradient: CommunityColors.communityGradient,
-        titleGradient: const LinearGradient(
-          colors: [Colors.white, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        foregroundColor: Colors.white,
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _handlePost,
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text(
-                    'Post',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-          ),
-        ],
-      ),
-      drawer: const ArtbeatDrawer(),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPostTypeHeader(),
-                    const SizedBox(height: 20),
-                    _buildContentField(),
-                    const SizedBox(height: 20),
-                    _buildSpecializedFields(),
-                  ],
-                ),
-              ),
-            ),
-            _buildBottomActions(),
-          ],
-        ),
-      ),
-    );
-  }
+  Future<void> _pickImages() async {
+    if (_isPickingMedia) return;
+    setState(() => _isPickingMedia = true);
 
-  Widget _buildPostTypeHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _getGroupColor().withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getGroupColor().withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(_getGroupIcon(), color: _getGroupColor(), size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getPostTypeTitle(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: _getGroupColor(),
-                  ),
-                ),
-                Text(
-                  _getPostTypeDescription(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: ArtbeatColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContentField() {
-    return TextFormField(
-      controller: _contentController,
-      maxLines: 5,
-      decoration: InputDecoration(
-        labelText: 'What would you like to share?',
-        hintText: _getContentHint(),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: _getGroupColor(), width: 2),
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Please enter some content';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildSpecializedFields() {
-    // This would contain different fields based on the group type and post type
-    // For now, showing a placeholder
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Additional Fields',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: _getGroupColor(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Specialized fields for ${widget.groupType.title} posts will be implemented here.',
-            style: const TextStyle(
-              fontSize: 14,
-              color: ArtbeatColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Image picker button
-          OutlinedButton.icon(
-            onPressed: _pickImages,
-            icon: const Icon(Icons.add_a_photo),
-            label: Text(
-              _selectedImages.isEmpty
-                  ? 'Add Photos'
-                  : '${_selectedImages.length} photo(s) selected',
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _getGroupColor(),
-              side: BorderSide(color: _getGroupColor()),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Location button
-          OutlinedButton.icon(
-            onPressed: _getCurrentLocation,
-            icon: const Icon(Icons.location_on),
-            label: Text(
-              _selectedLocation.isEmpty ? 'Add Location' : 'Location added',
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _getGroupColor(),
-              side: BorderSide(color: _getGroupColor()),
-            ),
-          ),
-
-          // Artist-specific fields
-          if (widget.groupType == GroupType.artist) ...[
-            const SizedBox(height: 8),
-
-            // Medium selection
-            OutlinedButton.icon(
-              onPressed: _showMediumSelection,
-              icon: const Icon(Icons.brush),
-              label: Text(
-                _selectedMedium.isEmpty ? 'Select Medium' : _selectedMedium,
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _getGroupColor(),
-                side: BorderSide(color: _getGroupColor()),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Style selection
-            OutlinedButton.icon(
-              onPressed: _showStyleSelection,
-              icon: const Icon(Icons.palette),
-              label: Text(
-                _selectedStyle.isEmpty ? 'Select Style' : _selectedStyle,
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _getGroupColor(),
-                side: BorderSide(color: _getGroupColor()),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomActions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          OutlinedButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handlePost,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _getGroupColor(),
-                foregroundColor: Colors.white,
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text('Post to Community'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _handlePost() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to create a post')),
+    try {
+      final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
+        limit: 4,
       );
+
+      if (pickedFiles.isNotEmpty) {
+        final validFiles = <File>[];
+
+        for (final file in pickedFiles) {
+          File imageFile = File(file.path);
+
+          // Compress if needed
+          if (!_storageService.isValidFileSize(imageFile)) {
+            imageFile = await _storageService.compressImage(imageFile);
+          }
+
+          if (_storageService.isValidFileSize(imageFile)) {
+            validFiles.add(imageFile);
+          }
+        }
+
+        if (validFiles.isNotEmpty) {
+          setState(() => _selectedImages = validFiles);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isPickingMedia = false);
+      }
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    if (_isPickingMedia) return;
+    setState(() => _isPickingMedia = true);
+
+    try {
+      final XFile? pickedFile = await _imagePicker.pickVideo(
+        source: ImageSource.gallery,
+      );
+
+      if (pickedFile != null) {
+        final videoFile = File(pickedFile.path);
+
+        // Check file size (max 50MB for video)
+        if (videoFile.lengthSync() <= 50 * 1024 * 1024) {
+          setState(() {
+            _selectedVideo = videoFile;
+            _selectedImages.clear(); // Clear images when video is selected
+            _selectedAudio = null; // Clear audio when video is selected
+          });
+
+          // Initialize video controller
+          _videoController?.dispose();
+          _videoController = VideoPlayerController.file(videoFile);
+          await _videoController!.initialize();
+          setState(() {});
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Video file too large (max 50MB)')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking video: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isPickingMedia = false);
+      }
+    }
+  }
+
+  Future<void> _pickAudio() async {
+    if (_isPickingMedia) return;
+    setState(() => _isPickingMedia = true);
+
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final audioFile = File(result.files.single.path!);
+
+        // Check file size (max 10MB for audio)
+        if (audioFile.lengthSync() <= 10 * 1024 * 1024) {
+          setState(() {
+            _selectedAudio = audioFile;
+            _selectedImages.clear(); // Clear images when audio is selected
+            _selectedVideo = null; // Clear video when audio is selected
+          });
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Audio file too large (max 10MB)')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking audio: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isPickingMedia = false);
+      }
+    }
+  }
+
+  Future<void> _editImage(int index) async {
+    if (index >= _selectedImages.length) return;
+
+    try {
+      final editedImage = await Navigator.push<Uint8List>(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ImageEditor(image: _selectedImages[index].readAsBytesSync()),
+        ),
+      );
+
+      if (editedImage != null) {
+        // Save edited image to temporary file
+        final tempDir = Directory.systemTemp;
+        final tempFile = File(
+          '${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        await tempFile.writeAsBytes(editedImage);
+
+        setState(() {
+          _selectedImages[index] = tempFile;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error editing image: $e')));
+      }
+    }
+  }
+
+  /// Wrapper method with guard against duplicate submissions
+  Future<void> _createPostWithGuard() async {
+    // Double-check guard: prevent any concurrent post submissions
+    if (_postSubmissionInProgress) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait while your post is being created...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    _postSubmissionInProgress = true;
+    try {
+      await _createPost();
+    } finally {
+      _postSubmissionInProgress = false;
+    }
+  }
+
+  Future<void> _createPost() async {
+    // Validate content BEFORE setting loading state
+    if (_contentController.text.trim().isEmpty &&
+        _selectedImages.isEmpty &&
+        _selectedVideo == null &&
+        _selectedAudio == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please add some content or media')),
+      );
+      return;
+    }
+
+    // Prevent duplicate submissions
+    if (_isLoading || _isUploadingMedia) {
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      // AI Moderation Check
+      final moderationResult = await _moderationService.moderateContent(
+        content: _contentController.text.trim(),
+        imageFiles: _selectedImages,
+        videoFile: _selectedVideo,
+        audioFile: _selectedAudio,
+      );
+
+      if (!moderationResult.isApproved) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Content moderation failed: ${moderationResult.reason}',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        // Reset loading state before returning
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isUploadingMedia = false;
+          });
+        }
+        return;
+      }
+
+      // Upload media files
+      List<String> imageUrls = [];
+      String? videoUrl;
+      String? audioUrl;
+
+      setState(() => _isUploadingMedia = true);
+
+      if (_selectedImages.isNotEmpty) {
+        imageUrls = await _storageService.uploadImages(_selectedImages);
+      }
+
+      if (_selectedVideo != null) {
+        try {
+          setState(() => _videoUploadProgress = 0.0);
+          videoUrl = await _storageService.uploadVideo(
+            _selectedVideo!,
+            onProgress: (progress) {
+              if (mounted) {
+                setState(() => _videoUploadProgress = progress);
+              }
+            },
+          );
+        } catch (e) {
+          final errorMessage =
+              e.toString().contains('App Check') ||
+                  e.toString().contains('cannot parse response')
+              ? 'Video upload failed due to authentication issue. Please try again or contact support.'
+              : 'Video upload failed. Please check your connection and try again.';
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMessage),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+          videoUrl = null;
+        } finally {
+          if (mounted) {
+            setState(() => _videoUploadProgress = 0.0);
+          }
+        }
+      }
+
+      if (_selectedAudio != null) {
+        audioUrl = await _storageService.uploadAudio(_selectedAudio!);
+      }
+
+      // Parse tags
+      final tags = _tagsController.text
+          .split(',')
+          .map((tag) => tag.trim())
+          .where((tag) => tag.isNotEmpty)
+          .toList();
+
       // Get user profile information
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUser.uid)
+          .doc(user.uid)
           .get();
 
       final userData = userDoc.data() ?? {};
       final userName =
-          userData['displayName'] ?? currentUser.displayName ?? 'Anonymous';
-      final userPhotoUrl =
-          userData['profileImageUrl'] ?? currentUser.photoURL ?? '';
+          userData['displayName'] ?? user.displayName ?? 'Anonymous';
+      final userPhotoUrl = userData['profileImageUrl'] ?? user.photoURL ?? '';
 
-      // Create the post data based on group type
-      Map<String, dynamic> postData;
-
-      if (widget.groupType == GroupType.artist) {
-        // Create artist post
-        postData = {
-          'userId': currentUser.uid,
-          'userName': userName,
-          'userPhotoUrl': userPhotoUrl,
-          'content': _contentController.text.trim(),
-          'imageUrls': await _uploadImages(),
-          'tags': _extractHashtags(_contentController.text),
-          'location': _selectedLocation,
-          'createdAt': FieldValue.serverTimestamp(),
-          'applauseCount': 0,
-          'commentCount': 0,
-          'shareCount': 0,
-          'isPublic': true,
-          'isUserVerified': userData['isVerified'] ?? false,
-          'groupType': 'artist',
-          // Artist-specific fields
-          'artistId': currentUser.uid,
-          'artworkTitle': _getArtworkTitle(),
-          'artworkDescription': _contentController.text.trim(),
-          'medium': _getMedium(),
-          'style': _getStyle(),
-          'price': null,
-          'isForSale': false,
-          'techniques': <String>[],
-        };
-      } else {
-        // For other group types, create a basic post structure
-        postData = {
-          'userId': currentUser.uid,
-          'userName': userName,
-          'userPhotoUrl': userPhotoUrl,
-          'content': _contentController.text.trim(),
-          'imageUrls': <String>[],
-          'tags': _extractHashtags(_contentController.text),
-          'location': '',
-          'createdAt': FieldValue.serverTimestamp(),
-          'applauseCount': 0,
-          'commentCount': 0,
-          'shareCount': 0,
-          'isPublic': true,
-          'isUserVerified': userData['isVerified'] ?? false,
-          'groupType': widget.groupType.value,
-        };
-      }
+      // Create the post data - all group posts have the same structure
+      final postData = {
+        'userId': user.uid,
+        'userName': userName,
+        'userPhotoUrl': userPhotoUrl,
+        'content': _contentController.text.trim(),
+        'imageUrls': imageUrls,
+        'videoUrl': videoUrl,
+        'audioUrl': audioUrl,
+        'tags': tags,
+        'location': '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'applauseCount': 0,
+        'commentCount': 0,
+        'shareCount': 0,
+        'isPublic': true,
+        'isUserVerified': userData['isVerified'] ?? false,
+        'groupType': widget.groupType.value,
+        if (widget.groupId != null) 'groupId': widget.groupId,
+      };
 
       // Save to Firestore - use 'posts' collection so it appears in unified feed
       await FirebaseFirestore.instance.collection('posts').add(postData);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${widget.groupType.title} post created successfully!',
-            ),
-            backgroundColor: _getGroupColor(),
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Post created successfully! It may take a moment to appear in your feeds.',
           ),
-        );
-        // Return true to indicate successful post creation
-        Navigator.pop(context, true);
-      }
+          backgroundColor: _getGroupColor(),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+      Navigator.pop(context, true);
     } catch (e) {
-      AppLogger.error('Error creating post: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create post: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error creating post: $e')));
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _isUploadingMedia = false;
+          _uploadProgress = 0.0;
+        });
       }
     }
   }
 
-  List<String> _extractHashtags(String text) {
-    final hashtagRegex = RegExp(r'#\w+');
-    return hashtagRegex
-        .allMatches(text)
-        .map((match) => match.group(0)!)
-        .toList();
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
   }
 
-  String _getArtworkTitle() {
-    // Extract title from content or use post type
-    switch (widget.postType) {
-      case 'artwork':
-        return 'New Artwork';
-      case 'process':
-        return 'Creative Process';
-      case 'update':
-        return 'Artist Update';
-      default:
-        return 'Untitled';
-    }
+  void _removeVideo() {
+    setState(() {
+      _selectedVideo = null;
+      _videoController?.dispose();
+      _videoController = null;
+    });
   }
 
-  String _getMedium() {
-    if (_selectedMedium.isNotEmpty) {
-      return _selectedMedium;
-    }
-    // Default fallback
-    switch (widget.postType) {
-      case 'artwork':
-        return 'Mixed Media';
-      case 'process':
-        return 'Process Documentation';
-      default:
-        return 'Digital';
-    }
-  }
-
-  String _getStyle() {
-    if (_selectedStyle.isNotEmpty) {
-      return _selectedStyle;
-    }
-    // Default fallback
-    return 'Contemporary';
+  void _removeAudio() {
+    setState(() {
+      _selectedAudio = null;
+      _audioPlayer?.stop();
+    });
   }
 
   Color _getGroupColor() {
@@ -472,6 +470,19 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
         return ArtbeatColors.secondaryTeal;
       case GroupType.artistWanted:
         return ArtbeatColors.accentYellow;
+    }
+  }
+
+  String _getGroupDisplayName() {
+    switch (widget.groupType) {
+      case GroupType.artist:
+        return 'Artist';
+      case GroupType.event:
+        return 'Event';
+      case GroupType.artWalk:
+        return 'Art Walk';
+      case GroupType.artistWanted:
+        return 'Artist Wanted';
     }
   }
 
@@ -515,33 +526,6 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
     }
   }
 
-  String _getPostTypeDescription() {
-    switch (widget.postType) {
-      case 'artwork':
-        return 'Share photos and details of your latest creation';
-      case 'process':
-        return 'Show your creative process with videos or photos';
-      case 'update':
-        return 'Share thoughts, updates, or announcements';
-      case 'hosting':
-        return 'Tell the community about an event you\'re organizing';
-      case 'attending':
-        return 'Share an event you\'re planning to attend';
-      case 'photos':
-        return 'Share photos from an art event or exhibition';
-      case 'artwalk':
-        return 'Share up to 5 photos from your art walk adventure';
-      case 'route':
-        return 'Create a new art walking route for others to follow';
-      case 'project':
-        return 'Describe your project and what kind of artist you need';
-      case 'services':
-        return 'Let others know about your availability and skills';
-      default:
-        return 'Share with the community';
-    }
-  }
-
   String _getContentHint() {
     switch (widget.postType) {
       case 'artwork':
@@ -569,211 +553,555 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
     }
   }
 
-  /// Pick images from gallery or camera
-  Future<void> _pickImages() async {
-    try {
-      final List<XFile> images = await _imagePicker.pickMultiImage(
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: Text(
+          'Create ${_getGroupDisplayName()} Post',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: _getGroupColor(),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+            child: ElevatedButton(
+              onPressed: (_isLoading || _isUploadingMedia)
+                  ? null
+                  : _createPostWithGuard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: _getGroupColor(),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: _isLoading || _isUploadingMedia
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      'Post',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+            ),
+          ),
+        ],
+      ),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Post type header
+              _buildPostTypeHeader(),
+              const SizedBox(height: 20),
 
-      if (images.isNotEmpty) {
-        setState(() {
-          _selectedImages = images.map((xFile) => File(xFile.path)).toList();
-        });
+              // User info section
+              _buildUserInfoSection(),
+              const SizedBox(height: 20),
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${images.length} image(s) selected')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to pick images: $e')));
-      }
-    }
+              // Content input
+              _buildContentInput(),
+              const SizedBox(height: 20),
+
+              // Media selection buttons
+              _buildMediaSelectionButtons(),
+              const SizedBox(height: 20),
+
+              // Selected media preview
+              _buildMediaPreview(),
+
+              // Tags input
+              _buildTagsInput(),
+              const SizedBox(height: 20),
+
+              // Upload progress
+              if (_isUploadingMedia) _buildUploadProgress(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  /// Upload selected images to Firebase Storage
-  Future<List<String>> _uploadImages() async {
-    if (_selectedImages.isEmpty) return [];
-
-    try {
-      final storageService = EnhancedStorageService();
-      final List<String> imageUrls = [];
-
-      for (final image in _selectedImages) {
-        final result = await storageService.uploadImageWithOptimization(
-          imageFile: image,
-          category: 'community_posts',
-          generateThumbnail: true,
-        );
-
-        if (result['imageUrl'] != null) {
-          imageUrls.add(result['imageUrl']!);
-        }
-      }
-
-      return imageUrls;
-    } catch (e) {
-      AppLogger.info('Failed to upload images: $e');
-      return [];
-    }
+  Widget _buildPostTypeHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _getGroupColor().withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _getGroupColor().withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(_getGroupIcon(), color: _getGroupColor(), size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getPostTypeTitle(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _getGroupColor(),
+                  ),
+                ),
+                Text(
+                  'Share with the ${_getGroupDisplayName().toLowerCase()} community',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: ArtbeatColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  /// Get current location
-  Future<void> _getCurrentLocation() async {
-    try {
-      // Check location permissions
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Location permissions are denied')),
-            );
-          }
-          return;
-        }
-      }
+  Widget _buildUserInfoSection() {
+    final user = FirebaseAuth.instance.currentUser;
 
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Location permissions are permanently denied'),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: _getGroupColor().withValues(alpha: 0.1),
+            backgroundImage: user?.photoURL != null
+                ? NetworkImage(user!.photoURL!)
+                : null,
+            child: user?.photoURL == null
+                ? Icon(Icons.person, color: _getGroupColor(), size: 24)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user?.displayName ?? 'Anonymous User',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  'Posting to ${_getGroupDisplayName()}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentInput() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _contentController,
+        maxLines: 6,
+        decoration: InputDecoration(
+          hintText: _getContentHint(),
+          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(16),
+        ),
+        style: const TextStyle(fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildMediaSelectionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildMediaButton(
+            icon: Icons.photo_library,
+            label: 'Images',
+            subtitle: '${_selectedImages.length}/4',
+            onTap: _pickImages,
+            isActive: _selectedImages.isNotEmpty,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMediaButton(
+            icon: Icons.videocam,
+            label: 'Video',
+            subtitle: _selectedVideo != null ? '1' : '0',
+            onTap: _pickVideo,
+            isActive: _selectedVideo != null,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMediaButton(
+            icon: Icons.audiotrack,
+            label: 'Audio',
+            subtitle: _selectedAudio != null ? '1' : '0',
+            onTap: _pickAudio,
+            isActive: _selectedAudio != null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMediaButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isActive,
+  }) {
+    return GestureDetector(
+      onTap: _isPickingMedia ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isActive
+              ? _getGroupColor().withValues(alpha: 0.1)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? _getGroupColor() : Colors.grey[300]!,
+            width: isActive ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isActive ? _getGroupColor() : Colors.grey[600],
+              size: 24,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: isActive ? _getGroupColor() : Colors.grey[700],
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMediaPreview() {
+    if (_selectedImages.isEmpty &&
+        _selectedVideo == null &&
+        _selectedAudio == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Media Preview',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+
+          // Images preview
+          if (_selectedImages.isNotEmpty) _buildImagesPreview(),
+
+          // Video preview
+          if (_selectedVideo != null) _buildVideoPreview(),
+
+          // Audio preview
+          if (_selectedAudio != null) _buildAudioPreview(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagesPreview() {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _selectedImages.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.only(right: 12),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _selectedImages[index],
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 120,
+                        height: 120,
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.red,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () => _editImage(index),
+                  ),
+                ),
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.red, size: 20),
+                    onPressed: () => _removeImage(index),
+                  ),
+                ),
+              ],
             ),
           );
-        }
-        return;
-      }
+        },
+      ),
+    );
+  }
 
-      // Get current position
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+  Widget _buildVideoPreview() {
+    if (_videoController == null || !_videoController!.value.isInitialized) {
+      return Container(
+        height: 120,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Container(
+      height: 120,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: AspectRatio(
+              aspectRatio: _videoController!.value.aspectRatio,
+              child: VideoPlayer(_videoController!),
+            ),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: _removeVideo,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+          const Positioned(
+            bottom: 8,
+            left: 8,
+            child: Icon(
+              Icons.play_circle_filled,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioPreview() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.audiotrack, color: Colors.grey),
+          const SizedBox(width: 12),
+          const Expanded(child: Text('Audio file selected')),
+          GestureDetector(
+            onTap: _removeAudio,
+            child: const Icon(Icons.close, color: Colors.red),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagsInput() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _tagsController,
+        decoration: InputDecoration(
+          labelText: 'Tags',
+          hintText: 'art, digital, painting, creative (separate by comma)',
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(16),
+          prefixIcon: Icon(Icons.tag, color: _getGroupColor()),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUploadProgress() {
+    // Show video upload progress if video is being uploaded
+    if (_selectedVideo != null && _videoUploadProgress > 0) {
+      return Container(
+        margin: const EdgeInsets.only(top: 20),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const Text(
+              'Uploading video...',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: _videoUploadProgress,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(_getGroupColor()),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${(_videoUploadProgress * 100).toInt()}%',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
         ),
       );
-
-      setState(() {
-        _selectedLocation = '${position.latitude}, ${position.longitude}';
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Location added')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
-      }
     }
-  }
 
-  /// Show medium selection dialog
-  Future<void> _showMediumSelection() async {
-    final mediums = [
-      'Oil Painting',
-      'Acrylic Painting',
-      'Watercolor',
-      'Digital Art',
-      'Photography',
-      'Sculpture',
-      'Mixed Media',
-      'Pencil Drawing',
-      'Charcoal',
-      'Pastel',
-      'Ink',
-      'Printmaking',
-      'Collage',
-      'Installation',
-      'Performance Art',
-      'Video Art',
-      'Other',
-    ];
-
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Medium'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: mediums.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(mediums[index]),
-                onTap: () => Navigator.pop(context, mediums[index]),
-              );
-            },
+    // Show general media upload progress
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-        ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Uploading media...',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: _uploadProgress,
+            backgroundColor: Colors.grey[300],
+            valueColor: AlwaysStoppedAnimation<Color>(_getGroupColor()),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${(_uploadProgress * 100).toInt()}%',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ),
+        ],
       ),
     );
-
-    if (selected != null) {
-      setState(() {
-        _selectedMedium = selected;
-      });
-    }
-  }
-
-  /// Show style selection dialog
-  Future<void> _showStyleSelection() async {
-    final styles = [
-      'Abstract',
-      'Realism',
-      'Impressionism',
-      'Expressionism',
-      'Surrealism',
-      'Pop Art',
-      'Minimalism',
-      'Contemporary',
-      'Classical',
-      'Modern',
-      'Street Art',
-      'Folk Art',
-      'Conceptual',
-      'Figurative',
-      'Landscape',
-      'Portrait',
-      'Still Life',
-      'Other',
-    ];
-
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Style'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: styles.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(styles[index]),
-                onTap: () => Navigator.pop(context, styles[index]),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-
-    if (selected != null) {
-      setState(() {
-        _selectedStyle = selected;
-      });
-    }
   }
 }

@@ -148,6 +148,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('capture_capture_upload_text_location_services_are'.tr())),
       );
@@ -158,6 +159,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('capture_capture_upload_text_location_permissions_are'.tr())),
         );
@@ -166,6 +168,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     }
 
     if (permission == LocationPermission.deniedForever) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -186,6 +189,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('capture_capture_upload_error_failed_to_get'.tr())));
     }
@@ -305,6 +309,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                 ).then((_) {
                   // After creating art walk, navigate to dashboard
                   Navigator.pushNamedAndRemoveUntil(
+                    // ignore: use_build_context_synchronously
                     context,
                     '/dashboard',
                     (route) => false,
@@ -404,6 +409,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
         // Give a brief moment for the status to show, then show success
         await Future<void>.delayed(const Duration(milliseconds: 300));
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(

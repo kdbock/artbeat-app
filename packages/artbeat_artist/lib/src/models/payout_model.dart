@@ -133,7 +133,10 @@ class PayoutAccountModel {
     if (accountType == 'paypal') {
       return 'PayPal - ${paypalEmail ?? 'Unknown'}';
     } else {
-      return '${bankName ?? 'Bank'} - ****${accountNumber.substring(accountNumber.length - 4)}';
+      final lastDigits = accountNumber.length >= 4
+          ? accountNumber.substring(accountNumber.length - 4)
+          : accountNumber;
+      return '${bankName ?? 'Bank'} - ****$lastDigits';
     }
   }
 }

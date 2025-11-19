@@ -577,6 +577,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
 
       _loadData(); // Refresh data
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Ad "${ad.title}" approved successfully'),
@@ -584,6 +585,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to approve ad: $e'),
@@ -609,6 +611,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
 
         _loadData(); // Refresh data
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Ad "${ad.title}" rejected'),
@@ -616,6 +619,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
           ),
         );
       } catch (e) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to reject ad: $e'),
@@ -640,6 +644,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
 
       _loadData(); // Refresh data
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Report ${status.displayName.toLowerCase()}'),
@@ -648,6 +653,7 @@ class _AdminAdManagementWidgetState extends State<AdminAdManagementWidget> {
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to review report: $e'),

@@ -79,6 +79,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
 
       // Show export options dialog
       showDialog<void>(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) => AlertDialog(
           title: Text('artwork_analytics_title'.tr()),
@@ -118,6 +119,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
         ),
       );
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('artwork_analytics_export_error'.tr())),
       );

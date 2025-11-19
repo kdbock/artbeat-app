@@ -1065,12 +1065,10 @@ class UserService extends ChangeNotifier {
     try {
       final query = await _usersCollection
           .where('userType', isEqualTo: role)
-          .where('isActive', isEqualTo: true)
-          .orderBy('displayName')
-          .limit(50)
+          .limit(100)
           .get();
 
-      return query.docs.map((doc) {
+      final results = query.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>?;
         if (data != null) {
           data['uid'] = doc.id;
@@ -1078,6 +1076,14 @@ class UserService extends ChangeNotifier {
         }
         return <String, dynamic>{'uid': doc.id};
       }).toList();
+
+      results.sort((a, b) {
+        final nameA = (a['displayName'] as String?) ?? (a['fullName'] as String?) ?? '';
+        final nameB = (b['displayName'] as String?) ?? (b['fullName'] as String?) ?? '';
+        return nameA.compareTo(nameB);
+      });
+
+      return results;
     } catch (e, s) {
       _logError('Error getting users by role', e, s);
       return [];

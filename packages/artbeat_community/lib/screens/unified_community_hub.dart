@@ -10,214 +10,12 @@ import '../../theme/community_colors.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../models/artwork_model.dart' as community_artwork;
-import '../../models/direct_commission_model.dart';
-import '../../services/direct_commission_service.dart';
 import '../../widgets/post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../widgets/community_drawer.dart';
 import 'feed/create_post_screen.dart';
 import 'create_art_post_screen.dart';
 import '../../services/art_community_service.dart';
-
-// Tab-specific version of commissions content (without MainLayout)
-class CommissionsTab extends StatefulWidget {
-  const CommissionsTab({super.key});
-
-  @override
-  State<CommissionsTab> createState() => _CommissionsTabState();
-}
-
-class _CommissionsTabState extends State<CommissionsTab>
-    with SingleTickerProviderStateMixin {
-  final DirectCommissionService _commissionService = DirectCommissionService();
-  late final TabController _tabController;
-  List<DirectCommissionModel> _commissions = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _loadCommissions();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadCommissions() async {
-    setState(() => _isLoading = true);
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final commissions = await _commissionService.getCommissionsByUser(
-        user.uid,
-      );
-      setState(() {
-        _commissions = commissions;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading commissions: $e')));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Tabs for filtering commissions
-        TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-          ],
-        ),
-        // Commission list
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Active commissions (in progress, accepted, quoted)
-                    _buildCommissionList(
-                      _commissions
-                          .where(
-                            (c) =>
-                                c.status == CommissionStatus.inProgress ||
-                                c.status == CommissionStatus.accepted ||
-                                c.status == CommissionStatus.quoted,
-                          )
-                          .toList(),
-                    ),
-                    // Pending commissions
-                    _buildCommissionList(
-                      _commissions
-                          .where((c) => c.status == CommissionStatus.pending)
-                          .toList(),
-                    ),
-                    // Completed commissions
-                    _buildCommissionList(
-                      _commissions
-                          .where(
-                            (c) =>
-                                c.status == CommissionStatus.completed ||
-                                c.status == CommissionStatus.delivered,
-                          )
-                          .toList(),
-                    ),
-                  ],
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCommissionList(List<DirectCommissionModel> commissions) {
-    if (commissions.isEmpty) {
-      return const Center(child: Text('No commissions found'));
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: commissions.length,
-      itemBuilder: (context, index) {
-        final commission = commissions[index];
-        return Card(
-          child: ListTile(
-            title: Text(commission.title),
-            subtitle: Text(
-              'Status: ${commission.status.displayName} • \$${commission.totalPrice.toStringAsFixed(2)}',
-            ),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: () {
-              _showCommissionDetails(commission);
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  void _showCommissionDetails(DirectCommissionModel commission) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Commission Details',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              _buildDetailRow('Commission ID', commission.id),
-              _buildDetailRow('Title', commission.title),
-              _buildDetailRow('Client', commission.clientName),
-              _buildDetailRow('Artist', commission.artistName),
-              _buildDetailRow('Type', commission.type.displayName),
-              _buildDetailRow(
-                'Total Price',
-                '\$${commission.totalPrice.toStringAsFixed(2)}',
-              ),
-              _buildDetailRow('Status', commission.status.displayName),
-              _buildDetailRow('Requested', commission.requestedAt.toString()),
-              if (commission.deadline != null)
-                _buildDetailRow('Deadline', commission.deadline.toString()),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.grey)),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class UnifiedCommunityHub extends StatefulWidget {
   const UnifiedCommunityHub({super.key});
@@ -235,13 +33,13 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
 
     // Handle hot reload scenarios where TabController length might be cached
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_tabController.length != 3) {
+      if (_tabController.length != 2) {
         _tabController.dispose();
-        _tabController = TabController(length: 3, vsync: this);
+        _tabController = TabController(length: 2, vsync: this);
       }
     });
 
@@ -262,9 +60,9 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
   void didUpdateWidget(UnifiedCommunityHub oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Recreate TabController if length doesn't match (handles hot reload issues)
-    if (_tabController.length != 3) {
+    if (_tabController.length != 2) {
       _tabController.dispose();
-      _tabController = TabController(length: 3, vsync: this);
+      _tabController = TabController(length: 2, vsync: this);
     }
   }
 
@@ -308,7 +106,6 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
               onNavigateToTab: (index) => _tabController.animateTo(index),
             ),
             const LegacyCommunityFeedTab(),
-            const CommissionsTab(),
           ],
         ),
       ),
@@ -338,6 +135,7 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
       if (artistProfile != null) {
         // User is an artist - show the options screen for specialized posts
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => const CreatePostScreen(),
@@ -346,6 +144,7 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
       } else {
         // Regular user - go directly to the simple create post form
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute<void>(
             builder: (context) => const CreateArtPostScreen(),
@@ -357,6 +156,7 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
     } catch (e) {
       // If there's an error checking artist status, default to simple create post
       Navigator.push(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute<void>(
           builder: (context) => const CreateArtPostScreen(),

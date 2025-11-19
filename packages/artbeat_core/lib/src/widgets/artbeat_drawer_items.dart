@@ -454,7 +454,16 @@ class ArtbeatDrawerItems {
   );
 
   // Grouped items for different user types
+  static const artbeatStore = ArtbeatDrawerItem(
+    title: 'Artbeat Store',
+    icon: Icons.storefront_outlined,
+    route: '/store',
+    color: ArtbeatColors.primaryPurple,
+    requiresAuth: false,
+  );
+
   static List<ArtbeatDrawerItem> get coreItems => [
+    artbeatStore,
     dashboard,
     browse,
     enhancedSearch,

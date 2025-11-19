@@ -198,7 +198,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: core.ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,

@@ -6,8 +6,9 @@ import '../screens/feed/create_group_post_screen.dart';
 /// Floating Action Button for creating posts in different groups
 class CreatePostFAB extends StatelessWidget {
   final GroupType groupType;
+  final VoidCallback? onPostCreated;
 
-  const CreatePostFAB({super.key, required this.groupType});
+  const CreatePostFAB({super.key, required this.groupType, this.onPostCreated});
 
   @override
   Widget build(BuildContext context) {
@@ -223,13 +224,17 @@ class CreatePostFAB extends StatelessWidget {
             Navigator.pop(context);
             Navigator.push(
               context,
-              MaterialPageRoute<void>(
+              MaterialPageRoute<bool>(
                 builder: (context) => CreateGroupPostScreen(
                   groupType: groupType,
                   postType: postType,
                 ),
               ),
-            );
+            ).then((result) {
+              if (result == true) {
+                onPostCreated?.call();
+              }
+            });
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(

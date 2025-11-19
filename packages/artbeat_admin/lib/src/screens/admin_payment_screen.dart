@@ -1353,6 +1353,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                         await Clipboard.setData(
                             ClipboardData(text: csvContent));
                         if (mounted) {
+                          // ignore: use_build_context_synchronously
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                                 content:

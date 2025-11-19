@@ -182,7 +182,7 @@ class CommunityModuleHome extends StatelessWidget {
               _buildNavButton(
                 context,
                 'Gifts',
-                const GiftsScreen(),
+                const ViewReceivedGiftsScreen(),
                 Icons.card_giftcard,
               ),
               _buildNavButton(

@@ -66,6 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             onPressed: () async {
               await _notificationService.markAllNotificationsAsRead();
               if (mounted) {
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('All notifications marked as read'),
@@ -92,6 +93,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     data: {'testData': 'This is test data'},
                   );
                   if (mounted) {
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Test notification created'),

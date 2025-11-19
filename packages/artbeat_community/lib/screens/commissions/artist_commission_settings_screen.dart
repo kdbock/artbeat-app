@@ -194,7 +194,7 @@ Please contact me with any questions before placing your commission request.
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: core.ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,
@@ -294,7 +294,7 @@ Please contact me with any questions before placing your commission request.
                     height: 56,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      gradient: CommunityColors.communityGradient,
+                      gradient: core.ArtbeatColors.primaryGradient,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/subscription_model.dart';
+import '../models/top_follower_model.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'error_monitoring_service.dart';
 import '../utils/artist_logger.dart';
@@ -528,6 +529,163 @@ class SubscriptionService {
     } catch (e) {
       ArtistLogger.error('Error getting all artists: $e');
       return [];
+    }
+  }
+
+  /// Get all followers for an artist
+  Future<List<String>> getFollowersForArtist({
+    required String artistProfileId,
+  }) async {
+    try {
+      final snapshot = await _firestore
+          .collection('artistFollows')
+          .where('artistProfileId', isEqualTo: artistProfileId)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => doc['userId'] as String)
+          .toList();
+    } catch (e) {
+      ArtistLogger.error('Error getting followers for artist: $e');
+      return [];
+    }
+  }
+
+  /// Get engagement score for a follower
+  /// Calculates based on gifts (10 pts), likes (1 pt), messages (5 pts), views (0.5 pts)
+  Future<int> calculateEngagementScore({
+    required String followerId,
+    required String artistProfileId,
+  }) async {
+    try {
+      int score = 0;
+
+      final giftsSnapshot = await _firestore
+          .collection('gifts')
+          .where('senderId', isEqualTo: followerId)
+          .where('recipientId', isEqualTo: artistProfileId)
+          .get();
+      score += giftsSnapshot.docs.length * 10;
+
+      final likesSnapshot = await _firestore
+          .collection('likes')
+          .where('userId', isEqualTo: followerId)
+          .where('artistId', isEqualTo: artistProfileId)
+          .get();
+      score += likesSnapshot.docs.length;
+
+      final messagesSnapshot = await _firestore
+          .collection('messages')
+          .where('senderId', isEqualTo: followerId)
+          .where('recipientId', isEqualTo: artistProfileId)
+          .get();
+      score += messagesSnapshot.docs.length * 5;
+
+      final viewsSnapshot = await _firestore
+          .collection('profileViews')
+          .where('viewerId', isEqualTo: followerId)
+          .where('artistProfileId', isEqualTo: artistProfileId)
+          .get();
+      score += (viewsSnapshot.docs.length * 0.5).toInt();
+
+      return score;
+    } catch (e) {
+      ArtistLogger.error('Error calculating engagement score: $e');
+      return 0;
+    }
+  }
+
+  /// Get top engaged followers for an artist (MySpace-style top 8)
+  Future<List<TopFollowerModel>> getTopFollowers({
+    required String artistProfileId,
+    int limit = 8,
+  }) async {
+    try {
+      ArtistLogger.info('🔝 Fetching top $limit followers for artist: $artistProfileId');
+
+      final followerIds = await getFollowersForArtist(artistProfileId: artistProfileId);
+
+      if (followerIds.isEmpty) {
+        ArtistLogger.info('No followers found for artist');
+        return [];
+      }
+
+      final topFollowers = <TopFollowerModel>[];
+
+      for (final followerId in followerIds) {
+        try {
+          final engagementScore = await calculateEngagementScore(
+            followerId: followerId,
+            artistProfileId: artistProfileId,
+          );
+
+          if (engagementScore > 0) {
+            final userDoc = await _firestore.collection('users').doc(followerId).get();
+
+            final followerName = userDoc['displayName'] as String? ?? 'User';
+            final followerAvatarUrl = userDoc['profileImageUrl'] as String?;
+            final isVerified = userDoc['isVerified'] as bool? ?? false;
+
+            final topFollower = TopFollowerModel(
+              followerId: followerId,
+              followerName: followerName,
+              followerAvatarUrl: followerAvatarUrl,
+              engagementScore: engagementScore,
+              isVerified: isVerified,
+              lastEngagementAt: DateTime.now(),
+            );
+
+            topFollowers.add(topFollower);
+          }
+        } catch (e) {
+          ArtistLogger.warning('Error processing follower $followerId: $e');
+          continue;
+        }
+      }
+
+      topFollowers.sort((a, b) => b.engagementScore.compareTo(a.engagementScore));
+
+      final result = topFollowers.take(limit).toList();
+      ArtistLogger.info('🔝 Found ${result.length} top followers');
+
+      return result;
+    } catch (e) {
+      ArtistLogger.error('Error getting top followers: $e');
+      return [];
+    }
+  }
+
+  /// Get follower stats for an artist
+  Future<Map<String, dynamic>> getFollowerStats({
+    required String artistProfileId,
+  }) async {
+    try {
+      final followerIds = await getFollowersForArtist(artistProfileId: artistProfileId);
+      final totalFollowers = followerIds.length;
+
+      int totalEngagement = 0;
+      for (final followerId in followerIds) {
+        final score = await calculateEngagementScore(
+          followerId: followerId,
+          artistProfileId: artistProfileId,
+        );
+        totalEngagement += score;
+      }
+
+      final avgEngagement = totalFollowers > 0 ? totalEngagement ~/ totalFollowers : 0;
+
+      return {
+        'totalFollowers': totalFollowers,
+        'totalEngagement': totalEngagement,
+        'averageEngagement': avgEngagement,
+      };
+    } catch (e) {
+      ArtistLogger.error('Error getting follower stats: $e');
+      return {
+        'totalFollowers': 0,
+        'totalEngagement': 0,
+        'averageEngagement': 0,
+      };
     }
   }
 }

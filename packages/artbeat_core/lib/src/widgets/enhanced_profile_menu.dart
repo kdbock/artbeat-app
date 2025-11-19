@@ -530,6 +530,7 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
     // Use a slight delay to ensure smooth navigation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (context.mounted) {
+        // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, route);
       }
     });

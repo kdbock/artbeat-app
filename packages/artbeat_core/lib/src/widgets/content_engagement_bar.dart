@@ -892,6 +892,7 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
       });
 
       try {
+        // ignore: use_build_context_synchronously
         final service = context.read<ContentEngagementService>();
         await service.addComment(
           contentId: widget.contentId,
@@ -1014,6 +1015,7 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
         // Use dynamic import to avoid circular dependencies
         final commissionModule = await _loadCommissionModule();
         if (commissionModule != null) {
+          // ignore: use_build_context_synchronously
           Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (context) => commissionModule),
           );

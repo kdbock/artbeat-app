@@ -153,9 +153,11 @@ class UserProfileScreen extends StatelessWidget {
               );
               await chatService.blockUser(user.id);
               ScaffoldMessenger.of(
+                // ignore: use_build_context_synchronously
                 context,
               ).showSnackBar(SnackBar(content: Text('messaging_user_profile_text_user_blocked'.tr())));
             } catch (e) {
+              // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('messaging_user_profile_error_failed_to_block'.tr())),
               );

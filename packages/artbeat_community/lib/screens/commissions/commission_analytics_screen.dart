@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommissionAnalyticsScreen extends StatefulWidget {
   const CommissionAnalyticsScreen({super.key});
@@ -57,7 +58,7 @@ class _CommissionAnalyticsScreenState extends State<CommissionAnalyticsScreen> {
         preferredSize: const Size.fromHeight(kToolbarHeight + 48 + 4),
         child: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: ArtbeatColors.primaryGradient,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,

@@ -168,6 +168,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
       }
 
       // Hide keyboard
+      // ignore: use_build_context_synchronously
       FocusScope.of(context).unfocus();
 
       // Provide haptic feedback

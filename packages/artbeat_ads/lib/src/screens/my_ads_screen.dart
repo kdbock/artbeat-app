@@ -7,7 +7,8 @@ import '../widgets/ad_card.dart';
 import 'create_local_ad_screen.dart';
 
 class MyAdsScreen extends StatefulWidget {
-  const MyAdsScreen({Key? key}) : super(key: key);
+  final bool showAppBar;
+  const MyAdsScreen({Key? key, this.showAppBar = true}) : super(key: key);
 
   @override
   State<MyAdsScreen> createState() => _MyAdsScreenState();
@@ -58,7 +59,9 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('admin_unified_admin_dashboard_error_error_e'.tr())),
+            SnackBar(
+              content: Text('admin_unified_admin_dashboard_error_error_e'.tr()),
+            ),
           );
         }
       }
@@ -68,9 +71,9 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('ads_my_ads_text_my_ads'.tr()),
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(title: Text('ads_my_ads_text_my_ads'.tr()))
+          : null,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push<void>(
@@ -100,9 +103,11 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
               .where((ad) => ad.status == LocalAdStatus.active && !ad.isExpired)
               .toList();
           final expiredAds = ads
-              .where((ad) =>
-                  ad.status == LocalAdStatus.expired ||
-                  (ad.status == LocalAdStatus.active && ad.isExpired))
+              .where(
+                (ad) =>
+                    ad.status == LocalAdStatus.expired ||
+                    (ad.status == LocalAdStatus.active && ad.isExpired),
+              )
               .toList();
 
           if (ads.isEmpty) {
@@ -110,11 +115,7 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.ads_click,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.ads_click, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'No ads yet',
@@ -140,29 +141,21 @@ class _MyAdsScreenState extends State<MyAdsScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                ...activeAds
-                    .map((ad) => AdCard(
-                          ad: ad,
-                          onDelete: () => _deleteAd(ad.id),
-                        ))
-                    .toList(),
+                ...activeAds.map(
+                  (ad) => AdCard(ad: ad, onDelete: () => _deleteAd(ad.id)),
+                ),
               ],
               if (expiredAds.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     'Expired Ads (${expiredAds.length})',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                ...expiredAds
-                    .map((ad) => AdCard(
-                          ad: ad,
-                          onDelete: () => _deleteAd(ad.id),
-                        ))
-                    .toList(),
+                ...expiredAds.map(
+                  (ad) => AdCard(ad: ad, onDelete: () => _deleteAd(ad.id)),
+                ),
               ],
             ],
           );
