@@ -129,7 +129,7 @@ class _AdsScreenState extends State<AdsScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: isPopular
-                      ? BorderSide(color: ArtbeatColors.primary, width: 2)
+                      ? const BorderSide(color: ArtbeatColors.primary, width: 2)
                       : BorderSide.none,
                 ),
                 child: Padding(

@@ -103,24 +103,22 @@ class AppLifecycleManager extends WidgetsBindingObserver {
   /// Ensure Firestore connection is healthy
   void _ensureFirestoreConnection() {
     try {
-      // Check if Firestore is available
-      FirebaseFirestore.instance.settings;
+      // Always re-enable network after resume to ensure proper connection
+      _reconnectFirestore();
       if (kDebugMode) {
-        AppLogger.info('✅ Firestore connection healthy');
+        AppLogger.info('✅ Firestore connection re-established');
       }
     } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Firestore connection issue: $e');
       }
-      // Attempt to reconnect
-      _reconnectFirestore();
     }
   }
 
   /// Attempt to reconnect Firestore
   void _reconnectFirestore() {
     try {
-      // Enable network if disabled
+      // Enable network to restore connection after background
       FirebaseFirestore.instance.enableNetwork();
       if (kDebugMode) {
         AppLogger.network('🔄 Firestore network re-enabled');
@@ -137,13 +135,13 @@ class AppLifecycleManager extends WidgetsBindingObserver {
     // This is where you would save any critical state
     // For now, we'll just ensure Firestore operations are completed
     try {
-      FirebaseFirestore.instance.terminate();
+      FirebaseFirestore.instance.disableNetwork();
       if (kDebugMode) {
-        AppLogger.info('💾 Firestore terminated cleanly for background');
+        AppLogger.info('💾 Firestore network disabled for background');
       }
     } on Exception catch (e) {
       if (kDebugMode) {
-        AppLogger.error('❌ Error terminating Firestore: $e');
+        AppLogger.error('❌ Error disabling Firestore network: $e');
       }
     }
   }

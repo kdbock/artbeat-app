@@ -3,19 +3,19 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 
 // Import the existing screens
-import 'package:artbeat_core/src/screens/gifts/gifts_screen.dart';
+// Removed unnecessary import for gifts_screen.dart
 import 'package:artbeat_ads/src/screens/my_ads_screen.dart';
-import 'package:artbeat_core/src/screens/subscriptions/subscriptions_screen.dart';
+// Removed unnecessary import for subscriptions_screen.dart
 
 class ArtbeatStoreScreen extends StatelessWidget {
   const ArtbeatStoreScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 3,
       child: Column(
-        children: const [
+        children: [
           TabBar(
             tabs: [
               Tab(text: 'Gifts', icon: Icon(Icons.card_giftcard)),

@@ -83,6 +83,10 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
     String route,
     bool isMainRoute,
   ) {
+    // Ensure the provided snackBarContext is still valid before doing
+    // navigation that will rely on it. Guard the BuildContext usage across
+    // async gaps to avoid use_build_context_synchronously lints.
+    if (!snackBarContext.mounted) return;
     // List of implemented routes based on app_router.dart
     final implementedRoutes = {
       '/dashboard',
@@ -206,7 +210,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
 
     // Add Artbeat Store route
     if (route == '/store') {
-      Navigator.pushNamed(context, '/store');
+      Navigator.of(snackBarContext, rootNavigator: true).pushNamed('/store');
       return;
     }
     if (implementedRoutes.contains(route)) {
@@ -216,10 +220,13 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         // Use push for most routes to maintain navigation stack
         // Only use pushReplacementNamed for true top-level destinations
         if (isMainRoute && mainRoutes.contains(route)) {
-          Navigator.pushReplacementNamed(context, route);
+          Navigator.of(
+            snackBarContext,
+            rootNavigator: true,
+          ).pushReplacementNamed(route);
         } else {
           // Use regular push to maintain back button functionality
-          Navigator.pushNamed(context, route);
+          Navigator.of(snackBarContext, rootNavigator: true).pushNamed(route);
         }
       } catch (error) {
         AppLogger.error('⚠️ Navigation error for route $route: $error');

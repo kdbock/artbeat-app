@@ -359,40 +359,63 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
     final currentRoute = ModalRoute.of(context)?.settings.name;
     final isCurrentRoute = currentRoute == route;
 
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isCurrentRoute ? ArtWalkDashboardColors.accentOrange : color,
-        size: 24,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isCurrentRoute
-              ? ArtWalkDashboardColors.accentOrange
-              : ArtWalkDashboardColors.textPrimary,
-          fontSize: 16,
-          fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
+    return Builder(
+      builder: (snackBarContext) => ListTile(
+        leading: Icon(
+          icon,
+          color: isCurrentRoute ? ArtWalkDashboardColors.accentOrange : color,
+          size: 24,
         ),
-      ),
-      selected: isCurrentRoute,
-      selectedTileColor: ArtWalkDashboardColors.primaryGreen.withValues(
-        alpha: 0.1,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isCurrentRoute
+                ? ArtWalkDashboardColors.accentOrange
+                : ArtWalkDashboardColors.textPrimary,
+            fontSize: 16,
+            fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+        selected: isCurrentRoute,
+        selectedTileColor: ArtWalkDashboardColors.primaryGreen.withValues(
+          alpha: 0.1,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        onTap: () async {
+          Navigator.pop(context); // Close drawer
 
-        if (route == currentRoute) return;
+          if (route == currentRoute) return;
 
-        // Handle navigation
-        if (route.startsWith('/art-walk/') || route == '/capture/public') {
-          Navigator.pushNamed(context, route);
-        } else {
-          // For non-art-walk routes, use pushReplacement to avoid stacking
-          Navigator.pushReplacementNamed(context, route);
-        }
-      },
+          // Wait briefly to ensure the drawer has closed before navigating.
+          // This mirrors the behavior in the core `ArtbeatDrawer` which helps
+          // avoid navigation race conditions that can cause navigation to fail
+          // or appear to reload the app.
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+
+          if (!mounted) return;
+          // Guard builder/context we will use for navigation. The linter warns
+          // about using a BuildContext (snackBarContext) across the async gap;
+          // check it is still mounted before using it.
+          if (!snackBarContext.mounted) return;
+
+          // Handle navigation using snackBarContext so the Scaffold's state is
+          // used correctly after the drawer is closed.
+          AppLogger.info(
+            'ArtWalkDrawer: navigate to $route (current: $currentRoute)',
+          );
+          if (route.startsWith('/art-walk/') ||
+              route == '/capture/public' ||
+              route == '/quest-history' ||
+              route == '/weekly-goals') {
+            Navigator.of(snackBarContext, rootNavigator: true).pushNamed(route);
+          } else {
+            Navigator.of(
+              snackBarContext,
+              rootNavigator: true,
+            ).pushReplacementNamed(route);
+          }
+        },
+      ),
     );
   }
 

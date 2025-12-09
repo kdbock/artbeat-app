@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/in_app_purchase_manager.dart';
+// Removed unused import for in_app_purchase_manager.dart
 import '../../services/in_app_purchase_setup.dart';
 import '../../services/user_service.dart';
 import '../../models/user_model.dart';
@@ -15,13 +15,13 @@ class GiftsScreen extends StatefulWidget {
 }
 
 class _GiftsScreenState extends State<GiftsScreen> {
-  final InAppPurchaseManager _purchaseManager = InAppPurchaseManager();
+  // Removed unused field _purchaseManager
   final UserService _userService = UserService();
 
   List<UserModel> _artists = [];
   UserModel? _selectedArtist;
   bool _isLoadingArtists = true;
-  bool _isPurchaseInitialized = false;
+  // Removed unused field _isPurchaseInitialized
   String _searchQuery = '';
 
   @override
@@ -33,12 +33,9 @@ class _GiftsScreenState extends State<GiftsScreen> {
 
   Future<void> _initializePurchases() async {
     final setup = InAppPurchaseSetup();
-    final initialized = await setup.initialize();
-    if (mounted) {
-      setState(() {
-        _isPurchaseInitialized = initialized;
-      });
-    }
+    await setup.initialize();
+    // Removed assignment to _isPurchaseInitialized
+    // You may add any other logic here if needed
   }
 
   Future<void> _loadArtists() async {
@@ -305,7 +302,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: isPopular
-                  ? BorderSide(color: ArtbeatColors.primary, width: 2)
+                  ? const BorderSide(color: ArtbeatColors.primary, width: 2)
                   : BorderSide.none,
             ),
             child: Padding(
@@ -380,7 +377,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
                       onPressed: _selectedArtist == null
                           ? null
                           : () {
-                              showModalBottomSheet(
+                              showModalBottomSheet<void>(
                                 context: context,
                                 isScrollControlled: true,
                                 shape: const RoundedRectangleBorder(
